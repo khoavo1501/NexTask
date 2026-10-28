@@ -508,8 +508,7 @@ Sau rehearsal, backup được restore vào database thật và migration chạy
 - Rehearsal `nextask_2b_rehearsal`: 1 board, 2 item, 2 task, 2 user, 1 invitation; no-op
   update hợp lệ; đã drop sau kiểm tra.
 - App DB sau 002: cùng số lượng; item version `31`, `13`; task version `4`, `1`.
-- Browser conflict test sau migration tăng item đầu lên version `32` (nội dung giữ
-  nguyên) và task thứ hai lên version `3` (đã trả về `To Do`). Board name được phục hồi,
-  version 3.
+- Browser/autosave sau migration làm item version `33`, `14` (nội dung giữ nguyên) và
+  task thứ hai version `4` (đã trả về `To Do`). Board name được phục hồi, version 3.
 - Test DB `nextask_phase2_test` được drop một lần trước khi chạy 002 để áp validator mới;
   không đụng database ứng dụng.

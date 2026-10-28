@@ -413,9 +413,9 @@ nới validator để che dữ liệu sai.
 - Migration thật trên database `nextask`: `applied: ["002-phase-2b"]`, không lỗi.
 - Trước và sau migration, dữ liệu giữ nguyên `_id`, nội dung, `createdAt` và version:
   item `31`, `13`; task `4`, `1`; board 1; invitation 1.
-- Browser conflict test sau migration làm item đầu tăng lên version `32` (nội dung không
-  đổi) và task thứ hai tăng lên version `3` (đã trả về cột `To Do`). Board được đổi tên
-  trong test conflict rồi trả lại `Retro E2E Phase 1` (version 3).
+- Browser/autosave sau migration làm item version `33`, `14` (nội dung không đổi) và
+  task thứ hai version `4` (đã trả về cột `To Do`). Board được đổi tên trong test
+  conflict rồi trả lại `Retro E2E Phase 1` (version 3).
 
 ### API và web
 

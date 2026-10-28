@@ -427,8 +427,8 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Migration thật: `applied: ["002-phase-2b"]`.
 - Trước/sau migration: counts không đổi; item version `31`, `13`; task version `4`, `1`;
   `_id`, nội dung, `createdAt`, `updatedAt` khớp giữa bản gốc và rehearsal.
-- Browser conflict test sau migration làm item đầu lên version `32` (nội dung không đổi)
-  và task thứ hai lên version `3` (đã trả về `To Do`); board name được phục hồi.
+- Browser/autosave sau migration làm item version `33`, `14` (nội dung không đổi) và
+  task thứ hai version `4` (đã trả về `To Do`); board name được phục hồi, version 3.
 
 ### Kiểm chứng
 

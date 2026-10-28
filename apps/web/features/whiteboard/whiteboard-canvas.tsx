@@ -133,6 +133,7 @@ export function WhiteboardCanvas({
         );
         mountedEditor.zoomToFit({ animation: { duration: 0 } });
       }
+      mountedEditor.selectNone();
       mountedEditor.setCurrentTool('select');
       setCurrentTool('select');
       setSaveState('saved');

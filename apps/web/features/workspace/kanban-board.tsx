@@ -72,7 +72,7 @@ export function KanbanBoard({ board, tasks, onMoveTask }: KanbanBoardProps) {
                 const taskId = event.dataTransfer.getData('text/plain') || draggingTaskId;
                 dropTask(column.id, taskId ?? '');
               }}
-              className={`flex min-w-[140px] flex-1 flex-col rounded-xl border p-2 transition ${
+              className={`flex min-w-[125px] flex-1 flex-col rounded-xl border p-2 transition ${
                 isOver
                   ? 'border-amber-400 bg-amber-50'
                   : column.isDone

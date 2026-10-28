@@ -1,12 +1,12 @@
 # Giai đoạn 2A - Auth, membership và quyền
 
-- Trạng thái: Hoàn thành ngày 2026-10-28; đã kiểm chứng trên feature, chờ merge release
+- Trạng thái: Hoàn thành ngày 2026-10-28; đã merge vào `release/v0.2`
 - Ngày lập: 2026-10-28
 - Tiền đề: Giai đoạn 1 hoàn thành
 - Đề xuất gốc: [02-proposal.md](./02-proposal.md)
 - Implementation plan: [2026-10-28-phase-2a-auth-membership.md](../superpowers/plans/2026-10-28-phase-2a-auth-membership.md)
 - Kiến trúc: [../architecture.md](../architecture.md)
-- Chi nhánh: `feat/phase-2a-auth-membership` từ `release/v0.2`
+- Nhánh: `feat/phase-2a-auth-membership`; merge commit `c15603e` vào `release/v0.2`; feature đã xóa
 
 ## 1. Mục tiêu
 

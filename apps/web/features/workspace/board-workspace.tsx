@@ -159,7 +159,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           <div className="min-w-0">
             <h1 className="truncate text-lg font-semibold text-stone-900">{data.board.name}</h1>
             <p className="text-xs text-stone-500">
-              Demo owner · {data.items.length} ghi chú · {data.tasks.length} task
+              {data.items.length} ghi chú · {data.tasks.length} task
             </p>
           </div>
         </div>

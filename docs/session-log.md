@@ -309,7 +309,8 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - `766e6e0` `feat: add invitation link and transactional accept`
 - `500f8dc` `feat: add web authentication and protected board list`
 - `61879bf` `feat: add invite, accept, and owner rename UI`
-- Commit tài liệu cuối và merge release được tạo sau biên bản này.
+- `69114a8` `docs: record phase 2a verification`
+- `c15603e` `merge: phase 2a auth and membership` vào `release/v0.2`
 
 ### Đã triển khai
 
@@ -358,9 +359,22 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Test DB Phase 2 tách khỏi Phase 1; migration test có DB riêng để tránh drop dữ liệu test khác.
 - Không dùng mock DB.
 
-### Trạng thái
+### Merge release
 
-- 2A hoàn thành và kiểm chứng trên feature.
+- Merge `feat/phase-2a-auth-membership` vào `release/v0.2` bằng `--no-ff`: `c15603e`.
+- Chạy lại quality gate trên release:
+  - Typecheck/lint/format pass.
+  - Full suite ba lần, mỗi lần 10 file, 46 test pass:
+    - Lần 1: 7.84 s.
+    - Lần 2: 7.83 s.
+    - Lần 3: 8.02 s.
+- Xóa feature branch bằng `git branch -d`; branch đã merge.
+- `main` vẫn ở `6d3d11b`, chưa nhận 2A.
+- Docker vẫn healthy; migration đã áp dụng trên app DB.
+
+### Trạng thái cuối
+
+- 2A hoàn thành và đã merge `release/v0.2`.
+- Không còn feature 2A; release đang chờ 2B.
 - Chưa có `$jsonSchema`, expectedVersion, realtime hoặc demote.
-- Chưa merge `main`.
-- Sau commit tài liệu: merge `feat/phase-2a-auth-membership` vào `release/v0.2`, chạy lại quality gate và xóa feature; main vẫn chờ v0.2 hoàn tất cùng 2B.
+- Chưa merge `main`; v0.2 chỉ lên main sau khi 2B hoàn tất và được duyệt.

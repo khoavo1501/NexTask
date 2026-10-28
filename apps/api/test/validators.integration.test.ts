@@ -22,9 +22,10 @@ describe('collection validators', () => {
   it('áp strict/error cho 5 collection nghiệp vụ', async () => {
     for (const name of collections) {
       const [info] = await db().listCollections({ name }).toArray();
-      expect(info?.options?.validator, name).toBeDefined();
-      expect(info?.options?.validationLevel, name).toBe('strict');
-      expect(info?.options?.validationAction, name).toBe('error');
+      const options = (info as { options?: Record<string, unknown> } | undefined)?.options;
+      expect(options?.validator, name).toBeDefined();
+      expect(options?.validationLevel, name).toBe('strict');
+      expect(options?.validationAction, name).toBe('error');
     }
   });
 

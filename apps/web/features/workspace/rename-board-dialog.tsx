@@ -2,15 +2,21 @@
 
 import type { BoardDto } from '@nextask/contracts';
 import { useEffect, useState, type FormEvent } from 'react';
-import { ApiClientError, renameBoard } from '../../lib/api';
+import { ApiClientError, isVersionConflict, renameBoard } from '../../lib/api';
 
 interface RenameBoardDialogProps {
   board: BoardDto;
   onClose: () => void;
   onRenamed: (board: BoardDto) => void;
+  onConflict: () => void;
 }
 
-export function RenameBoardDialog({ board, onClose, onRenamed }: RenameBoardDialogProps) {
+export function RenameBoardDialog({
+  board,
+  onClose,
+  onRenamed,
+  onConflict,
+}: RenameBoardDialogProps) {
   const [name, setName] = useState(board.name);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
@@ -32,6 +38,10 @@ export function RenameBoardDialog({ board, onClose, onRenamed }: RenameBoardDial
       onRenamed(updated);
       onClose();
     } catch (caught) {
+      if (isVersionConflict(caught)) {
+        onConflict();
+        return;
+      }
       setError(caught instanceof ApiClientError ? caught.message : 'Không đổi tên được board.');
     } finally {
       setPending(false);

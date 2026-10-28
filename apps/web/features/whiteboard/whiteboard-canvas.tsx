@@ -1,6 +1,10 @@
 'use client';
 
-import type { ItemDto } from '@nextask/contracts';
+import type {
+  ItemDto,
+  SyncDeletedItemInput,
+  SyncItemInput,
+} from '@nextask/contracts';
 import {
   DefaultColorStyle,
   Tldraw,
@@ -13,7 +17,7 @@ import {
 } from 'tldraw';
 import 'tldraw/tldraw.css';
 import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
-import { ApiClientError, syncItems } from '../../lib/api';
+import { ApiClientError, getItems, isVersionConflict, syncItems } from '../../lib/api';
 import type { WhiteboardProps } from './whiteboard';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
@@ -39,6 +43,14 @@ export function WhiteboardCanvas({
   onPromoteRequest,
 }: WhiteboardProps) {
   const initialItemsRef = useRef(initialItems);
+  const knownItemsRef = useRef(
+    new Map(
+      initialItems.map((item) => [
+        item.shapeId,
+        { version: item.version, promotedTaskId: item.promotedTaskId },
+      ]),
+    ),
+  );
   const editorRef = useRef<Editor | null>(null);
   const initializedRef = useRef(false);
   const saveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -49,7 +61,77 @@ export function WhiteboardCanvas({
   const [activeColor, setActiveColor] = useState<NoteColor>('yellow');
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [error, setError] = useState<string | null>(null);
+  const [versionNotice, setVersionNotice] = useState<string | null>(null);
   const [, forceViewport] = useReducer((value: number) => value + 1, 0);
+
+  useEffect(() => {
+    const known = knownItemsRef.current;
+    for (const item of items) {
+      const entry = known.get(item.shapeId);
+      if (entry && item.version >= entry.version) {
+        known.set(item.shapeId, {
+          version: item.version,
+          promotedTaskId: item.promotedTaskId,
+        });
+      }
+    }
+  }, [items]);
+
+  const sendSync = useCallback(
+    async (payload: SyncItemInput[], deleted: SyncDeletedItemInput[]): Promise<ItemDto[]> => {
+      try {
+        return await syncItems(board._id, payload, deleted);
+      } catch (caught) {
+        if (!isVersionConflict(caught)) throw caught;
+
+        const serverItems = await getItems(board._id);
+        const serverByShapeId = new Map(serverItems.map((item) => [item.shapeId, item]));
+        const missing: string[] = [];
+
+        for (const entry of payload) {
+          const item = serverByShapeId.get(entry.shapeId);
+          if (item) {
+            knownItemsRef.current.set(entry.shapeId, {
+              version: item.version,
+              promotedTaskId: item.promotedTaskId,
+            });
+          } else if (entry.expectedVersion > 0) {
+            missing.push(entry.shapeId);
+          }
+        }
+
+        for (const entry of deleted) {
+          const item = serverByShapeId.get(entry.shapeId);
+          if (item) {
+            knownItemsRef.current.set(entry.shapeId, {
+              version: item.version,
+              promotedTaskId: item.promotedTaskId,
+            });
+          } else {
+            knownItemsRef.current.delete(entry.shapeId);
+          }
+        }
+
+        if (missing.length > 0) throw caught;
+
+        const retryPayload = payload.map((entry) => ({
+          ...entry,
+          expectedVersion: knownItemsRef.current.get(entry.shapeId)?.version ?? 0,
+        }));
+        const retryDeleted = deleted
+          .filter((entry) => knownItemsRef.current.has(entry.shapeId))
+          .map((entry) => ({
+            ...entry,
+            expectedVersion:
+              knownItemsRef.current.get(entry.shapeId)?.version ?? entry.expectedVersion,
+          }));
+
+        setVersionNotice('Board vừa thay đổi từ tab khác; đã đồng bộ lại.');
+        return syncItems(board._id, retryPayload, retryDeleted);
+      }
+    },
+    [board._id],
+  );
 
   const syncNow = useCallback(async (): Promise<ItemDto[]> => {
     const currentEditor = editorRef.current;
@@ -62,7 +144,9 @@ export function WhiteboardCanvas({
           .getCurrentPageShapes()
           .filter((shape): shape is TLNoteShape => shape.type === 'note');
 
-        const payload = shapes.map((shape) => {
+        const known = knownItemsRef.current;
+        const localShapeIds = new Set<string>(shapes.map((shape) => shape.id));
+        const payload: SyncItemInput[] = shapes.map((shape) => {
           const bounds = currentEditor.getShapePageBounds(shape);
           const props = shape.props as TLNoteShapeProps;
           return {
@@ -81,13 +165,41 @@ export function WhiteboardCanvas({
             rotation: shape.rotation,
             tldrawIndex: String(shape.index),
             parentFrameId: null,
+            expectedVersion: known.get(shape.id)?.version ?? 0,
           };
         });
+        const deleted: SyncDeletedItemInput[] = [...known.entries()]
+          .filter(
+            ([shapeId, entry]) => !localShapeIds.has(shapeId) && entry.promotedTaskId === null,
+          )
+          .map(([shapeId, entry]) => ({
+            shapeId,
+            expectedVersion: entry.version,
+          }));
 
         setSaveState('saving');
         setError(null);
         try {
-          const saved = await syncItems(board._id, payload);
+          const saved = await sendSync(payload, deleted);
+          const savedByShapeId = new Map(saved.map((item) => [item.shapeId, item]));
+
+          for (const shapeId of localShapeIds) {
+            const savedItem = savedByShapeId.get(shapeId);
+            if (savedItem) {
+              known.set(shapeId, {
+                version: savedItem.version,
+                promotedTaskId: savedItem.promotedTaskId,
+              });
+            }
+          }
+          for (const shapeId of [...known.keys()]) {
+            const entry = known.get(shapeId);
+            if (!entry) continue;
+            if (!localShapeIds.has(shapeId) && entry.promotedTaskId === null) {
+              known.delete(shapeId);
+            }
+          }
+
           onItemsChange(saved);
           setSaveState('saved');
           return saved;
@@ -100,7 +212,7 @@ export function WhiteboardCanvas({
 
     saveChainRef.current = run;
     return run;
-  }, [board._id, onItemsChange]);
+  }, [onItemsChange, sendSync]);
 
   const scheduleSave = useCallback(
     (delay: number) => {
@@ -364,6 +476,9 @@ export function WhiteboardCanvas({
         >
           {saveLabel}
         </span>
+        {versionNotice ? (
+          <span className="px-1 text-[11px] text-amber-700">{versionNotice}</span>
+        ) : null}
       </div>
 
       {error ? (

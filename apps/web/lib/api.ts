@@ -10,6 +10,7 @@ import {
   promoteResponseSchema,
   registerRequestSchema,
   renameBoardRequestSchema,
+  syncItemsRequestSchema,
   taskResponseSchema,
   tasksResponseSchema,
   userResponseSchema,
@@ -22,6 +23,7 @@ import {
   type PromoteRequest,
   type RegisterRequest,
   type RenameBoardRequest,
+  type SyncDeletedItemInput,
   type SyncItemInput,
   type TaskDto,
   type UserDto,
@@ -43,6 +45,10 @@ export class ApiClientError extends Error {
     super(message);
     this.name = 'ApiClientError';
   }
+}
+
+export function isVersionConflict(error: unknown): error is ApiClientError {
+  return error instanceof ApiClientError && error.code === 'VERSION_CONFLICT';
 }
 
 async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit): Promise<T> {
@@ -188,11 +194,16 @@ export async function getItems(boardId: string): Promise<ItemDto[]> {
   return (await request(`/boards/${boardId}/items`, itemsResponseSchema)).data;
 }
 
-export async function syncItems(boardId: string, items: SyncItemInput[]): Promise<ItemDto[]> {
+export async function syncItems(
+  boardId: string,
+  items: SyncItemInput[],
+  deleted: SyncDeletedItemInput[],
+): Promise<ItemDto[]> {
+  const body = syncItemsRequestSchema.parse({ items, deleted });
   return (
     await request(`/boards/${boardId}/items`, itemsResponseSchema, {
       method: 'PUT',
-      body: JSON.stringify({ items }),
+      body: JSON.stringify(body),
     })
   ).data;
 }

@@ -380,3 +380,14 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Không còn feature/fix 2A; release đang chờ 2B.
 - Chưa có `$jsonSchema`, expectedVersion, realtime hoặc demote.
 - Chưa merge `main`; v0.2 chỉ lên main sau khi 2B hoàn tất và được duyệt.
+
+## 2026-10-28 - Phase 2B bắt đầu
+
+- Nhánh `feat/phase-2b-data-integrity` từ `release/v0.2` tại `611e893`.
+- Spec: `docs/phases/02b-data-integrity.md`.
+- Plan: `docs/superpowers/plans/2026-10-28-phase-2b-data-integrity.md`.
+- Phạm vi: `$jsonSchema`, expectedVersion cho board/task/promote/item sync, sync
+  transaction, client conflict reload/refetch.
+- Quyết định: sync item dùng `deleted[]` tường minh; board version tăng khi membership
+  thay đổi; conflict chung `409 VERSION_CONFLICT`.
+- Chưa merge `main`.

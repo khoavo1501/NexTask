@@ -12,6 +12,33 @@
 
 **Branch:** `feat/phase-2b-data-integrity` từ `release/v0.2` tại `611e893`. Không commit trực tiếp vào `main`; không merge `main` trong phase này.
 
+**Trạng thái thực thi:** Hoàn thành ngày 2026-10-28; đã merge vào `release/v0.2`. Commit
+chính trên feature:
+
+- `83ed3b2` `docs: plan phase 2b data integrity`
+- `46728d4` `feat: add version conflict contract`
+- `84eacb3` `feat: add phase 2b json schema validators`
+- `9b7debc` `fix: type collection validator assertions`
+- `5e07952` `feat: enforce expected versions for board and task writes`
+- `e9ef947` `feat: enforce expected item version on promote`
+- `60c6f68` `feat: make item sync versioned and transactional`
+- `d296e5f` `feat: send versions and handle conflicts in web`
+
+**Điều chỉnh thực tế:**
+
+- Test DB dùng chung được drop một lần để 001 + 002 chạy lại với validator mới; không
+  drop database ứng dụng.
+- `deleted[].expectedVersion` là số dương; test xóa stale dùng `version + 1`.
+- Web board/task gửi version được nối sớm ở Task 3 để giữ typecheck xanh; conflict UX
+  hoàn tất ở Task 6.
+- Thêm test race hai client cùng tạo một shapeId.
+- In-app browser chỉ mở một tab; client thứ hai dùng fetch cùng cookie. Drag dùng
+  synthetic `DragEvent` + `DataTransfer`.
+- Browser test đổi tên board và cột task rồi phục hồi bằng API với version hiện tại;
+  item version tăng do test conflict, nội dung không đổi.
+- Rehearsal và migration thật dùng backup `nextask-before-2b-2026-10-28.gz`; no-op update
+  xác nhận toàn bộ document cũ hợp lệ.
+
 ## Global Constraints
 
 - Node 26, TypeScript 6.0.3 strict; giữ cấu trúc monorepo hiện có.

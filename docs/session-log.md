@@ -391,3 +391,67 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Quyết định: sync item dùng `deleted[]` tường minh; board version tăng khi membership
   thay đổi; conflict chung `409 VERSION_CONFLICT`.
 - Chưa merge `main`.
+
+## 2026-10-28 - Phase 2B hoàn thành
+
+### Commit trên feature
+
+- `83ed3b2` `docs: plan phase 2b data integrity`
+- `46728d4` `feat: add version conflict contract`
+- `84eacb3` `feat: add phase 2b json schema validators`
+- `9b7debc` `fix: type collection validator assertions`
+- `5e07952` `feat: enforce expected versions for board and task writes`
+- `e9ef947` `feat: enforce expected item version on promote`
+- `60c6f68` `feat: make item sync versioned and transactional`
+- `d296e5f` `feat: send versions and handle conflicts in web`
+- Commit tài liệu kiểm chứng 2B nằm sau danh sách code ở trên.
+
+### Đã triển khai
+
+- `$jsonSchema` strict/error cho `users`, `boards`, `items`, `tasks`, `invitations`;
+  migration `002-phase-2b` idempotent bằng `collMod`/`createCollection`.
+- API startup yêu cầu `LATEST_MIGRATION_NAME = 002-phase-2b`.
+- `409 VERSION_CONFLICT` với `currentVersion` và `shapeId` khi sync.
+- Board rename, task move, promote, item sync đều lọc theo version.
+- Item sync transaction `snapshot`/`majority`, all-or-nothing, `deleted[]` tường minh.
+- Accept invitation tăng board version.
+- Web gửi version; board/task/promote/rename reload khi conflict; whiteboard refetch và
+  retry một lần.
+- Thêm test race tạo cùng `shapeId`; test validator raw insert code 121.
+
+### Backup và migration dữ liệu thật
+
+- Backup: `backups/nextask-before-2b-2026-10-28.gz`, 2.6 KB, `gzip -t` pass.
+- Rehearsal `nextask_2b_rehearsal`: restore 2 user, 1 board, 2 item, 2 task, 1 invitation;
+  migration `applied: ["002-phase-2b"]`; no-op update hợp lệ cả 5 collection; đã drop.
+- Migration thật: `applied: ["002-phase-2b"]`.
+- Trước/sau migration: counts không đổi; item version `31`, `13`; task version `4`, `1`;
+  `_id`, nội dung, `createdAt`, `updatedAt` khớp giữa bản gốc và rehearsal.
+- Browser conflict test sau migration làm item đầu lên version `32` (nội dung không đổi)
+  và task thứ hai lên version `3` (đã trả về `To Do`); board name được phục hồi.
+
+### Kiểm chứng
+
+- `npm run typecheck`: pass.
+- `npm run lint`: pass.
+- `npm run format:check`: pass.
+- Full suite 13 file, 67 test, ba lần liên tiếp:
+  - Lần 1: 8.99 s.
+  - Lần 2: 8.65 s.
+  - Lần 3: 8.70 s.
+- Docker: `mongo`, `api`, `web` healthy; migrate exit 0; health `ok`, `rs0`, primary.
+- Browser:
+  - Board cũ còn 2 note, 2 task; quyền Owner hiển thị đúng.
+  - Rename conflict: `PATCH 200` (client B), `PATCH 409` (client A), UI reload tên B.
+  - Task move conflict: `PATCH 200`, `PATCH 409`, UI reload cột B.
+  - Whiteboard save conflict: `PUT 409`, `GET items 200`, `PUT 200`, notice đồng bộ,
+    không có lỗi 500.
+  - Move thành công qua UI sang `Review`; sau test trả task về `To Do` bằng version hiện
+    tại.
+- In-app browser chỉ mở một tab; client thứ hai dùng fetch cùng cookie; drag dùng
+  synthetic `DragEvent` + `DataTransfer`.
+
+### Còn chờ
+
+- Merge feature vào `release/v0.2` bằng `--no-ff`, chạy lại gate trên release, xóa feature.
+- Không merge `release/v0.2` vào `main`; chờ người dùng duyệt phát hành v0.2.

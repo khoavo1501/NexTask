@@ -1,6 +1,6 @@
 # Giai đoạn 2B - $jsonSchema và optimistic concurrency
 
-- Trạng thái: Đang triển khai ngày 2026-10-28
+- Trạng thái: Hoàn thành ngày 2026-10-28; đã merge vào `release/v0.2`
 - Ngày lập: 2026-10-28
 - Tiền đề: Giai đoạn 2A hoàn thành, đang nằm trên `release/v0.2`
 - Đề xuất gốc: [02-proposal.md](./02-proposal.md)
@@ -395,3 +395,64 @@ nới validator để che dữ liệu sai.
   version hiện tại.
 - **Mất chỉnh sửa cục bộ khi reload workspace**: chỉ xảy ra khi conflict; ưu tiên dữ
   liệu server và thông báo rõ thay vì ghi đè im lặng.
+
+## 13. Kết quả thực hiện
+
+### Migration và dữ liệu
+
+- Migration `002-phase-2b` áp validator cho `users`, `boards`, `items`, `tasks`,
+  `invitations`; tất cả `strict`/`error`, `additionalProperties: false`.
+- Rehearsal trên `nextask_2b_rehearsal` từ backup `backups/nextask-before-2b-2026-10-28.gz`
+  (2.6 KB, `gzip -t` pass) thành công.
+- No-op update bằng aggregation pipeline xác nhận toàn bộ document cũ hợp lệ:
+  - `users`: 2
+  - `boards`: 1
+  - `items`: 2
+  - `tasks`: 2
+  - `invitations`: 1
+- Migration thật trên database `nextask`: `applied: ["002-phase-2b"]`, không lỗi.
+- Trước và sau migration, dữ liệu giữ nguyên `_id`, nội dung, `createdAt` và version:
+  item `31`, `13`; task `4`, `1`; board 1; invitation 1.
+- Browser conflict test sau migration làm item đầu tăng lên version `32` (nội dung không
+  đổi) và task thứ hai tăng lên version `3` (đã trả về cột `To Do`). Board được đổi tên
+  trong test conflict rồi trả lại `Retro E2E Phase 1` (version 3).
+
+### API và web
+
+- `409 VERSION_CONFLICT` với `details.currentVersion` cho board rename, task move,
+  promote; sync thêm `details.shapeId`.
+- Item sync transaction `snapshot`/`majority`, kiểm tra toàn bộ version trước khi ghi;
+  bất kỳ item stale nào cũng làm request thất bại không ghi.
+- `deleted[]` xóa tường minh; item promoted bị bỏ qua; shapeId lặp bị 422.
+- Accept invitation tăng board version; accept lặp không tăng.
+- Web gửi version ở cả bốn luồng; conflict board/task/promote/rename reload workspace.
+- Whiteboard gặp 409: refetch item, cập nhật map version, retry đúng một lần; retry thành
+  công hiện notice "đã đồng bộ lại".
+
+### Kiểm chứng
+
+- `npm run typecheck`: pass.
+- `npm run lint`: pass.
+- `npm run format:check`: pass.
+- Full API suite 13 file, 67 test, ba lần liên tiếp:
+  - Lần 1: 8.99 s.
+  - Lần 2: 8.65 s.
+  - Lần 3: 8.70 s.
+- Docker: `mongo`, `api`, `web` healthy; migrate exit 0.
+- Browser:
+  - Owner mở board, thấy 2 note và 2 task cũ; Kanban hiển thị đúng cột.
+  - Rename conflict: request B `200`, request A `409`, UI notice và tải lại tên B.
+  - Task move conflict: request B `200`, request A `409`, UI notice và task ở cột B.
+  - Whiteboard save conflict: `PUT 409` → `GET items 200` → `PUT 200`, notice đồng bộ;
+    không có lỗi 500.
+  - Move thành công qua UI gửi version đúng, task sang `Review`; sau test đã trả task về
+    `To Do` bằng API với version hiện tại.
+- Browser dùng fetch cùng cookie làm client thứ hai vì in-app browser chỉ mở một tab;
+  drag dùng synthetic `DragEvent` + `DataTransfer`.
+
+### Ghi chú vận hành
+
+- Test DB `nextask_phase2_test` được drop một lần trước khi áp 002 để migration chạy lại
+  từ đầu với validator mới; không đụng database ứng dụng.
+- Backup 2A và 2B đều còn; database rehearsal đã drop sau kiểm tra.
+- `release/v0.2` chứa 2A + 2B; `main` chưa nhận v0.2.

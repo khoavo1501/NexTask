@@ -8,7 +8,7 @@
 - Phase 0 và Phase 1 đã nằm trên `main`.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
-- Feature đang mở: `feat/phase-2b-data-integrity`, tạo từ `release/v0.2` tại `611e893`.
+- Feature đang mở: `feat/phase-2b-data-integrity`, tạo từ `release/v0.2` tại `611e893`; code và tài liệu 2B đã hoàn tất, chờ merge release.
 - Từ Phase 2A trở đi, không commit trực tiếp vào `main`; mọi thay đổi đi qua nhánh feature và nhánh phiên bản.
 - Không có thao tác push, tag hoặc tạo PR ngoài quy trình dưới đây.
 
@@ -200,3 +200,6 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Không merge `release/v0.2` vào `main` cho tới khi người dùng duyệt phát hành v0.2.
 - Plan: `docs/superpowers/plans/2026-10-28-phase-2b-data-integrity.md`.
 - Spec: `docs/phases/02b-data-integrity.md`.
+- Migration 002 đã áp lên database thật; backup 2B đã lưu; rehearsal đã kiểm tra và drop.
+- Quality gate trên feature: typecheck/lint/format pass; full suite 13 file, 67 test, ba
+  lần 8.99/8.65/8.70 s.

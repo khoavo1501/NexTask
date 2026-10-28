@@ -3,16 +3,16 @@ name: nextask
 services:
   mongo:
     image: mongo:8.0
-    command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all']
     ports:
-      - "127.0.0.1:27017:27017"
+      - '127.0.0.1:27017:27017'
     volumes:
       - mongo-data:/data/db
     healthcheck:
       test:
         [
-          "CMD-SHELL",
-          "mongosh --quiet --eval \"try { db.adminCommand({ ping: 1 }).ok } catch (e) { 0 }\" | grep 1",
+          'CMD-SHELL',
+          'mongosh --quiet --eval "try { db.adminCommand({ ping: 1 }).ok } catch (e) { 0 }" | grep 1',
         ]
       interval: 5s
       timeout: 5s
@@ -26,7 +26,8 @@ services:
         condition: service_healthy
     volumes:
       - ./docker/mongo/init-replica.js:/scripts/init-replica.js:ro
-    entrypoint: ["mongosh", "--host", "mongo:27017", "--quiet", "--file", "/scripts/init-replica.js"]
+    entrypoint:
+      ['mongosh', '--host', 'mongo:27017', '--quiet', '--file', '/scripts/init-replica.js']
     restart: on-failure:5
 
 volumes:

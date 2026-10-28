@@ -82,10 +82,7 @@ async function setupPromotedTask() {
 describe('board rename OCC', () => {
   it('version đúng tăng 1, version cũ trả 409 và không ghi đè', async () => {
     const owner = await registerAgent(app, 'owner@example.com', 'Owner');
-    const board = await owner.agent
-      .post('/api/v1/boards')
-      .send({ name: 'Retro' })
-      .expect(201);
+    const board = await owner.agent.post('/api/v1/boards').send({ name: 'Retro' }).expect(201);
     const boardId = board.body.data._id as string;
 
     const renamed = await owner.agent
@@ -165,10 +162,7 @@ describe('task move OCC', () => {
 describe('promote OCC', () => {
   it('expectedItemVersion cũ trả 409 và không tạo task', async () => {
     const owner = await registerAgent(app, 'owner@example.com', 'Owner');
-    const board = await owner.agent
-      .post('/api/v1/boards')
-      .send({ name: 'Retro' })
-      .expect(201);
+    const board = await owner.agent.post('/api/v1/boards').send({ name: 'Retro' }).expect(201);
     const boardId = board.body.data._id as string;
     const synced = await owner.agent
       .put(`/api/v1/boards/${boardId}/items`)
@@ -218,10 +212,7 @@ describe('promote OCC', () => {
 describe('item sync OCC', () => {
   it('một item stale làm toàn bộ request không ghi', async () => {
     const owner = await registerAgent(app, 'owner@example.com', 'Owner');
-    const board = await owner.agent
-      .post('/api/v1/boards')
-      .send({ name: 'Retro' })
-      .expect(201);
+    const board = await owner.agent.post('/api/v1/boards').send({ name: 'Retro' }).expect(201);
     const boardId = board.body.data._id as string;
 
     const first = await owner.agent
@@ -253,10 +244,7 @@ describe('item sync OCC', () => {
 
   it('item mới phải gửi expectedVersion 0', async () => {
     const owner = await registerAgent(app, 'owner@example.com', 'Owner');
-    const board = await owner.agent
-      .post('/api/v1/boards')
-      .send({ name: 'Retro' })
-      .expect(201);
+    const board = await owner.agent.post('/api/v1/boards').send({ name: 'Retro' }).expect(201);
     const boardId = board.body.data._id as string;
 
     const response = await owner.agent
@@ -272,10 +260,7 @@ describe('item sync OCC', () => {
 
   it('xóa đúng version, xóa stale 409, item promoted bị bỏ qua', async () => {
     const owner = await registerAgent(app, 'owner@example.com', 'Owner');
-    const board = await owner.agent
-      .post('/api/v1/boards')
-      .send({ name: 'Retro' })
-      .expect(201);
+    const board = await owner.agent.post('/api/v1/boards').send({ name: 'Retro' }).expect(201);
     const boardId = board.body.data._id as string;
 
     const first = await owner.agent
@@ -340,10 +325,7 @@ describe('item sync OCC', () => {
 
   it('hai sync đồng thời trên cùng item chỉ một thành công', async () => {
     const owner = await registerAgent(app, 'owner@example.com', 'Owner');
-    const board = await owner.agent
-      .post('/api/v1/boards')
-      .send({ name: 'Retro' })
-      .expect(201);
+    const board = await owner.agent.post('/api/v1/boards').send({ name: 'Retro' }).expect(201);
     const boardId = board.body.data._id as string;
 
     const first = await owner.agent
@@ -368,10 +350,7 @@ describe('item sync OCC', () => {
 
   it('shapeId lặp giữa items và deleted trả 422', async () => {
     const owner = await registerAgent(app, 'owner@example.com', 'Owner');
-    const board = await owner.agent
-      .post('/api/v1/boards')
-      .send({ name: 'Retro' })
-      .expect(201);
+    const board = await owner.agent.post('/api/v1/boards').send({ name: 'Retro' }).expect(201);
     const boardId = board.body.data._id as string;
 
     await owner.agent
@@ -381,5 +360,27 @@ describe('item sync OCC', () => {
         deleted: [{ shapeId: 'shape:one', expectedVersion: 1 }],
       })
       .expect(422);
+  });
+});
+
+describe('item sync create race', () => {
+  it('hai client cùng tạo một shapeId chỉ một item được tạo', async () => {
+    const owner = await registerAgent(app, 'owner@example.com', 'Owner');
+    const board = await owner.agent.post('/api/v1/boards').send({ name: 'Retro' }).expect(201);
+    const boardId = board.body.data._id as string;
+
+    const [left, right] = await Promise.all([
+      owner.agent
+        .put(`/api/v1/boards/${boardId}/items`)
+        .send({ items: [note('shape:race', 'Trái')] }),
+      owner.agent
+        .put(`/api/v1/boards/${boardId}/items`)
+        .send({ items: [note('shape:race', 'Phải')] }),
+    ]);
+
+    expect([left.status, right.status].sort()).toEqual([200, 409]);
+    const saved = await ItemModel.find({ boardId, shapeId: 'shape:race' }).exec();
+    expect(saved).toHaveLength(1);
+    expect(saved[0]?.version).toBe(1);
   });
 });

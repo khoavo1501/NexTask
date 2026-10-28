@@ -30,5 +30,63 @@ services:
       ['mongosh', '--host', 'mongo:27017', '--quiet', '--file', '/scripts/init-replica.js']
     restart: on-failure:5
 
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    environment:
+      NODE_ENV: production
+      PORT: 4000
+      MONGODB_URI: mongodb://mongo:27017/nextask?replicaSet=rs0
+      MONGODB_REPLICA_SET: rs0
+      CORS_ORIGIN: http://localhost:3000
+      LOG_LEVEL: info
+      SERVICE_VERSION: 0.1.0
+    ports:
+      - '127.0.0.1:4000:4000'
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:4000/api/v1/health').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    environment:
+      API_INTERNAL_URL: http://api:4000/api/v1
+    ports:
+      - '127.0.0.1:3000:3000'
+    depends_on:
+      api:
+        condition: service_healthy
+    init: true
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3000').then((r)=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+      start_period: 10s
+
 volumes:
   mongo-data:

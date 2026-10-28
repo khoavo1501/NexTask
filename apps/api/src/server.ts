@@ -1,8 +1,15 @@
+import { existsSync } from 'node:fs';
 import { createServer } from 'node:http';
+import { fileURLToPath } from 'node:url';
 import { createApp } from './app.js';
 import { loadEnv } from './config/env.js';
 import { assertReplicaSet, connectMongo } from './db/mongoose.js';
 import { createLogger } from './lib/logger.js';
+
+const rootEnvPath = fileURLToPath(new URL('../../../.env', import.meta.url));
+if (existsSync(rootEnvPath)) {
+  process.loadEnvFile(rootEnvPath);
+}
 
 async function main(): Promise<void> {
   const env = loadEnv();

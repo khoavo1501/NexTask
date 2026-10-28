@@ -12,6 +12,18 @@
 
 **Branch:** `feat/phase-2a-auth-membership` từ `release/v0.2`. Không commit trực tiếp vào `main`.
 
+**Trạng thái thực thi:** Hoàn thành ngày 2026-10-28 trên feature; chờ merge vào `release/v0.2`. Biên bản trong `docs/phases/02a-auth-membership.md` và `docs/session-log.md`.
+
+**Điều chỉnh thực tế:**
+
+- Migration 001 gom toàn bộ index Phase 1 và index mới; `ensureIndexes()` đã bị xóa.
+- Migration test dùng database riêng, không drop test DB dùng chung.
+- Logout xóa cookie bằng `Expires=epoch` do Express, test kiểm tra hành vi đó.
+- Member promote/move được kiểm chứng trong integration test.
+- App DB migration đã backup và rehearsal trước khi áp dụng thật.
+- Invitation accept idempotent cho user đã là member.
+- Merge vào release và xóa feature được thực hiện sau commit tài liệu; main chưa nhận 2A.
+
 ## Global Constraints
 
 - Node 26, TypeScript 6.0.3 strict; giữ cấu trúc monorepo hiện có.

@@ -404,3 +404,63 @@ Index được tạo bởi `ensureIndexes()` khi API khởi động, không bở
 - Phase 0 dùng `nextask_phase0_test`.
 - Phase 1 dùng `nextask_phase1_test`.
 - Test integration không mock MongoDB và không đụng database ứng dụng `nextask`.
+
+## 15. Quan sát Giai đoạn 2A
+
+### Migration runner
+
+- Collection `schema_migrations` lưu `_id` là tên migration và `appliedAt`.
+- Migration `001-phase-2a` chạy một lần, idempotent.
+- API không tự tạo index; API kiểm tra migration version trước khi listen.
+- Compose service `migrate` chạy sau `mongo-init` và trước `api`.
+
+Lệnh migrate dữ liệu thật đã chạy:
+
+```bash
+docker compose run --rm --no-deps \
+  -e MONGODB_URI='mongodb://mongo:27017/nextask_phase2_rehearsal?replicaSet=rs0' \
+  migrate
+```
+
+Sau rehearsal, backup được restore vào database thật và migration chạy với log:
+
+```json
+{"applied":["001-phase-2a"],"msg":"Migrations complete"}
+```
+
+### Index mới
+
+- `users_email_normalized_unique` unique `{ emailNormalized: 1 }`.
+- `boards_member_updated` `{ "members.userId": 1, updatedAt: -1 }`.
+- `invitations_token_hash_unique` unique `{ tokenHash: 1 }`.
+- `invitations_board_created` `{ boardId: 1, createdAt: -1 }`.
+- `invitations_expiry_ttl` TTL `{ expiresAt: 1 }` với `expireAfterSeconds: 0`.
+- Các index Phase 1 được giữ và tạo lại idempotent qua migration.
+
+### Backfill dữ liệu Phase 1
+
+- Trước migration: 1 board, 2 item, 2 task, 0 user.
+- Sau migration: 1 board, 2 item, 2 task, 1 user seed.
+- Board nhận member owner `{ userId: 000000000000000000000001, role: "owner" }`.
+- Item version `31`, `13` và task version `4`, `1` không đổi.
+- Browser E2E sau đó tạo user thứ hai; board có owner + member.
+
+### Seed owner
+
+- Migration tạo user `_id = 000000000000000000000001` nếu board legacy tồn tại và user chưa có.
+- Email/password lấy từ env local, password hash argon2id.
+- Không reset password nếu user đã tồn tại.
+- Nếu có board owner nhưng thiếu seed env, migration fail.
+
+### Chưa áp dụng trong 2A
+
+- Chưa có `$jsonSchema`; đây là hạng mục 2B.
+- Chưa có expectedVersion/optimistic concurrency; version hiện chỉ tăng, chưa dùng để chặn ghi.
+- Chưa có `explain()` mới cho các query membership; sẽ bổ sung khi Phase 3 tối ưu.
+- Invitation TTL monitor không xóa ngay; test dùng expiresAt trực tiếp để kiểm tra logic.
+
+### Test database
+
+- Phase 2 dùng `nextask_phase2_test`.
+- Migration test dùng `nextask_phase2_migration_test`.
+- Database rehearsal `nextask_phase2_rehearsal` đã được xóa sau kiểm tra; backup vẫn giữ.

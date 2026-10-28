@@ -1,8 +1,6 @@
 import { healthResponseSchema, type HealthResponse } from '@nextask/contracts';
 
-export type HealthResult =
-  | { ok: true; response: HealthResponse }
-  | { ok: false; message: string };
+export type HealthResult = { ok: true; response: HealthResponse } | { ok: false; message: string };
 
 export async function fetchHealth(): Promise<HealthResult> {
   const baseUrl = process.env.API_INTERNAL_URL ?? 'http://localhost:4000/api/v1';

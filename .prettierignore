@@ -5,3 +5,4 @@ coverage
 package-lock.json
 docs
 README.md
+apps/web/next-env.d.ts

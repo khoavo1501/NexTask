@@ -1,11 +1,13 @@
 import cors from 'cors';
 import express, { type Express, type Request } from 'express';
 import helmet from 'helmet';
-import type { Connection } from 'mongoose';
+import { Types, type Connection } from 'mongoose';
 import { pinoHttp } from 'pino-http';
 import type { Logger } from './lib/logger.js';
+import { createDemoOwnerMiddleware } from './middleware/demo-owner.js';
 import { createErrorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { requestId } from './middleware/request-id.js';
+import { createBoardsRouter } from './modules/boards/board.router.js';
 import { createHealthRouter } from './modules/health/health.router.js';
 
 export interface AppDependencies {
@@ -19,6 +21,7 @@ export interface AppDependencies {
 
 export function createApp(deps: AppDependencies): Express {
   const app = express();
+  const demoOwnerId = new Types.ObjectId(deps.demoOwnerId);
   app.disable('x-powered-by');
   app.use(helmet());
   app.use(cors({ origin: deps.corsOrigin, credentials: true }));
@@ -39,6 +42,7 @@ export function createApp(deps: AppDependencies): Express {
       version: deps.version,
     }),
   );
+  app.use('/api/v1/boards', createDemoOwnerMiddleware(demoOwnerId), createBoardsRouter());
 
   app.use(notFoundHandler);
   app.use(createErrorHandler(deps.logger));

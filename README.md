@@ -114,7 +114,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A làm trên nhánh `feat/phase-2a-auth-membership`, merge vào `release/v0.2`; `main` chỉ nhận release khi v0.2 hoàn tất. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A đã merge vào `release/v0.2` và feature branch đã xóa; `main` chỉ nhận release khi v0.2 hoàn tất cùng Phase 2B. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 

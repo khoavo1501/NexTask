@@ -12,7 +12,7 @@
 
 **Branch:** `feat/phase-2a-auth-membership` từ `release/v0.2`. Không commit trực tiếp vào `main`.
 
-**Trạng thái thực thi:** Hoàn thành ngày 2026-10-28 trên feature; chờ merge vào `release/v0.2`. Biên bản trong `docs/phases/02a-auth-membership.md` và `docs/session-log.md`.
+**Trạng thái thực thi:** Hoàn thành ngày 2026-10-28; đã merge vào `release/v0.2` bằng `c15603e`, feature branch đã xóa. Biên bản trong `docs/phases/02a-auth-membership.md` và `docs/session-log.md`.
 
 **Điều chỉnh thực tế:**
 

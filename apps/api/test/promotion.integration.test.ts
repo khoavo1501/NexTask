@@ -59,6 +59,7 @@ async function setupNote(content = 'Ý tưởng lớn') {
           rotation: 0,
           tldrawIndex: 'a1',
           parentFrameId: null,
+          expectedVersion: 0,
         },
       ],
     })
@@ -73,7 +74,7 @@ async function setupNote(content = 'Ý tưởng lớn') {
     boardId,
     board,
     actor,
-    item: sync.body.data[0] as { _id: string },
+    item: sync.body.data[0] as { _id: string; version: number },
   };
 }
 
@@ -83,7 +84,7 @@ describe('promote', () => {
 
     const response = await owner.agent
       .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-      .send({ columnId: 'todo', assignToMe: true })
+      .send({ columnId: 'todo', assignToMe: true, expectedItemVersion: item.version })
       .expect(201);
 
     expect(response.body.data.task.title).toBe('Ý tưởng lớn');
@@ -95,13 +96,17 @@ describe('promote', () => {
   it('promote lần hai trả 409 và không tạo task trùng', async () => {
     const { owner, boardId, item } = await setupNote();
 
-    await owner.agent
+    const first = await owner.agent
       .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-      .send({ columnId: 'todo', assignToMe: false })
+      .send({ columnId: 'todo', assignToMe: false, expectedItemVersion: item.version })
       .expect(201);
     await owner.agent
       .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-      .send({ columnId: 'todo', assignToMe: false })
+      .send({
+        columnId: 'todo',
+        assignToMe: false,
+        expectedItemVersion: first.body.data.item.version,
+      })
       .expect(409);
 
     expect(await TaskModel.countDocuments({ sourceItemId: item._id })).toBe(1);
@@ -113,10 +118,10 @@ describe('promote', () => {
     const [first, second] = await Promise.all([
       owner.agent
         .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-        .send({ columnId: 'todo', assignToMe: false }),
+        .send({ columnId: 'todo', assignToMe: false, expectedItemVersion: item.version }),
       owner.agent
         .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-        .send({ columnId: 'todo', assignToMe: false }),
+        .send({ columnId: 'todo', assignToMe: false, expectedItemVersion: item.version }),
     ]);
 
     expect([first.status, second.status].sort()).toEqual([201, 409]);
@@ -131,7 +136,11 @@ describe('promote', () => {
         board,
         itemId: item._id,
         actor,
-        request: { columnId: 'todo', assignToMe: false },
+        request: {
+          columnId: 'todo',
+          assignToMe: false,
+          expectedItemVersion: item.version,
+        },
         afterTaskInsert: async () => {
           throw new Error('fault injection');
         },
@@ -147,13 +156,13 @@ describe('promote', () => {
     const { owner, boardId, item } = await setupNote('Kéo thẻ');
     const promoted = await owner.agent
       .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-      .send({ columnId: 'todo', assignToMe: false })
+      .send({ columnId: 'todo', assignToMe: false, expectedItemVersion: item.version })
       .expect(201);
     const taskId = promoted.body.data.task._id as string;
 
     const moved = await owner.agent
       .patch(`/api/v1/boards/${boardId}/tasks/${taskId}`)
-      .send({ columnId: 'done' })
+      .send({ columnId: 'done', expectedVersion: promoted.body.data.task.version })
       .expect(200);
 
     expect(moved.body.data.columnId).toBe('done');

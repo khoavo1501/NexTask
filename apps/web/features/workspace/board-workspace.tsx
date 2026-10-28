@@ -5,7 +5,15 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { AuthHeader } from '../../components/auth-header';
-import { ApiClientError, getBoard, getItems, getTasks, moveTask, promoteItem } from '../../lib/api';
+import {
+  ApiClientError,
+  getBoard,
+  getItems,
+  getTasks,
+  isVersionConflict,
+  moveTask,
+  promoteItem,
+} from '../../lib/api';
 import { PromoteDialog } from '../whiteboard/promote-dialog';
 import { Whiteboard } from '../whiteboard/whiteboard';
 import { InviteDialog } from './invite-dialog';
@@ -74,30 +82,50 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     async (input: { columnId: string; assignToMe: boolean }) => {
       if (!promoteTarget) return;
 
-      const result = await promoteItem(boardId, promoteTarget._id, input);
-      setData((current) => {
-        if (!current) return current;
-        return {
-          ...current,
-          items: current.items.map((item) => (item._id === result.item._id ? result.item : item)),
-          tasks: [...current.tasks.filter((task) => task._id !== result.task._id), result.task],
-        };
-      });
-      setPromoteTarget(null);
-      setNotice('Đã promote ghi chú thành task');
+      try {
+        const result = await promoteItem(boardId, promoteTarget._id, {
+          columnId: input.columnId,
+          assignToMe: input.assignToMe,
+          expectedItemVersion: promoteTarget.version,
+        });
+        setData((current) => {
+          if (!current) return current;
+          return {
+            ...current,
+            items: current.items.map((item) => (item._id === result.item._id ? result.item : item)),
+            tasks: [...current.tasks.filter((task) => task._id !== result.task._id), result.task],
+          };
+        });
+        setPromoteTarget(null);
+        setNotice('Đã promote ghi chú thành task');
+      } catch (caught) {
+        if (isVersionConflict(caught)) {
+          setPromoteTarget(null);
+          setNotice('Ghi chú vừa thay đổi từ tab/người khác. Đã tải lại board.');
+          await loadWorkspace();
+          return;
+        }
+        throw caught;
+      }
     },
-    [boardId, promoteTarget],
+    [boardId, loadWorkspace, promoteTarget],
   );
 
   const handleRenamed = useCallback((board: BoardDto) => {
     setData((current) => (current ? { ...current, board } : current));
   }, []);
 
+  const handleRenameConflict = useCallback(() => {
+    setShowRename(false);
+    setNotice('Board vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
+    void loadWorkspace();
+  }, [loadWorkspace]);
+
   const handleMoveTask = useCallback(
-    async (taskId: string, columnId: string) => {
+    async (taskId: string, columnId: string, expectedVersion: number) => {
       setNotice(null);
       try {
-        const moved = await moveTask(boardId, taskId, { columnId });
+        const moved = await moveTask(boardId, taskId, { columnId, expectedVersion });
         setData((current) => {
           if (!current) return current;
           return {
@@ -106,10 +134,15 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           };
         });
       } catch (caught) {
+        if (isVersionConflict(caught)) {
+          setNotice('Board vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
+          await loadWorkspace();
+          return;
+        }
         setNotice(caught instanceof ApiClientError ? caught.message : 'Không di chuyển được task.');
       }
     },
-    [boardId],
+    [boardId, loadWorkspace],
   );
 
   if (loading) {
@@ -231,6 +264,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           board={data.board}
           onClose={() => setShowRename(false)}
           onRenamed={handleRenamed}
+          onConflict={handleRenameConflict}
         />
       ) : null}
     </main>

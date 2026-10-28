@@ -32,7 +32,7 @@ afterAll(async () => {
   await connection.close();
 });
 
-function note(shapeId: string, content: string) {
+function note(shapeId: string, content: string, expectedVersion = 0) {
   return {
     shapeId,
     type: 'note',
@@ -44,6 +44,7 @@ function note(shapeId: string, content: string) {
     rotation: 0,
     tldrawIndex: 'a1',
     parentFrameId: null,
+    expectedVersion,
   };
 }
 
@@ -93,7 +94,9 @@ describe('boards và items', () => {
 
     const second = await owner.agent
       .put(`/api/v1/boards/${boardId}/items`)
-      .send({ items: [note('shape:one', 'Ý tưởng đã sửa')] })
+      .send({
+        items: [note('shape:one', 'Ý tưởng đã sửa', first.body.data[0].version)],
+      })
       .expect(200);
 
     expect(second.body.data).toHaveLength(1);
@@ -103,16 +106,21 @@ describe('boards và items', () => {
     expect(listed.body.data).toHaveLength(1);
   });
 
-  it('sync xóa note chưa promote không còn trong payload', async () => {
+  it('sync xóa note qua danh sách deleted', async () => {
     const { owner, boardId } = await createOwnerBoard();
-    await owner.agent
+    const first = await owner.agent
       .put(`/api/v1/boards/${boardId}/items`)
       .send({ items: [note('shape:one', 'Một'), note('shape:two', 'Hai')] })
       .expect(200);
+    const one = first.body.data[0] as { shapeId: string; version: number };
+    const two = first.body.data[1] as { shapeId: string; version: number };
 
     const response = await owner.agent
       .put(`/api/v1/boards/${boardId}/items`)
-      .send({ items: [note('shape:one', 'Một')] })
+      .send({
+        items: [note('shape:one', 'Một', one.version)],
+        deleted: [{ shapeId: 'shape:two', expectedVersion: two.version }],
+      })
       .expect(200);
 
     expect(response.body.data).toHaveLength(1);

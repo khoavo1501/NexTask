@@ -2,6 +2,7 @@ import type { PromoteRequest } from '@nextask/contracts';
 import { generateKeyBetween } from 'fractional-indexing';
 import mongoose, { Types } from 'mongoose';
 import { AppError } from '../../lib/errors.js';
+import { versionConflict } from '../../lib/versioning.js';
 import type { BoardDocument } from '../boards/board.model.js';
 import { TaskModel, type TaskDocument } from '../tasks/task.model.js';
 import type { UserDocument } from '../users/user.model.js';
@@ -44,6 +45,9 @@ export async function promoteItem(input: PromoteInput): Promise<PromoteResult> {
         }).session(session);
         if (!item) {
           throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy item');
+        }
+        if (item.version !== input.request.expectedItemVersion) {
+          throw versionConflict(item.version);
         }
         if (item.promotedTaskId) {
           throw new AppError(409, 'ALREADY_PROMOTED', 'Item đã được promote');
@@ -99,6 +103,7 @@ export async function promoteItem(input: PromoteInput): Promise<PromoteResult> {
             _id: item._id,
             boardId: input.board._id,
             promotedTaskId: null,
+            version: input.request.expectedItemVersion,
           },
           {
             $set: { promotedTaskId: task._id },

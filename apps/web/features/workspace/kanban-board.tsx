@@ -6,7 +6,7 @@ import { useState } from 'react';
 interface KanbanBoardProps {
   board: BoardDto;
   tasks: TaskDto[];
-  onMoveTask: (taskId: string, columnId: string) => Promise<void>;
+  onMoveTask: (taskId: string, columnId: string, expectedVersion: number) => Promise<void>;
 }
 
 const priorityLabels: Record<TaskDto['priority'], string> = {
@@ -37,7 +37,9 @@ export function KanbanBoard({ board, tasks, onMoveTask }: KanbanBoardProps) {
 
   function dropTask(columnId: string, taskId: string) {
     if (!taskId) return;
-    void onMoveTask(taskId, columnId);
+    const task = tasks.find((entry) => entry._id === taskId);
+    if (!task) return;
+    void onMoveTask(taskId, columnId, task.version);
     setDraggingTaskId(null);
     setDragOverColumn(null);
   }

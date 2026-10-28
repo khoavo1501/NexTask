@@ -35,10 +35,12 @@ export const taskSchema = z.object({
 export const promoteRequestSchema = z.object({
   columnId: z.string().min(1),
   assignToMe: z.boolean().default(false),
+  expectedItemVersion: z.number().int().positive(),
 });
 
 export const moveTaskRequestSchema = z.object({
   columnId: z.string().min(1),
+  expectedVersion: z.number().int().positive(),
 });
 
 export const tasksResponseSchema = z.object({

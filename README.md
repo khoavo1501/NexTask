@@ -7,7 +7,8 @@ Whiteboard và Kanban cho team Agile, gộp brainstorm và thực thi trên cùn
 - Phase 0: Docker Compose, MongoDB replica set, health.
 - Phase 1: tldraw note, Promote transaction, Kanban, badge sau reload.
 - Phase 2A: tài khoản, JWT cookie, board membership, Owner/Member, invitation link.
-- Chưa có `$jsonSchema`, optimistic concurrency, realtime hoặc Demote; các phần này thuộc Phase 2B trở đi.
+- Phase 2B: `$jsonSchema` validator, expectedVersion, item sync transaction, client conflict handling.
+- Chưa có realtime hoặc Demote; các phần này thuộc giai đoạn sau.
 
 ## Yêu cầu
 
@@ -59,7 +60,19 @@ Người dùng khác có thể đăng ký tài khoản mới. Owner tạo invita
 8. Tài khoản Member đăng nhập, mở link, accept và làm việc trên board.
 9. Member không thấy nút `Mời`/`Đổi tên`; gọi API trực tiếp vẫn bị server chặn `403`.
 
-`Done` xác định bằng trường `isDone` của cột. Phase 2A chưa có realtime nên badge cập nhật sau reload hoặc thao tác phía client.
+`Done` xác định bằng trường `isDone` của cột. Chưa có realtime nên badge cập nhật sau reload hoặc thao tác phía client.
+
+## Đồng bộ và xung đột
+
+- Board rename, task move, promote và item sync đều gửi `expectedVersion` (promote dùng
+  `expectedItemVersion`); item mới trong sync gửi `0`.
+- Nếu version đã cũ, API trả `409 VERSION_CONFLICT` kèm `currentVersion` (sync thêm
+  `shapeId`). UI board/task/promote/rename tải lại workspace và hiện notice.
+- Whiteboard gặp 409 sẽ refetch version item, cập nhật map version và thử lại một lần;
+  conflict lần hai hiện lỗi thay vì ghi đè.
+- Sync gửi `deleted[]` tường minh cho note đã xóa; note không có trong payload và không
+  có trong `deleted` được giữ nguyên.
+- Toàn bộ sync chạy trong transaction; một item stale làm cả request không ghi.
 
 ## Phát triển local
 
@@ -87,6 +100,9 @@ docker compose exec -T mongo mongodump --archive --gzip --db=nextask > backups/n
 ```
 
 - Backup local đã dùng cho Phase 2A: `backups/nextask-before-2a-2026-10-28.gz`.
+- Backup local đã dùng cho Phase 2B: `backups/nextask-before-2b-2026-10-28.gz`.
+- Migration `002-phase-2b` áp `$jsonSchema` cho `users`, `boards`, `items`, `tasks`,
+  `invitations`; không tự sửa dữ liệu cũ.
 - Không xóa backup hoặc chạy migration trên dữ liệu chưa backup.
 
 ## Kiểm tra
@@ -106,6 +122,7 @@ Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2
 - `JWT_SECRET`, seed owner password và Mongo local chỉ dành cho phát triển.
 - MongoDB local không bật auth và chỉ publish cổng ra `127.0.0.1`.
 - Auth endpoint có rate limit; CORS giới hạn origin; mutation có kiểm tra Origin.
+- `$jsonSchema` strict/error là chốt chặn cuối ở DB; zod vẫn kiểm tra request ở API.
 - Không dùng nguyên trạng cho production; production cần secret management, auth DB, TLS và mạng riêng.
 
 ## tldraw license
@@ -114,7 +131,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A đã merge vào `release/v0.2` và feature branch đã xóa; `main` chỉ nhận release khi v0.2 hoàn tất cùng Phase 2B. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A và 2B đã merge vào `release/v0.2`; feature branch đã xóa. `main` chỉ nhận release khi v0.2 hoàn tất và được duyệt. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 
@@ -123,6 +140,7 @@ Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A 
 - [Giai đoạn 1](docs/phases/01-vertical-slice.md)
 - [Đề xuất Phase 2](docs/phases/02-proposal.md)
 - [Phase 2A](docs/phases/02a-auth-membership.md)
+- [Phase 2B](docs/phases/02b-data-integrity.md)
 - [Ghi chú MongoDB](docs/mongodb-notes.md)
 - [Lịch sử phiên](docs/session-log.md)
 - [Quy trình Git](docs/git-workflow.md)

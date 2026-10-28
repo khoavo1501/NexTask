@@ -122,6 +122,7 @@ describe('membership và role', () => {
             rotation: 0,
             tldrawIndex: 'a0',
             parentFrameId: null,
+            expectedVersion: 0,
           },
         ],
       })
@@ -129,13 +130,17 @@ describe('membership và role', () => {
 
     const promoted = await member.agent
       .post(`/api/v1/boards/${boardId}/items/${synced.body.data[0]._id}/promote`)
-      .send({ columnId: 'todo', assignToMe: true })
+      .send({
+        columnId: 'todo',
+        assignToMe: true,
+        expectedItemVersion: synced.body.data[0].version,
+      })
       .expect(201);
     expect(promoted.body.data.task.assigneeId).toBe(member.user._id);
 
     const moved = await member.agent
       .patch(`/api/v1/boards/${boardId}/tasks/${promoted.body.data.task._id}`)
-      .send({ columnId: 'done' })
+      .send({ columnId: 'done', expectedVersion: promoted.body.data.task.version })
       .expect(200);
     expect(moved.body.data.columnId).toBe('done');
   });
@@ -147,7 +152,7 @@ describe('membership và role', () => {
 
     const renamed = await owner.agent
       .patch(`/api/v1/boards/${boardId}`)
-      .send({ name: 'Retro mới' })
+      .send({ name: 'Retro mới', expectedVersion: board.body.data.version })
       .expect(200);
 
     expect(renamed.body.data.name).toBe('Retro mới');

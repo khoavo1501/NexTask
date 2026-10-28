@@ -59,8 +59,10 @@ NexTask/
     api/
       src/
         config/        # env, hằng số
-        db/            # kết nối, session helper, migration runner
+        db/            # kết nối, session helper, migration runner,
+                       # collection-validators, migrations/002-phase-2b
         middleware/    # auth, board access, validation, lỗi, request id
+        lib/           # serialize, versionConflict
         modules/
           auth/
           boards/
@@ -839,7 +841,7 @@ Seed tạo một board Retro có frame Start/Stop/Continue, nhiều note nhiều
 
 Mỗi giai đoạn có một file trong `docs/phases/` với mục tiêu, kiến thức MongoDB, danh sách file, cách chạy, câu hỏi kiểm tra và rủi ro. Chỉ chuyển giai đoạn sau khi người dùng duyệt cổng hiện tại.
 
-Trạng thái ngày 2026-10-28: Giai đoạn 0, 1 và 2A đã hoàn thành. Phase 1 chỉ hỗ trợ shape note, chưa có realtime; xem biên bản trong `docs/phases/01-vertical-slice.md`. Phase 2A đã có auth, membership, role, invitation, migration và seed owner; xem `docs/phases/02a-auth-membership.md`. Phase 2B chưa bắt đầu.
+Trạng thái ngày 2026-10-28: Giai đoạn 0, 1, 2A và 2B đã hoàn thành. Phase 1 chỉ hỗ trợ shape note, chưa có realtime; xem biên bản trong `docs/phases/01-vertical-slice.md`. Phase 2A đã có auth, membership, role, invitation, migration và seed owner; xem `docs/phases/02a-auth-membership.md`. Phase 2B đã có `$jsonSchema` validator, expectedVersion, item sync transaction và client conflict handling; xem `docs/phases/02b-data-integrity.md`.
 
 ## 17. Rủi ro và giả định
 

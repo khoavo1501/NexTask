@@ -69,6 +69,8 @@ describe('invitations', () => {
 
     const boards = await invitee.agent.get('/api/v1/boards').expect(200);
     expect(boards.body.data.map((entry: { _id: string }) => entry._id)).toContain(boardId);
+    const boardAfterAccept = await owner.agent.get(`/api/v1/boards/${boardId}`).expect(200);
+    expect(boardAfterAccept.body.data.version).toBe(2);
     const storedAfter = await InvitationModel.findOne({ boardId }).exec();
     expect(storedAfter?.usedAt).not.toBeNull();
   });

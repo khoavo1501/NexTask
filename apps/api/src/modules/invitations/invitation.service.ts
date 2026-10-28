@@ -119,6 +119,7 @@ export async function acceptInvitation(
                 joinedAt: new Date(),
               },
             },
+            $inc: { version: 1 },
           },
           { returnDocument: 'after', session },
         );

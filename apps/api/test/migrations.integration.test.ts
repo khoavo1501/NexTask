@@ -3,7 +3,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ItemModel } from '../src/modules/items/item.model.js';
 import { TaskModel } from '../src/modules/tasks/task.model.js';
 import { UserModel } from '../src/modules/users/user.model.js';
-import { runMigrations, MIGRATION_001_NAME } from '../src/db/migration-runner.js';
+import {
+  runMigrations,
+  MIGRATION_001_NAME,
+  MIGRATION_002_NAME,
+} from '../src/db/migration-runner.js';
+import { COLLECTION_VALIDATORS } from '../src/db/collection-validators.js';
 import { assertSchemaVersion } from '../src/db/schema-version.js';
 import { connectMongo } from '../src/db/mongoose.js';
 import { testLogger } from './helpers/test-db.js';
@@ -95,9 +100,22 @@ describe('migration 2A', () => {
   it('idempotent và giữ item/task/version', async () => {
     const migrations = await runMigrations({ connection, env: migrationEnv });
     expect(migrations).not.toContain(MIGRATION_001_NAME);
+    expect(migrations).not.toContain(MIGRATION_002_NAME);
     expect((await ItemModel.findOne({ shapeId: 'shape:legacy' }))?.version).toBe(9);
     expect((await TaskModel.findOne({ title: 'Legacy task' }))?.version).toBe(4);
-    await expect(assertSchemaVersion(connection, MIGRATION_001_NAME)).resolves.toBeUndefined();
+    await expect(assertSchemaVersion(connection, MIGRATION_002_NAME)).resolves.toBeUndefined();
+  });
+
+  it('áp validator 002 cho cả 5 collection', async () => {
+    if (!connection.db) throw new Error('DB chưa kết nối');
+
+    for (const name of Object.keys(COLLECTION_VALIDATORS)) {
+      const [info] = await connection.db.listCollections({ name }).toArray();
+      const options = (info as { options?: Record<string, unknown> } | undefined)?.options;
+      expect(options?.validator, name).toBeDefined();
+      expect(options?.validationLevel, name).toBe('strict');
+      expect(options?.validationAction, name).toBe('error');
+    }
   });
 
   it('index cần thiết tồn tại', async () => {

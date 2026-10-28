@@ -40,6 +40,7 @@ export const createBoardRequestSchema = z.object({
 
 export const renameBoardRequestSchema = z.object({
   name: z.string().trim().min(1).max(80),
+  expectedVersion: z.number().int().positive(),
 });
 
 export const boardMemberDetailSchema = boardMemberSchema.extend({

@@ -2,6 +2,7 @@ import { createBoardRequestSchema, type BoardDto } from '@nextask/contracts';
 import { Router } from 'express';
 import { serializeBoard } from '../../lib/serialize.js';
 import { createItemsRouter } from '../items/item.router.js';
+import { createTasksRouter } from '../tasks/task.router.js';
 import { createBoard, getBoardForOwner, listBoards } from './board.service.js';
 
 export function createBoardsRouter(): Router {
@@ -42,6 +43,7 @@ export function createBoardsRouter(): Router {
   });
 
   router.use('/:boardId/items', createItemsRouter());
+  router.use('/:boardId/tasks', createTasksRouter());
 
   return router;
 }

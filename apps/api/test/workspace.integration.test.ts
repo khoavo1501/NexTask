@@ -77,6 +77,7 @@ describe('boards và items', () => {
 
     expect(response.body.data).toHaveLength(1);
     expect(response.body.data[0].name).toBe('Board của tôi');
+    await request(app).get(`/api/v1/boards/${response.body.data[0]._id}`).expect(200);
   });
 
   it('sync note idempotent theo shapeId', async () => {
@@ -97,6 +98,8 @@ describe('boards và items', () => {
     expect(second.body.data).toHaveLength(1);
     expect(second.body.data[0].content).toBe('Ý tưởng đã sửa');
     expect(await ItemModel.countDocuments({ boardId })).toBe(1);
+    const listed = await request(app).get(`/api/v1/boards/${boardId}/items`).expect(200);
+    expect(listed.body.data).toHaveLength(1);
   });
 
   it('sync xóa note chưa promote không còn trong payload', async () => {

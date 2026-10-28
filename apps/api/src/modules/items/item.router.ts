@@ -1,8 +1,9 @@
-import { syncItemsRequestSchema, type ItemDto } from '@nextask/contracts';
+import { promoteRequestSchema, syncItemsRequestSchema, type ItemDto } from '@nextask/contracts';
 import { Router } from 'express';
 import { AppError } from '../../lib/errors.js';
-import { serializeItem } from '../../lib/serialize.js';
+import { serializeItem, serializeTask } from '../../lib/serialize.js';
 import { listItems, syncItems } from './item.service.js';
+import { promoteItem } from './promotion.service.js';
 
 export function createItemsRouter(): Router {
   const router = Router({ mergeParams: true });
@@ -32,6 +33,29 @@ export function createItemsRouter(): Router {
 
     response.json({
       data,
+      meta: { requestId: request.requestId },
+    });
+  });
+
+  router.post('/:itemId/promote', async (request, response) => {
+    const params = request.params as { boardId?: string; itemId?: string };
+    if (!params.boardId || !params.itemId) {
+      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy item');
+    }
+
+    const input = promoteRequestSchema.parse(request.body);
+    const result = await promoteItem({
+      boardId: params.boardId,
+      itemId: params.itemId,
+      ownerId: request.ownerId,
+      request: input,
+    });
+
+    response.status(201).json({
+      data: {
+        item: serializeItem(result.item),
+        task: serializeTask(result.task),
+      },
       meta: { requestId: request.requestId },
     });
   });

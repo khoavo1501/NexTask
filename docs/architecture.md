@@ -757,7 +757,7 @@ Không tính item đã demote là "chưa promote" nếu task demoted còn tồn 
 
 - Logic Promote/Demote và transaction phải test với MongoDB replica set thật, không mock DB cho các test chứng minh tính nguyên tử.
 - Có thể mock clock, ID generator và fault injection ở biên service, không mock transaction/index của Mongo.
-- Test chạy trên database riêng (`nextask_test`), dọn dữ liệu có kiểm soát.
+- Test chạy trên database riêng (`nextask_phase0_test` ở Giai đoạn 0), dọn dữ liệu có kiểm soát.
 - Test transaction chạy tuần tự trong một file để tránh nhiễu; test đọc/ghi độc lập có thể song song sau khi đo.
 - Mỗi test quan trọng phải chứng minh cả trạng thái cuối và lỗi trả về.
 

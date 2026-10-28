@@ -10,6 +10,17 @@
 
 **Spec:** `docs/architecture.md` và `docs/phases/00-setup.md`
 
+**Trạng thái thực thi:** Hoàn thành ngày 2026-10-28. Biên bản thực tế nằm trong `docs/session-log.md` và mục 11 của `docs/phases/00-setup.md`.
+
+**Điều chỉnh so với kế hoạch ban đầu:**
+
+- `mongo-init` dùng `depends_on: service_healthy` và `restart: on-failure:5` để tránh race `ECONNREFUSED`.
+- Database test dùng `nextask_phase0_test`, không dùng `nextask_test`.
+- `pino-http` import bằng named export và MongoDB command dùng cast do typings của driver 7.
+- `next.config.ts` dùng `process.cwd()` thay vì `import.meta.dirname`.
+- Prettier bỏ qua `docs`, `README.md` và `apps/web/next-env.d.ts`.
+- `esbuild@0.28.2` được approve trong `allowScripts` của npm 12.
+
 ## Global Constraints
 
 - Node >= 26; image `node:26-bookworm-slim`.
@@ -546,11 +557,11 @@ services:
     image: mongo:8.0
     depends_on:
       mongo:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - ./docker/mongo/init-replica.js:/scripts/init-replica.js:ro
     entrypoint: ["mongosh", "--host", "mongo:27017", "--quiet", "--file", "/scripts/init-replica.js"]
-    restart: "no"
+    restart: on-failure:5
 
 volumes:
   mongo-data:
@@ -678,7 +689,7 @@ import { loadEnv } from '../src/config/env.js';
 const validEnv = {
   NODE_ENV: 'test',
   PORT: '4000',
-  MONGODB_URI: 'mongodb://localhost:27017/nextask_test?replicaSet=rs0&directConnection=true',
+  MONGODB_URI: 'mongodb://localhost:27017/nextask_phase0_test?directConnection=true',
   MONGODB_REPLICA_SET: 'rs0',
   CORS_ORIGIN: 'http://localhost:3000',
   LOG_LEVEL: 'silent',
@@ -719,7 +730,7 @@ import { checkHealth } from '../src/modules/health/health.service.js';
 
 const testUri =
   process.env.MONGODB_TEST_URI ??
-  'mongodb://localhost:27017/nextask_test?replicaSet=rs0&directConnection=true';
+  'mongodb://localhost:27017/nextask_phase0_test?directConnection=true';
 
 const logger = pino({ level: 'silent' });
 let connection: Connection;

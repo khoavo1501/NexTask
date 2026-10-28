@@ -1,6 +1,15 @@
 # Quy trình Git của NexTask
 
+## Trạng thái hiện tại
+
 - Repository cục bộ, nhánh `main`, chưa có remote.
+- Giai đoạn 0 đã hoàn thành và được kiểm chứng.
+- Các commit chính: `0058ff7`, `ce50898`, `cbefc35`, `ef1eaa4`, `eecd027`, `d9e87bd`.
+- Commit tài liệu hoàn tất Giai đoạn 0 được tạo sau biên bản này; xem `git log --oneline`.
+- Không có thao tác push, merge, tag hoặc tạo PR.
+
+## Quy tắc
+
 - Không push, tag, merge hoặc tạo PR nếu người dùng chưa yêu cầu.
 - Không sửa git config. Identity truyền theo từng lệnh commit.
 - Không amend commit đã tạo.

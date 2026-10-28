@@ -326,3 +326,35 @@ Kết quả vote vẫn lấy từ `items.votes` bằng aggregation; budget khôn
 - TTL deletion lag trong môi trường local.
 
 Kết quả sẽ được ghi kèm ngày, lệnh và dữ liệu đầu vào. Nếu chưa chạy, ghi rõ chưa có số liệu.
+
+## 13. Quan sát Giai đoạn 0
+
+Lệnh kiểm tra replica set:
+
+```bash
+docker compose exec -T mongo mongosh --quiet --eval 'JSON.stringify({set: rs.status().set, primary: db.adminCommand({hello:1}).isWritablePrimary})'
+```
+
+Kết quả ngày 2026-10-28:
+
+```json
+{"set":"rs0","primary":true}
+```
+
+Health API cùng ngày trả `replicaSet: "rs0"`, `primary: true`, `latencyMs: 1`. Đây là một mẫu đo local, không phải benchmark.
+
+### Replica set tồn tại trong volume
+
+Volume `nextask_mongo-data` đã có từ trước và đã chứa cấu hình replica set `rs0`. Khi container Mongo được tạo lại, replica set không mất vì cấu hình nằm trong dữ liệu volume. Điều này giải thích vì sao `rs.status()` thành công ngay cả khi container `mongo-init` đầu tiên lỗi.
+
+### Race khi init
+
+`mongosh` kết nối tới `mongo:27017` trước khi `mongod` mở cổng sẽ thoát với `ECONNREFUSED`; script bên trong không kịp chạy. Cần gate container init sau healthcheck của Mongo và cho phép retry. Sau khi sửa, log là `replica set rs0 ready`.
+
+### Host và container khác hostname
+
+Replica set cấu hình member `mongo:27017`, tên chỉ phân giải trong mạng Docker. Từ host phải dùng `directConnection=true` hoặc chạy `mongosh` trong container. Test integration dùng `directConnection=true` và vẫn đọc được `setName` từ `hello`.
+
+### Health không chỉ là ping
+
+`ping` thành công không chứng minh transaction hay Change Streams dùng được. Health kiểm tra thêm `hello.setName` và `isWritablePrimary`; API từ chối khởi động nếu replica set không khớp. Đây là hành vi có chủ đích, không phải kiểm tra thừa.

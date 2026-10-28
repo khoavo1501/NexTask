@@ -1,8 +1,9 @@
 # Giai đoạn 0 - Thiết lập nền tảng
 
-- Trạng thái: Kế hoạch, chưa triển khai
+- Trạng thái: Hoàn thành ngày 2026-10-28
 - Ngày lập: 2026-10-28
 - Tài liệu kiến trúc: [../architecture.md](../architecture.md)
+- Biên bản kiểm chứng: [Kết quả triển khai](#11-kết-quả-triển-khai)
 
 ## 1. Mục tiêu
 
@@ -192,11 +193,12 @@ Nếu DB mất kết nối sau khi server đã chạy, health trả 503; process
 ### Luồng khởi động
 
 1. `mongo` khởi động, healthcheck ping.
-2. `mongo-init` chạy script idempotent:
+2. `mongo-init` chạy sau khi `mongo` healthy và có retry khi lỗi:
    - Thử `rs.status()`.
    - Nếu chưa có replica set, gọi `rs.initiate` với member `mongo:27017`.
    - Chờ `hello().isWritablePrimary`.
    - Nếu đã có, kiểm tra tên replica set và thoát thành công.
+   - `depends_on: service_healthy` và `restart: on-failure:5` tránh race `ECONNREFUSED` lúc Mongo chưa mở cổng.
 3. `api` chỉ chạy khi `mongo-init` hoàn tất. API kết nối `mongodb://mongo:27017/nextask?replicaSet=rs0`.
 4. `web` chạy sau API; server component gọi `http://api:4000/api/v1/health` để hiển thị trạng thái.
 
@@ -242,14 +244,14 @@ Các lệnh trên là kế hoạch kiểm chứng. Sau khi triển khai, kết q
 
 ### Tiêu chí đạt
 
-- [ ] Cả `mongo`, `api`, `web` chuyển healthy, `mongo-init` exit 0.
-- [ ] Health trả HTTP 200, `replicaSet: "rs0"`, `primary: true`.
-- [ ] Web hiển thị trạng thái API lấy qua mạng nội bộ Docker.
-- [ ] `docker compose up` không cần secret hay bước cài DB thủ công.
-- [ ] Typecheck, lint và test đều pass.
-- [ ] Restart API vẫn kết nối được DB và health trả 200.
-- [ ] Dữ liệu Mongo nằm trong volume; `down` rồi `up` không mất volume.
-- [ ] Không có code auth, board, tldraw hay Change Streams trong giai đoạn này.
+- [x] Cả `mongo`, `api`, `web` chuyển healthy, `mongo-init` exit 0.
+- [x] Health trả HTTP 200, `replicaSet: "rs0"`, `primary: true`.
+- [x] Web hiển thị trạng thái API lấy qua mạng nội bộ Docker.
+- [x] `docker compose up` không cần secret hay bước cài DB thủ công.
+- [x] Typecheck, lint và test đều pass.
+- [x] Restart API vẫn kết nối được DB và health trả 200.
+- [x] Dữ liệu Mongo nằm trong volume; `down` rồi `up` không mất volume.
+- [x] Không có code auth, board, tldraw hay Change Streams trong giai đoạn này.
 
 ### Test
 
@@ -279,12 +281,45 @@ Các lệnh trên là kế hoạch kiểm chứng. Sau khi triển khai, kết q
 
 - Docker và Docker Compose đã cài trên máy.
 - Node 26 và npm 12 dùng cho phát triển ngoài container.
-- Không có dữ liệu cũ cần giữ.
-- Workspace trống và chưa phải git repo; không tự khởi tạo commit.
+- Volume `nextask_mongo-data` đã tồn tại từ trước và được giữ nguyên; database `nextask` rỗng tại thời điểm kiểm tra.
+- Test dùng database riêng `nextask_phase0_test`, không ghi vào database ứng dụng.
 - UI tiếng Việt, code tiếng Anh.
 - MongoDB local không cần auth; production sẽ cấu hình riêng.
 
-## 11. Việc chuyển sang Giai đoạn 1
+## 11. Kết quả triển khai
+
+### Git
+
+- Repository cục bộ trên nhánh `main`, chưa có remote.
+- Commit nền: `0058ff7` docs, `ce50898` scaffold, `cbefc35` API, `ef1eaa4` web, `eecd027` Docker/README, `d9e87bd` formatting.
+
+### Kiểm chứng
+
+- `npm run typecheck`: exit 0.
+- `npm run lint`: exit 0.
+- `npm run format:check`: exit 0.
+- Full test ba lần liên tiếp, mỗi lần `2` file và `6` test pass. Thời gian ba lần lần lượt `517 ms`, `505 ms`, `512 ms`.
+- `docker compose ps`: `mongo`, `api`, `web` đều healthy; `mongo-init` exit 0.
+- Health thật: HTTP 200, `status: "ok"`, `replicaSet: "rs0"`, `primary: true`, `latencyMs: 1`.
+- Browser tại `http://localhost:3000`: thấy tiêu đề NexTask, badge Hoạt động, replica set `rs0`, primary `true`, request id.
+- `docker compose restart api`: health trả 200 với `rs0` và primary.
+- `docker compose down` rồi `docker compose up -d`: cả ba service healthy; health và web trả 200; `rs.status().set` là `rs0`; volume được giữ.
+- API local đọc `.env` ở thư mục gốc: chạy trên cổng `4101`, health trả `ok`.
+
+### Sự cố và điều chỉnh
+
+- Lần chạy `mongo-init` đầu tiên exit 1 với `connect ECONNREFUSED` vì Mongo chưa mở cổng, dù replica set `rs0` đã tồn tại từ volume cũ.
+- Đã sửa Compose để `mongo-init` phụ thuộc `mongo` ở trạng thái healthy và thêm `restart: on-failure:5`.
+- Chạy lại: `mongo-init` exit 0, log `replica set rs0 ready`.
+- Database test được đổi sang `nextask_phase0_test` để không đụng dữ liệu cũ.
+
+### Giới hạn còn lại
+
+- Mongo local không auth, chỉ bind loopback.
+- Replica set một nút không có failover.
+- Chưa có nghiệp vụ board, item, task, tldraw hay realtime; đó là các giai đoạn sau.
+
+## 12. Việc chuyển sang Giai đoạn 1
 
 Chỉ sau khi người dùng duyệt kết quả Giai đoạn 0:
 

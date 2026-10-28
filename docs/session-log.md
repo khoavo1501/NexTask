@@ -257,6 +257,36 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 
 ### Trạng thái
 
-- Spec 2A đang chờ người dùng duyệt.
-- Chưa tạo implementation plan và chưa viết code.
-- Sau khi spec được duyệt mới chuyển sang writing-plans và thực thi.
+- Spec 2A đã được người dùng duyệt.
+- Implementation plan đã được lập trên nhánh feature.
+- Chưa viết code.
+
+---
+
+## 2026-10-28 - Phiên 5: Implementation plan 2A và branch workflow
+
+### Quyết định Git của người dùng
+
+- Mỗi phase/phần việc làm trên nhánh riêng, không commit trực tiếp vào `main`.
+- Có nhánh quản lý phiên bản và các nhánh `feat`, `fix`, `chore`, `docs`, `hotfix`.
+- Hoàn thành feature thì merge vào nhánh phiên bản; phiên bản hoàn tất mới merge vào `main`.
+
+### Nhánh đã tạo
+
+- `release/v0.2` từ `main`.
+- `feat/phase-2a-auth-membership` từ `release/v0.2`.
+- `main` giữ nguyên tại `6d3d11b`.
+- Feature hiện tại chứa plan và sẽ chứa toàn bộ triển khai 2A.
+
+### File tài liệu
+
+- `docs/superpowers/plans/2026-10-28-phase-2a-auth-membership.md`: plan chi tiết Task 0-8, TDD, migration, auth, membership, invitation, UI, Docker và merge.
+- `docs/git-workflow.md`: mô hình `main`, `release/vX.Y`, `feat/*`, `fix/*`, `chore/*`, `docs/*`, `hotfix/*`; quy tắc merge `--no-ff`, xóa feature sau merge, không push/amend/config.
+- `docs/phases/02a-auth-membership.md`: cập nhật trạng thái đã duyệt và link plan.
+- `docs/session-log.md`: mục này.
+
+### Trạng thái
+
+- Chưa viết code.
+- Chờ người dùng duyệt plan để bắt đầu thực thi trên `feat/phase-2a-auth-membership`.
+- Sau khi 2A xong: merge feature vào `release/v0.2`; chưa merge vào `main` cho tới khi 2B hoàn tất.

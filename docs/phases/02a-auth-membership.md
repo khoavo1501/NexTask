@@ -1,9 +1,10 @@
 # Giai đoạn 2A - Auth, membership và quyền
 
-- Trạng thái: Spec, chờ duyệt
+- Trạng thái: Đã duyệt; implementation plan đã lập
 - Ngày lập: 2026-10-28
 - Tiền đề: Giai đoạn 1 hoàn thành
 - Đề xuất gốc: [02-proposal.md](./02-proposal.md)
+- Implementation plan: [2026-10-28-phase-2a-auth-membership.md](../superpowers/plans/2026-10-28-phase-2a-auth-membership.md)
 - Kiến trúc: [../architecture.md](../architecture.md)
 
 ## 1. Mục tiêu

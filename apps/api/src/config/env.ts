@@ -24,10 +24,6 @@ const envSchema = z.object({
   SEED_OWNER_EMAIL: z.string().email().optional(),
   SEED_OWNER_PASSWORD: z.string().min(12).optional(),
   SEED_OWNER_NAME: z.string().min(1).max(80).default('Demo Owner'),
-  DEMO_OWNER_ID: z
-    .string()
-    .regex(/^[a-f0-9]{24}$/i, 'DEMO_OWNER_ID phải là ObjectId 24 ký tự')
-    .default('000000000000000000000001'),
 });
 
 export type Env = z.infer<typeof envSchema>;

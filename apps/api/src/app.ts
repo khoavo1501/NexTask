@@ -2,13 +2,13 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { type Express, type Request } from 'express';
 import helmet from 'helmet';
-import { Types, type Connection } from 'mongoose';
+import type { Connection } from 'mongoose';
 import { pinoHttp } from 'pino-http';
 import type { Logger } from './lib/logger.js';
 import { createOriginGuard } from './middleware/origin-guard.js';
-import { createDemoOwnerMiddleware } from './middleware/demo-owner.js';
 import { createErrorHandler, notFoundHandler } from './middleware/error-handler.js';
 import { requestId } from './middleware/request-id.js';
+import { createAuthenticate } from './modules/auth/auth.middleware.js';
 import { createAuthRouter } from './modules/auth/auth.router.js';
 import { createBoardsRouter } from './modules/boards/board.router.js';
 import { createHealthRouter } from './modules/health/health.router.js';
@@ -19,7 +19,6 @@ export interface AppDependencies {
   version: string;
   corsOrigin: string;
   logger: Logger;
-  demoOwnerId: string;
   jwtSecret: string;
   cookieSecure: boolean;
   authRateLimitMax: number;
@@ -27,7 +26,7 @@ export interface AppDependencies {
 
 export function createApp(deps: AppDependencies): Express {
   const app = express();
-  const demoOwnerId = new Types.ObjectId(deps.demoOwnerId);
+  const authenticate = createAuthenticate(deps.jwtSecret);
   app.disable('x-powered-by');
   app.use(helmet());
   app.use(cors({ origin: deps.corsOrigin, credentials: true }));
@@ -58,7 +57,7 @@ export function createApp(deps: AppDependencies): Express {
       authRateLimitMax: deps.authRateLimitMax,
     }),
   );
-  app.use('/api/v1/boards', createDemoOwnerMiddleware(demoOwnerId), createBoardsRouter());
+  app.use('/api/v1/boards', authenticate, createBoardsRouter());
 
   app.use(notFoundHandler);
   app.use(createErrorHandler(deps.logger));

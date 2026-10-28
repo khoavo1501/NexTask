@@ -17,7 +17,6 @@ x-api-environment: &api-environment
   SEED_OWNER_EMAIL: owner@nextask.local
   SEED_OWNER_PASSWORD: nextask-local-owner-2026
   SEED_OWNER_NAME: Demo Owner
-  DEMO_OWNER_ID: '000000000000000000000001'
 
 services:
   mongo:

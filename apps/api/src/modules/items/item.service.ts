@@ -1,19 +1,17 @@
 import type { SyncItemInput } from '@nextask/contracts';
 import type { Types } from 'mongoose';
-import { getBoardForOwner } from '../boards/board.service.js';
+import type { BoardDocument } from '../boards/board.model.js';
 import { ItemModel, type ItemDocument } from './item.model.js';
 
-export async function listItems(boardId: string, ownerId: Types.ObjectId): Promise<ItemDocument[]> {
-  const board = await getBoardForOwner(boardId, ownerId);
+export async function listItems(board: BoardDocument): Promise<ItemDocument[]> {
   return ItemModel.find({ boardId: board._id, type: 'note' }).sort({ createdAt: 1 }).exec();
 }
 
 export async function syncItems(
-  boardId: string,
-  ownerId: Types.ObjectId,
+  board: BoardDocument,
+  userId: Types.ObjectId,
   items: SyncItemInput[],
 ): Promise<ItemDocument[]> {
-  const board = await getBoardForOwner(boardId, ownerId);
   const now = new Date();
   const shapeIds = items.map((item) => item.shapeId);
 
@@ -38,7 +36,7 @@ export async function syncItems(
             $setOnInsert: {
               boardId: board._id,
               shapeId: item.shapeId,
-              authorId: ownerId,
+              authorId: userId,
               votes: [],
               promotedTaskId: null,
               createdAt: now,

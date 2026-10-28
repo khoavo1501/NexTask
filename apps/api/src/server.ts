@@ -27,7 +27,6 @@ async function main(): Promise<void> {
     version: env.SERVICE_VERSION,
     corsOrigin: env.CORS_ORIGIN,
     logger,
-    demoOwnerId: env.DEMO_OWNER_ID,
     jwtSecret: env.JWT_SECRET,
     cookieSecure: env.COOKIE_SECURE,
     authRateLimitMax: 5,

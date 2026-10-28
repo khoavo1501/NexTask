@@ -43,7 +43,6 @@ describe('health với MongoDB thật', () => {
       version: '0.1.0-test',
       corsOrigin: 'http://localhost:3000',
       logger,
-      demoOwnerId: '000000000000000000000001',
       jwtSecret: 'local-test-jwt-secret-at-least-32-bytes-long',
       cookieSecure: false,
       authRateLimitMax: 100,

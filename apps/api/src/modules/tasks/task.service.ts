@@ -2,23 +2,20 @@ import type { MoveTaskRequest } from '@nextask/contracts';
 import { generateKeyBetween } from 'fractional-indexing';
 import { Types } from 'mongoose';
 import { AppError } from '../../lib/errors.js';
-import { getBoardForOwner } from '../boards/board.service.js';
+import type { BoardDocument } from '../boards/board.model.js';
 import { TaskModel, type TaskDocument } from './task.model.js';
 
-export async function listTasks(boardId: string, ownerId: Types.ObjectId): Promise<TaskDocument[]> {
-  const board = await getBoardForOwner(boardId, ownerId);
+export async function listTasks(board: BoardDocument): Promise<TaskDocument[]> {
   return TaskModel.find({ boardId: board._id, lifecycle: 'active' })
     .sort({ columnId: 1, order: 1 })
     .exec();
 }
 
 export async function moveTask(
-  boardId: string,
+  board: BoardDocument,
   taskId: string,
-  ownerId: Types.ObjectId,
   input: MoveTaskRequest,
 ): Promise<TaskDocument> {
-  const board = await getBoardForOwner(boardId, ownerId);
   if (!Types.ObjectId.isValid(taskId)) {
     throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
   }

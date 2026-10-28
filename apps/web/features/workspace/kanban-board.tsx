@@ -72,7 +72,7 @@ export function KanbanBoard({ board, tasks, onMoveTask }: KanbanBoardProps) {
                 const taskId = event.dataTransfer.getData('text/plain') || draggingTaskId;
                 dropTask(column.id, taskId ?? '');
               }}
-              className={`flex w-[210px] shrink-0 flex-col rounded-xl border p-2 transition ${
+              className={`flex min-w-[140px] flex-1 flex-col rounded-xl border p-2 transition ${
                 isOver
                   ? 'border-amber-400 bg-amber-50'
                   : column.isDone
@@ -102,7 +102,7 @@ export function KanbanBoard({ board, tasks, onMoveTask }: KanbanBoardProps) {
                       setDraggingTaskId(null);
                       setDragOverColumn(null);
                     }}
-                    className={`cursor-grab rounded-lg border border-stone-200 bg-white p-3 shadow-sm active:cursor-grabbing ${
+                    className={`cursor-grab select-none rounded-lg border border-stone-200 bg-white p-3 shadow-sm active:cursor-grabbing ${
                       draggingTaskId === task._id ? 'opacity-50' : ''
                     }`}
                   >

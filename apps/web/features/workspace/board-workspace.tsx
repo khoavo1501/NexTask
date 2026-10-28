@@ -131,7 +131,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   }
 
   return (
-    <main className="flex h-screen min-h-[720px] flex-col bg-stone-100">
+    <main className="flex min-h-screen flex-col bg-stone-100">
       <header className="flex flex-wrap items-center justify-between gap-4 border-b border-stone-200 bg-white px-5 py-3">
         <div className="flex min-w-0 items-center gap-4">
           <Link
@@ -161,8 +161,8 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
         </div>
       ) : null}
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 p-4 xl:flex-row">
-        <section className="relative min-h-[540px] flex-1 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+      <div className="flex flex-1 flex-col gap-4 p-4">
+        <section className="relative h-[62vh] min-h-[520px] overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
           <Whiteboard
             board={data.board}
             initialItems={data.items}
@@ -173,7 +173,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           />
         </section>
 
-        <aside className="min-h-[420px] w-full shrink-0 overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm xl:w-[430px]">
+        <aside className="h-[440px] w-full overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
           <KanbanBoard board={data.board} tasks={data.tasks} onMoveTask={handleMoveTask} />
         </aside>
       </div>

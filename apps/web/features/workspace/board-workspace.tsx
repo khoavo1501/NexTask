@@ -74,7 +74,11 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     async (input: { columnId: string; assignToMe: boolean }) => {
       if (!promoteTarget) return;
 
-      const result = await promoteItem(boardId, promoteTarget._id, input);
+      const result = await promoteItem(boardId, promoteTarget._id, {
+        columnId: input.columnId,
+        assignToMe: input.assignToMe,
+        expectedItemVersion: promoteTarget.version,
+      });
       setData((current) => {
         if (!current) return current;
         return {

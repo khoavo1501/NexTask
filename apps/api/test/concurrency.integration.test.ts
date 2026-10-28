@@ -1,6 +1,7 @@
 import pino from 'pino';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
+import { ItemModel } from '../src/modules/items/item.model.js';
 import { TaskModel } from '../src/modules/tasks/task.model.js';
 import { registerAgent } from './helpers/auth.js';
 import { cleanDb, connectTestDb } from './helpers/test-db.js';
@@ -63,7 +64,11 @@ async function setupPromotedTask() {
 
   const promoted = await owner.agent
     .post(`/api/v1/boards/${boardId}/items/${synced.body.data[0]._id}/promote`)
-    .send({ columnId: 'todo', assignToMe: false })
+    .send({
+      columnId: 'todo',
+      assignToMe: false,
+      expectedItemVersion: synced.body.data[0].version,
+    })
     .expect(201);
 
   return {
@@ -154,5 +159,58 @@ describe('task move OCC', () => {
 
     expect(moved.body.data.columnId).toBe('todo');
     expect(moved.body.data.version).toBe(task.version);
+  });
+});
+
+describe('promote OCC', () => {
+  it('expectedItemVersion cũ trả 409 và không tạo task', async () => {
+    const owner = await registerAgent(app, 'owner@example.com', 'Owner');
+    const board = await owner.agent
+      .post('/api/v1/boards')
+      .send({ name: 'Retro' })
+      .expect(201);
+    const boardId = board.body.data._id as string;
+    const synced = await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({ items: [note('shape:one', 'Stale promote')] })
+      .expect(200);
+    const item = synced.body.data[0] as { _id: string; version: number };
+
+    await ItemModel.updateOne({ _id: item._id }, { $inc: { version: 1 } }).exec();
+
+    const stale = await owner.agent
+      .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
+      .send({ columnId: 'todo', assignToMe: false, expectedItemVersion: item.version })
+      .expect(409);
+    expect(stale.body.error).toMatchObject({
+      code: 'VERSION_CONFLICT',
+      details: { currentVersion: item.version + 1 },
+    });
+    expect(await TaskModel.countDocuments({ boardId })).toBe(0);
+
+    await owner.agent
+      .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
+      .send({
+        columnId: 'todo',
+        assignToMe: false,
+        expectedItemVersion: item.version + 1,
+      })
+      .expect(201);
+  });
+
+  it('version đúng nhưng đã promote trả ALREADY_PROMOTED', async () => {
+    const { owner, boardId, item } = await setupPromotedTask();
+    const current = await ItemModel.findById(item._id).exec();
+    if (!current) throw new Error('Item missing');
+
+    const response = await owner.agent
+      .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
+      .send({
+        columnId: 'todo',
+        assignToMe: false,
+        expectedItemVersion: current.version,
+      })
+      .expect(409);
+    expect(response.body.error.code).toBe('ALREADY_PROMOTED');
   });
 });

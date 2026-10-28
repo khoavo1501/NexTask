@@ -129,7 +129,11 @@ describe('membership và role', () => {
 
     const promoted = await member.agent
       .post(`/api/v1/boards/${boardId}/items/${synced.body.data[0]._id}/promote`)
-      .send({ columnId: 'todo', assignToMe: true })
+      .send({
+        columnId: 'todo',
+        assignToMe: true,
+        expectedItemVersion: synced.body.data[0].version,
+      })
       .expect(201);
     expect(promoted.body.data.task.assigneeId).toBe(member.user._id);
 

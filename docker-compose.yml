@@ -1,5 +1,24 @@
 name: nextask
 
+x-api-build: &api-build
+  context: .
+  dockerfile: apps/api/Dockerfile
+
+x-api-environment: &api-environment
+  NODE_ENV: production
+  PORT: 4000
+  MONGODB_URI: mongodb://mongo:27017/nextask?replicaSet=rs0
+  MONGODB_REPLICA_SET: rs0
+  CORS_ORIGIN: http://localhost:3000
+  LOG_LEVEL: info
+  SERVICE_VERSION: 0.1.0
+  JWT_SECRET: local-dev-only-nextask-jwt-secret-change-me
+  COOKIE_SECURE: 'false'
+  SEED_OWNER_EMAIL: owner@nextask.local
+  SEED_OWNER_PASSWORD: nextask-local-owner-2026
+  SEED_OWNER_NAME: Demo Owner
+  DEMO_OWNER_ID: '000000000000000000000001'
+
 services:
   mongo:
     image: mongo:8.0
@@ -30,28 +49,22 @@ services:
       ['mongosh', '--host', 'mongo:27017', '--quiet', '--file', '/scripts/init-replica.js']
     restart: on-failure:5
 
+  migrate:
+    build: *api-build
+    command: ['node', 'dist/db/migrate.js']
+    environment: *api-environment
+    depends_on:
+      mongo-init:
+        condition: service_completed_successfully
+    restart: 'no'
+
   api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
-    environment:
-      NODE_ENV: production
-      PORT: 4000
-      MONGODB_URI: mongodb://mongo:27017/nextask?replicaSet=rs0
-      MONGODB_REPLICA_SET: rs0
-      CORS_ORIGIN: http://localhost:3000
-      LOG_LEVEL: info
-      SERVICE_VERSION: 0.1.0
-      JWT_SECRET: local-dev-only-nextask-jwt-secret-change-me
-      COOKIE_SECURE: 'false'
-      SEED_OWNER_EMAIL: owner@nextask.local
-      SEED_OWNER_PASSWORD: nextask-local-owner-2026
-      SEED_OWNER_NAME: Demo Owner
-      DEMO_OWNER_ID: '000000000000000000000001'
+    build: *api-build
+    environment: *api-environment
     ports:
       - '127.0.0.1:4000:4000'
     depends_on:
-      mongo-init:
+      migrate:
         condition: service_completed_successfully
     init: true
     restart: unless-stopped

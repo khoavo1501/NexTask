@@ -1,10 +1,12 @@
 # Giai đoạn 2A - Auth, membership và quyền
 
-- Trạng thái: Spec, chờ duyệt
+- Trạng thái: Hoàn thành ngày 2026-10-28; đã kiểm chứng trên feature, chờ merge release
 - Ngày lập: 2026-10-28
 - Tiền đề: Giai đoạn 1 hoàn thành
 - Đề xuất gốc: [02-proposal.md](./02-proposal.md)
+- Implementation plan: [2026-10-28-phase-2a-auth-membership.md](../superpowers/plans/2026-10-28-phase-2a-auth-membership.md)
 - Kiến trúc: [../architecture.md](../architecture.md)
+- Chi nhánh: `feat/phase-2a-auth-membership` từ `release/v0.2`
 
 ## 1. Mục tiêu
 
@@ -559,3 +561,82 @@ Sau khi 2A được duyệt và kiểm chứng, 2B sẽ thêm:
 - expectedVersion cho board, task, promote và item sync.
 - Client conflict handling.
 - Test concurrent write và schema rejection.
+
+## 17. Kết quả triển khai 2A
+
+### Git
+
+Các commit trên feature:
+
+- `370ff99` auth primitives và config.
+- `8c89e88` migration runner, seed owner.
+- `4853230` auth API và middleware.
+- `d1d94f4` membership, role và refactor board APIs.
+- `766e6e0` invitation link và accept.
+- `500f8dc` web auth và board list bảo vệ.
+- `61879bf` invite/accept/rename UI.
+- Commit tài liệu cuối và merge release được tạo sau biên bản này; xem `git log`.
+
+`main` và `release/v0.2` vẫn ở `6d3d11b` trong lúc triển khai feature.
+
+### Backup và migration
+
+- Backup trước migration: `backups/nextask-before-2a-2026-10-28.gz`, kích thước `1.8K`, `gzip -t` pass.
+- Rehearsal: restore backup vào `nextask_phase2_rehearsal`, migrate thành công, sau đó xóa database rehearsal.
+- Migration thật chạy một lần, log `applied: ["001-phase-2a"]`.
+- Trước migration: 1 board, 2 item, 2 task, 0 user.
+- Sau migration: 1 board, 2 item, 2 task, 1 seed user, owner member được backfill.
+- Nội dung và version giữ nguyên:
+  - Item version: `31`, `13`.
+  - Task version: `4`, `1`.
+- Sau browser E2E: 2 user, board có owner + member; invitation đã `usedAt`.
+- Browser flow:
+  - `/` chưa đăng nhập chuyển `/login`.
+  - Seed owner đăng nhập thấy board Phase 1 và dữ liệu cũ.
+  - Owner tạo invitation link qua UI.
+  - User thứ hai đăng ký, accept link, thấy role `Member`.
+  - Member không thấy nút `Mời`/`Đổi tên`.
+  - Gọi PATCH board bằng cookie Member trả `403 FORBIDDEN`.
+- Docker Compose: `mongo`, `api`, `web` healthy; migrate service exit 0.
+- Health: `status: ok`, `rs0`, primary `true`, latency `1 ms`.
+
+### Kiểm chứng tự động
+
+- `npm run typecheck`: pass.
+- `npm run lint`: pass.
+- `npm run format:check`: pass.
+- Full suite ba lần liên tiếp, mỗi lần `10` file, `46` test pass:
+  - Lần 1: 8.06 s.
+  - Lần 2: 7.77 s.
+  - Lần 3: 7.82 s.
+- Test dùng MongoDB replica set thật; test DB Phase 2 là `nextask_phase2_test`, migration test dùng DB riêng.
+- Auth: register/login/logout/me, cookie, email trùng, sai mật khẩu, token hết hạn, origin lạ, rate limit.
+- Membership: owner/member/non-member, owner rename, member promote/move, member list.
+- Invitation: hash token, email match, expiry, used token, member không được invite, TTL index.
+- Migration: seed/backfill, idempotent, preservation.
+- Promotion transaction, duplicate và rollback tests Phase 1 vẫn pass sau khi refactor auth.
+
+### Giới hạn còn lại
+
+- Chưa có `$jsonSchema`; thuộc 2B.
+- Chưa enforce expectedVersion; thuộc 2B.
+- Không gửi email invitation; Owner copy link.
+- Không có refresh/revocation token, password reset hoặc member removal.
+- Rate limit lưu bộ nhớ, phù hợp một API instance.
+- Merge feature vào `release/v0.2` được thực hiện sau commit tài liệu; chưa merge vào `main` để chờ 2B.
+
+### Tiêu chí 2A
+
+- [x] Register/login/logout bằng cookie HttpOnly.
+- [x] Seed owner đăng nhập thấy dữ liệu Phase 1.
+- [x] Migration idempotent, preservation item/task/version.
+- [x] Board có members; owner là member.
+- [x] Board list theo membership.
+- [x] Owner tạo invitation link; Member accept.
+- [x] Member bị chặn 403 ở thao tác Owner-only.
+- [x] Non-member bị chặn 404.
+- [x] Member promote/move được.
+- [x] Auth/membership/invitation tests dùng MongoDB thật.
+- [x] Full suite ba lần, typecheck/lint/format sạch.
+- [x] Docker migrate trước API; ba service healthy.
+- [x] Chưa thêm `$jsonSchema` hoặc version enforcement trong 2A.

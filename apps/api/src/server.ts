@@ -1,16 +1,13 @@
-import { existsSync } from 'node:fs';
 import { createServer } from 'node:http';
-import { fileURLToPath } from 'node:url';
 import { createApp } from './app.js';
 import { loadEnv } from './config/env.js';
-import { ensureIndexes } from './db/indexes.js';
+import { loadRootEnvFile } from './config/load-env-file.js';
+import { MIGRATION_001_NAME } from './db/migration-runner.js';
 import { assertReplicaSet, connectMongo } from './db/mongoose.js';
+import { assertSchemaVersion } from './db/schema-version.js';
 import { createLogger } from './lib/logger.js';
 
-const rootEnvPath = fileURLToPath(new URL('../../../.env', import.meta.url));
-if (existsSync(rootEnvPath)) {
-  process.loadEnvFile(rootEnvPath);
-}
+loadRootEnvFile();
 
 async function main(): Promise<void> {
   const env = loadEnv();
@@ -22,7 +19,7 @@ async function main(): Promise<void> {
     throw new Error('MongoDB replica set has no primary');
   }
 
-  await ensureIndexes();
+  await assertSchemaVersion(connection, MIGRATION_001_NAME);
 
   const app = createApp({
     connection,
@@ -30,7 +27,9 @@ async function main(): Promise<void> {
     version: env.SERVICE_VERSION,
     corsOrigin: env.CORS_ORIGIN,
     logger,
-    demoOwnerId: env.DEMO_OWNER_ID,
+    jwtSecret: env.JWT_SECRET,
+    cookieSecure: env.COOKIE_SECURE,
+    authRateLimitMax: 5,
   });
   const server = createServer(app);
 

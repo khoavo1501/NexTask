@@ -1,6 +1,9 @@
 import Link from 'next/link';
+import { cookies } from 'next/headers';
+import { redirect } from 'next/navigation';
+import { AuthHeader } from '../components/auth-header';
+import { ServerApiError, fetchBoardsServer } from '../lib/server-api';
 import { CreateBoardForm } from './create-board-form';
-import { fetchBoardsServer } from '../lib/server-api';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,12 +15,24 @@ function formatUpdatedAt(value: string): string {
 }
 
 export default async function HomePage() {
+  const cookieStore = await cookies();
+  const cookieHeader = cookieStore
+    .getAll()
+    .map(({ name, value }) => `${name}=${value}`)
+    .join('; ');
+  if (!cookieHeader) {
+    redirect('/login');
+  }
+
   let boards = null;
   let error: string | null = null;
 
   try {
-    boards = await fetchBoardsServer();
-  } catch {
+    boards = await fetchBoardsServer(cookieHeader);
+  } catch (caught) {
+    if (caught instanceof ServerApiError && caught.status === 401) {
+      redirect('/login');
+    }
     error = 'Không tải được danh sách board từ API';
   }
 
@@ -33,12 +48,7 @@ export default async function HomePage() {
             Brainstorm trên whiteboard, promote thành task và theo dõi trên Kanban.
           </p>
         </div>
-        <Link
-          href="/health"
-          className="rounded-full border border-stone-300 bg-white px-3 py-1.5 text-sm text-stone-600 transition hover:border-stone-500"
-        >
-          Trạng thái hệ thống
-        </Link>
+        <AuthHeader />
       </header>
 
       <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">

@@ -8,12 +8,11 @@ export function createTasksRouter(): Router {
   const router = Router({ mergeParams: true });
 
   router.get('/', async (request, response) => {
-    const boardId = (request.params as { boardId?: string }).boardId;
-    if (!boardId) {
+    if (!request.board) {
       throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
     }
 
-    const tasks = await listTasks(boardId, request.ownerId);
+    const tasks = await listTasks(request.board);
     const data: TaskDto[] = tasks.map(serializeTask);
     response.json({
       data,
@@ -22,13 +21,17 @@ export function createTasksRouter(): Router {
   });
 
   router.patch('/:taskId', async (request, response) => {
-    const params = request.params as { boardId?: string; taskId?: string };
-    if (!params.boardId || !params.taskId) {
+    if (!request.board) {
+      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
+    }
+
+    const params = request.params as { taskId?: string };
+    if (!params.taskId) {
       throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
     }
 
     const input = moveTaskRequestSchema.parse(request.body);
-    const task = await moveTask(params.boardId, params.taskId, request.ownerId, input);
+    const task = await moveTask(request.board, params.taskId, input);
     const data: TaskDto = serializeTask(task);
 
     response.json({

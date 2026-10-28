@@ -2,17 +2,29 @@ import {
   apiErrorSchema,
   boardResponseSchema,
   boardsResponseSchema,
+  createInvitationRequestSchema,
+  invitationAcceptResponseSchema,
+  invitationCreateResponseSchema,
   itemsResponseSchema,
+  loginRequestSchema,
   promoteResponseSchema,
+  registerRequestSchema,
+  renameBoardRequestSchema,
   taskResponseSchema,
   tasksResponseSchema,
+  userResponseSchema,
   type BoardDto,
   type CreateBoardRequest,
+  type CreateInvitationRequest,
   type ItemDto,
+  type LoginRequest,
   type MoveTaskRequest,
   type PromoteRequest,
+  type RegisterRequest,
+  type RenameBoardRequest,
   type SyncItemInput,
   type TaskDto,
+  type UserDto,
 } from '@nextask/contracts';
 import type { z } from 'zod';
 
@@ -42,6 +54,7 @@ async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit
   const response = await fetch(`${browserApiBase}${path}`, {
     ...init,
     headers,
+    credentials: 'include',
     cache: 'no-store',
   });
   const json: unknown = await response.json().catch(() => null);
@@ -66,8 +79,92 @@ async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit
   return parsed.data;
 }
 
+async function parseApiError(response: Response): Promise<never> {
+  const json: unknown = await response.json().catch(() => null);
+  const parsed = apiErrorSchema.safeParse(json);
+  if (parsed.success) {
+    throw new ApiClientError(
+      response.status,
+      parsed.data.error.code,
+      parsed.data.error.message,
+      parsed.data.error.details,
+    );
+  }
+  throw new ApiClientError(response.status, 'UNKNOWN_ERROR', 'API trả lỗi không xác định');
+}
+
+export async function register(input: RegisterRequest): Promise<UserDto> {
+  const body = registerRequestSchema.parse(input);
+  return (
+    await request('/auth/register', userResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function login(input: LoginRequest): Promise<UserDto> {
+  const body = loginRequestSchema.parse(input);
+  return (
+    await request('/auth/login', userResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function logout(): Promise<void> {
+  const response = await fetch(`${browserApiBase}/auth/logout`, {
+    method: 'POST',
+    credentials: 'include',
+    cache: 'no-store',
+  });
+  if (!response.ok) {
+    await parseApiError(response);
+  }
+}
+
+export async function getMe(): Promise<UserDto> {
+  return (await request('/auth/me', userResponseSchema)).data;
+}
+
 export async function listBoards(): Promise<BoardDto[]> {
   return (await request('/boards', boardsResponseSchema)).data;
+}
+
+export async function renameBoard(boardId: string, name: string): Promise<BoardDto> {
+  const body: RenameBoardRequest = renameBoardRequestSchema.parse({ name });
+  return (
+    await request(`/boards/${boardId}`, boardResponseSchema, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function createInvitation(
+  boardId: string,
+  email?: string,
+): Promise<{ token: string; path: string; expiresAt: string }> {
+  const body: CreateInvitationRequest = createInvitationRequestSchema.parse(email ? { email } : {});
+  return (
+    await request(`/boards/${boardId}/invitations`, invitationCreateResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function acceptInvitation(token: string): Promise<BoardDto> {
+  return (
+    await request(
+      `/invitations/${encodeURIComponent(token)}/accept`,
+      invitationAcceptResponseSchema,
+      {
+        method: 'POST',
+      },
+    )
+  ).data;
 }
 
 export async function createBoard(input: CreateBoardRequest): Promise<BoardDto> {

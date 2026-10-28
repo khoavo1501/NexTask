@@ -2,11 +2,15 @@
 
 import type { BoardDto, ItemDto, TaskDto } from '@nextask/contracts';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { AuthHeader } from '../../components/auth-header';
 import { ApiClientError, getBoard, getItems, getTasks, moveTask, promoteItem } from '../../lib/api';
 import { PromoteDialog } from '../whiteboard/promote-dialog';
 import { Whiteboard } from '../whiteboard/whiteboard';
+import { InviteDialog } from './invite-dialog';
 import { KanbanBoard } from './kanban-board';
+import { RenameBoardDialog } from './rename-board-dialog';
 
 interface BoardWorkspaceProps {
   boardId: string;
@@ -19,10 +23,13 @@ interface WorkspaceData {
 }
 
 export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
+  const router = useRouter();
   const [data, setData] = useState<WorkspaceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [promoteTarget, setPromoteTarget] = useState<ItemDto | null>(null);
+  const [showInvite, setShowInvite] = useState(false);
+  const [showRename, setShowRename] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
 
   const loadWorkspace = useCallback(async () => {
@@ -36,13 +43,18 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       ]);
       setData({ board, items, tasks });
     } catch (caught) {
+      if (caught instanceof ApiClientError && caught.status === 401) {
+        const nextPath = `${window.location.pathname}${window.location.search}`;
+        router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
+        return;
+      }
       setError(
         caught instanceof ApiClientError ? caught.message : 'Không tải được board, thử lại sau.',
       );
     } finally {
       setLoading(false);
     }
-  }, [boardId]);
+  }, [boardId, router]);
 
   useEffect(() => {
     void loadWorkspace();
@@ -76,6 +88,10 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     },
     [boardId, promoteTarget],
   );
+
+  const handleRenamed = useCallback((board: BoardDto) => {
+    setData((current) => (current ? { ...current, board } : current));
+  }, []);
 
   const handleMoveTask = useCallback(
     async (taskId: string, columnId: string) => {
@@ -147,9 +163,30 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
             </p>
           </div>
         </div>
-        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">
-          Phase 1 · chưa realtime
-        </span>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">
+            {data.board.viewerRole === 'owner' ? 'Owner' : 'Member'}
+          </span>
+          {data.board.viewerRole === 'owner' ? (
+            <>
+              <button
+                type="button"
+                onClick={() => setShowRename(true)}
+                className="rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs text-stone-600 hover:border-stone-500"
+              >
+                Đổi tên
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowInvite(true)}
+                className="rounded-lg bg-amber-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
+              >
+                Mời
+              </button>
+            </>
+          ) : null}
+          <AuthHeader compact />
+        </div>
       </header>
 
       {notice ? (
@@ -184,6 +221,16 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           columns={data.board.columns}
           onClose={() => setPromoteTarget(null)}
           onConfirm={handlePromote}
+        />
+      ) : null}
+
+      {showInvite ? <InviteDialog boardId={boardId} onClose={() => setShowInvite(false)} /> : null}
+
+      {showRename ? (
+        <RenameBoardDialog
+          board={data.board}
+          onClose={() => setShowRename(false)}
+          onRenamed={handleRenamed}
         />
       ) : null}
     </main>

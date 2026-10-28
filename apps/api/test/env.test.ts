@@ -9,6 +9,11 @@ const validEnv = {
   CORS_ORIGIN: 'http://localhost:3000',
   LOG_LEVEL: 'silent',
   SERVICE_VERSION: '0.1.0',
+  JWT_SECRET: 'local-test-jwt-secret-at-least-32-bytes-long',
+  COOKIE_SECURE: 'false',
+  SEED_OWNER_EMAIL: 'owner@nextask.local',
+  SEED_OWNER_PASSWORD: 'nextask-local-owner-2026',
+  SEED_OWNER_NAME: 'Demo Owner',
 };
 
 describe('loadEnv', () => {
@@ -26,5 +31,9 @@ describe('loadEnv', () => {
   it('từ chối URI không phải MongoDB', () => {
     const input = { ...validEnv, MONGODB_URI: 'http://localhost:27017' };
     expect(() => loadEnv(input)).toThrow(/MONGODB_URI/);
+  });
+
+  it('từ chối JWT_SECRET ngắn', () => {
+    expect(() => loadEnv({ ...validEnv, JWT_SECRET: 'short' })).toThrow(/JWT_SECRET/);
   });
 });

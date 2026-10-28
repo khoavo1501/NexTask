@@ -257,6 +257,110 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 
 ### Trạng thái
 
-- Spec 2A đang chờ người dùng duyệt.
-- Chưa tạo implementation plan và chưa viết code.
-- Sau khi spec được duyệt mới chuyển sang writing-plans và thực thi.
+- Spec 2A đã được người dùng duyệt.
+- Implementation plan đã được lập trên nhánh feature.
+- Chưa viết code.
+
+---
+
+## 2026-10-28 - Phiên 5: Implementation plan 2A và branch workflow
+
+### Quyết định Git của người dùng
+
+- Mỗi phase/phần việc làm trên nhánh riêng, không commit trực tiếp vào `main`.
+- Có nhánh quản lý phiên bản và các nhánh `feat`, `fix`, `chore`, `docs`, `hotfix`.
+- Hoàn thành feature thì merge vào nhánh phiên bản; phiên bản hoàn tất mới merge vào `main`.
+
+### Nhánh đã tạo
+
+- `release/v0.2` từ `main`.
+- `feat/phase-2a-auth-membership` từ `release/v0.2`.
+- `main` giữ nguyên tại `6d3d11b`.
+- Feature hiện tại chứa plan và sẽ chứa toàn bộ triển khai 2A.
+
+### File tài liệu
+
+- `docs/superpowers/plans/2026-10-28-phase-2a-auth-membership.md`: plan chi tiết Task 0-8, TDD, migration, auth, membership, invitation, UI, Docker và merge.
+- `docs/git-workflow.md`: mô hình `main`, `release/vX.Y`, `feat/*`, `fix/*`, `chore/*`, `docs/*`, `hotfix/*`; quy tắc merge `--no-ff`, xóa feature sau merge, không push/amend/config.
+- `docs/phases/02a-auth-membership.md`: cập nhật trạng thái đã duyệt và link plan.
+- `docs/session-log.md`: mục này.
+
+### Trạng thái
+
+- Chưa viết code.
+- Chờ người dùng duyệt plan để bắt đầu thực thi trên `feat/phase-2a-auth-membership`.
+- Sau khi 2A xong: merge feature vào `release/v0.2`; chưa merge vào `main` cho tới khi 2B hoàn tất.
+
+---
+
+## 2026-10-28 - Phiên 6: Triển khai Giai đoạn 2A
+
+### Bối cảnh
+
+- Người dùng duyệt plan và yêu cầu bắt đầu 2A.
+- Làm trên `feat/phase-2a-auth-membership`; không commit vào `main`.
+
+### Commit trên feature
+
+- `370ff99` `feat: add auth primitives and configuration`
+- `8c89e88` `feat: add versioned migration and legacy owner seed`
+- `4853230` `feat: add cookie auth API and middleware`
+- `d1d94f4` `feat: add board membership and server-side roles`
+- `766e6e0` `feat: add invitation link and transactional accept`
+- `500f8dc` `feat: add web authentication and protected board list`
+- `61879bf` `feat: add invite, accept, and owner rename UI`
+- Commit tài liệu cuối và merge release được tạo sau biên bản này.
+
+### Đã triển khai
+
+- `users`, argon2id, JWT HS256 cookie 7 ngày.
+- Register/login/logout/me, rate limit và origin guard.
+- `members[]`, owner member, board access middleware, owner-only rename/invite.
+- Invitation token hash, TTL, email ràng buộc, accept transaction.
+- Migration runner `schema_migrations`, migration `001-phase-2a`, seed owner, backfill member, toàn bộ index.
+- Compose service `migrate`; API dừng nếu schema chưa migrate.
+- Web login/register/logout, cookie credentials, bảo vệ board list, invite/accept/rename UI.
+
+### Backup và migration dữ liệu thật
+
+- Backup: `backups/nextask-before-2a-2026-10-28.gz`, 1.8 KB, `gzip -t` pass.
+- Rehearsal trên `nextask_phase2_rehearsal`: thành công; database rehearsal đã xóa sau kiểm tra.
+- Migration thật: `applied: ["001-phase-2a"]`.
+- Trước migration: 1 board, 2 item, 2 task, 0 user.
+- Sau migration: 1 board, 2 item, 2 task, 1 seed user, owner member.
+- Item version giữ `31`, `13`; task version giữ `4`, `1`.
+- Browser E2E tạo thêm user member; hiện có 2 user, board có owner + member, invitation đã dùng.
+- Backup không bị xóa.
+
+### Kiểm chứng
+
+- `npm run typecheck`: pass.
+- `npm run lint`: pass.
+- `npm run format:check`: pass.
+- Full suite ba lần liên tiếp, mỗi lần 10 file, 46 test pass:
+  - Lần 1: 8.06 s.
+  - Lần 2: 7.77 s.
+  - Lần 3: 7.82 s.
+- Docker: `mongo`, `api`, `web` healthy; migrate exit 0.
+- Browser:
+  - Chưa đăng nhập chuyển `/login`.
+  - Seed owner đăng nhập, thấy board và dữ liệu cũ.
+  - Owner tạo invitation link.
+  - Member đăng ký, accept, vào board với role Member.
+  - Member không thấy nút Mời/Đổi tên.
+  - PATCH board bằng cookie Member trả `403 FORBIDDEN`.
+- API auth/membership/invitation tests dùng MongoDB thật.
+
+### Sự cố và điều chỉnh
+
+- Test logout ban đầu kỳ vọng `Max-Age=0`, Express dùng `Expires=epoch`; sửa test theo hành vi chuẩn của cookie xóa.
+- Migration test task fixture dùng description rỗng bị Mongoose required từ chối; dùng mô tả hợp lệ.
+- Test DB Phase 2 tách khỏi Phase 1; migration test có DB riêng để tránh drop dữ liệu test khác.
+- Không dùng mock DB.
+
+### Trạng thái
+
+- 2A hoàn thành và kiểm chứng trên feature.
+- Chưa có `$jsonSchema`, expectedVersion, realtime hoặc demote.
+- Chưa merge `main`.
+- Sau commit tài liệu: merge `feat/phase-2a-auth-membership` vào `release/v0.2`, chạy lại quality gate và xóa feature; main vẫn chờ v0.2 hoàn tất cùng 2B.

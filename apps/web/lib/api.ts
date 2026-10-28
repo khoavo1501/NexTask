@@ -2,20 +2,26 @@ import {
   apiErrorSchema,
   boardResponseSchema,
   boardsResponseSchema,
+  createInvitationRequestSchema,
+  invitationAcceptResponseSchema,
+  invitationCreateResponseSchema,
   itemsResponseSchema,
   loginRequestSchema,
   promoteResponseSchema,
   registerRequestSchema,
+  renameBoardRequestSchema,
   taskResponseSchema,
   tasksResponseSchema,
   userResponseSchema,
   type BoardDto,
   type CreateBoardRequest,
+  type CreateInvitationRequest,
   type ItemDto,
   type LoginRequest,
   type MoveTaskRequest,
   type PromoteRequest,
   type RegisterRequest,
+  type RenameBoardRequest,
   type SyncItemInput,
   type TaskDto,
   type UserDto,
@@ -124,6 +130,41 @@ export async function getMe(): Promise<UserDto> {
 
 export async function listBoards(): Promise<BoardDto[]> {
   return (await request('/boards', boardsResponseSchema)).data;
+}
+
+export async function renameBoard(boardId: string, name: string): Promise<BoardDto> {
+  const body: RenameBoardRequest = renameBoardRequestSchema.parse({ name });
+  return (
+    await request(`/boards/${boardId}`, boardResponseSchema, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function createInvitation(
+  boardId: string,
+  email?: string,
+): Promise<{ token: string; path: string; expiresAt: string }> {
+  const body: CreateInvitationRequest = createInvitationRequestSchema.parse(email ? { email } : {});
+  return (
+    await request(`/boards/${boardId}/invitations`, invitationCreateResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function acceptInvitation(token: string): Promise<BoardDto> {
+  return (
+    await request(
+      `/invitations/${encodeURIComponent(token)}/accept`,
+      invitationAcceptResponseSchema,
+      {
+        method: 'POST',
+      },
+    )
+  ).data;
 }
 
 export async function createBoard(input: CreateBoardRequest): Promise<BoardDto> {

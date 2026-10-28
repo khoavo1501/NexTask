@@ -220,3 +220,43 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Slice dọc Phase 1 chạy được và đạt kiểm chứng tự động.
 - Còn một việc xác nhận thủ công: kéo task bằng chuột thật trong trình duyệt.
 - Chờ người dùng duyệt để chuyển sang Giai đoạn 2.
+
+---
+
+## 2026-10-28 - Phiên 4: Đề xuất và spec Phase 2A
+
+### Bối cảnh
+
+- Người dùng yêu cầu đề xuất nội dung Phase 2 trước khi quyết định.
+- Đã kiểm tra dữ liệu ứng dụng: 1 board, 2 note, 2 task, chưa có `users` hoặc `members`.
+- Chưa thay đổi code.
+
+### Quyết định của người dùng
+
+1. Chia Phase 2 thành 2A và 2B.
+2. Giữ dữ liệu Phase 1 bằng seed owner từ `.env`.
+3. Một JWT cookie 7 ngày, chưa có refresh token.
+4. Invitation chỉ tạo link; không gửi email.
+
+### File tài liệu
+
+- `docs/phases/02-proposal.md`: đề xuất, so sánh một phase và 2A/2B, các quyết định.
+- `docs/phases/02a-auth-membership.md`: spec chi tiết Auth, membership, invitation, quyền, migration và seed owner.
+- `docs/architecture.md`: cập nhật lộ trình thành 2A/2B.
+- `docs/session-log.md`: mục này.
+
+### Nội dung Phase 2A đã chốt trong spec
+
+- `users`, argon2id, JWT HttpOnly cookie, login/register/logout/me.
+- `members[]`, owner member, board list theo membership.
+- Owner đổi tên board, tạo invitation link; Member accept.
+- Member bị chặn 403 ở thao tác Owner-only; non-member 404.
+- Migration runner có version; seed owner id demo; backfill members; chuyển index sang migration.
+- Chưa làm `$jsonSchema` và optimistic concurrency; hai phần này thuộc 2B.
+- Test auth, invitation, role, migration và preservation dữ liệu Phase 1.
+
+### Trạng thái
+
+- Spec 2A đang chờ người dùng duyệt.
+- Chưa tạo implementation plan và chưa viết code.
+- Sau khi spec được duyệt mới chuyển sang writing-plans và thực thi.

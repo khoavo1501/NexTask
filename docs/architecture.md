@@ -829,7 +829,8 @@ Seed tạo một board Retro có frame Start/Stop/Continue, nhiều note nhiều
 | --- | --- | --- |
 | 0 | Docker Compose, replica set, monorepo, health | `docker compose up` chạy Mongo + API + web; health xác nhận `rs0` |
 | 1 | Slice dọc: tạo board, note, promote, Kanban, reload badge | Promote bằng transaction; unique index; task hiện trên Kanban; không cần realtime |
-| 2 | Auth, thành viên/vai trò, `$jsonSchema`, version | Member bị chặn thao tác Owner; validate DB; xung đột version |
+| 2A | Auth, membership, invitation, quyền, seed owner | Board cũ giữ nguyên; Member bị chặn thao tác Owner |
+| 2B | `$jsonSchema`, optimistic concurrency | Validate DB; ghi đồng thời trả xung đột version |
 | 3 | Kanban đầy đủ, fractional index, filter, index + explain | Kéo thả không ghi hàng loạt; explain được ghi lại |
 | 4 | Change Streams, resume token, presence | Badge tự đổi khi task move; restart không mất sự kiện trong oplog |
 | 5 | Demote, batch, undo, activity TTL, lỗi transaction | Demote giữ lịch sử; batch rollback; fault injection pass |
@@ -838,7 +839,7 @@ Seed tạo một board Retro có frame Start/Stop/Continue, nhiều note nhiều
 
 Mỗi giai đoạn có một file trong `docs/phases/` với mục tiêu, kiến thức MongoDB, danh sách file, cách chạy, câu hỏi kiểm tra và rủi ro. Chỉ chuyển giai đoạn sau khi người dùng duyệt cổng hiện tại.
 
-Trạng thái ngày 2026-10-28: Giai đoạn 0 và Giai đoạn 1 đã hoàn thành. Phase 1 dùng demo owner, chỉ hỗ trợ shape note, chưa có realtime; xem biên bản trong `docs/phases/01-vertical-slice.md`.
+Trạng thái ngày 2026-10-28: Giai đoạn 0 và Giai đoạn 1 đã hoàn thành. Phase 1 dùng demo owner, chỉ hỗ trợ shape note, chưa có realtime; xem biên bản trong `docs/phases/01-vertical-slice.md`. Phase 2A đang ở trạng thái spec chờ duyệt; xem `docs/phases/02a-auth-membership.md`.
 
 ## 17. Rủi ro và giả định
 

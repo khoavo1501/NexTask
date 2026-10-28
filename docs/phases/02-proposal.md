@@ -1,10 +1,11 @@
 # Đề xuất nội dung Giai đoạn 2
 
-- Trạng thái: Chờ quyết định
+- Trạng thái: Đã chốt ba quyết định; spec 2A đã được tách
 - Ngày lập: 2026-10-28
 - Tiền đề: Giai đoạn 1 đã hoàn thành
 - Kiến trúc: [../architecture.md](../architecture.md)
 - Biên bản Giai đoạn 1: [01-vertical-slice.md](./01-vertical-slice.md)
+- Spec Phase 2A: [02a-auth-membership.md](./02a-auth-membership.md)
 
 ## 1. Hiện trạng cần tính đến
 
@@ -48,10 +49,11 @@ Phạm vi:
 - Middleware xác thực và board access.
 - `members[]` nhúng trong board; backfill owner hiện tại.
 - Invitation bằng link; accept invitation.
-- Owner-only: đổi tên/cài đặt board, tạo invitation.
+- Owner-only: đổi tên board, tạo invitation.
 - Member được đọc board, sửa note, promote, move task.
 - UI đăng ký/đăng nhập/logout, danh sách board theo membership, invitation.
-- Migration runner phiên bản tối thiểu, migration seed owner và backfill board cũ.
+- Migration runner phiên bản tối thiểu, seed owner, backfill board cũ.
+- Chuyển toàn bộ index hiện có và index mới sang migration; bỏ `ensureIndexes()` khỏi runtime.
 - Test auth, membership, role, preservation dữ liệu.
 
 Cổng 2A:
@@ -69,7 +71,7 @@ Phạm vi:
 
 - Mở rộng migration runner của 2A.
 - `$jsonSchema` cho `users`, `boards`, `items`, `tasks`, `invitations`.
-- Chuyển việc tạo index từ `ensureIndexes()` sang migration; API kiểm tra schema đã migrate.
+- Hoàn thiện kiểm tra schema version nếu còn phần chưa làm ở 2A.
 - Version enforcement cho board update, task move, promote và item sync.
 - Client gửi expected version; xử lý `409 VERSION_CONFLICT`.
 - Test direct DB insert sai, concurrent writes, stale version.
@@ -161,7 +163,7 @@ members: [{ userId, role: owner|member, joinedAt }]
 | Xem board/items/tasks | Có | Có |
 | Tạo/sửa note | Có | Có |
 | Promote, move task | Có | Có |
-| Đổi tên/cài đặt board | Có | Không |
+| Đổi tên board | Có | Không |
 | Tạo invitation | Có | Không |
 | Xem member | Có | Có |
 
@@ -372,15 +374,11 @@ Khuyến nghị: Cách A.
 - Seed owner bằng env là tiện cho local nhưng phải tránh dùng mật khẩu mặc định ngoài local.
 - tldraw license vẫn là giới hạn UI hiện có.
 
-## 13. Quyết định cần chốt
+## 13. Quyết định đã chốt
 
-1. Chia Phase 2 thành 2A và 2B, hay làm một Phase 2 duy nhất?
-   - Khuyến nghị: chia 2A/2B.
-2. Giữ dữ liệu Phase 1 bằng seed owner từ env, transfer sau khi đăng ký, hay bỏ dữ liệu cũ?
-   - Khuyến nghị: seed owner từ env.
-3. Session dùng một JWT cookie 7 ngày, hay access token + refresh token?
-   - Khuyến nghị: một JWT cookie 7 ngày cho v1.
+1. Chia Phase 2 thành 2A và 2B.
+2. Giữ dữ liệu Phase 1 bằng seed owner từ env.
+3. Session dùng một JWT cookie 7 ngày; chưa có refresh token.
+4. Invitation chỉ tạo link để Owner copy; không gửi email thật trong v1.
 
-Giả định đã chốt trong proposal: invitation chỉ tạo link để Owner copy; không gửi email thật trong v1. Email delivery ngoài phạm vi.
-
-Sau khi chốt ba điểm trên, bước tiếp theo là viết spec Phase 2 và implementation plan, chưa viết code.
+Spec chi tiết của 2A nằm trong [02a-auth-membership.md](./02a-auth-membership.md). Sau khi spec được duyệt, bước tiếp theo là implementation plan cho 2A; chưa viết code.

@@ -1,12 +1,15 @@
 import {
   createBoardRequestSchema,
+  createInvitationRequestSchema,
   renameBoardRequestSchema,
   type BoardDto,
   type BoardMemberDetailDto,
+  type InvitationCreateResponse,
 } from '@nextask/contracts';
 import { Router } from 'express';
 import { AppError } from '../../lib/errors.js';
 import { serializeBoard } from '../../lib/serialize.js';
+import { createInvitation } from '../invitations/invitation.service.js';
 import { createItemsRouter } from '../items/item.router.js';
 import { createTasksRouter } from '../tasks/task.router.js';
 import { loadBoardAccess, requireOwner } from './board-access.js';
@@ -80,6 +83,21 @@ export function createBoardsRouter(): Router {
       data: members,
       meta: { requestId: request.requestId },
     });
+  });
+
+  router.post('/:boardId/invitations', requireOwner, async (request, response) => {
+    if (!request.board || !request.user) {
+      throw new AppError(401, 'UNAUTHENTICATED', 'Cần đăng nhập');
+    }
+
+    const input = createInvitationRequestSchema.parse(request.body);
+    const invitation = await createInvitation(request.board, request.user, input);
+    const body: InvitationCreateResponse = {
+      data: invitation,
+      meta: { requestId: request.requestId },
+    };
+
+    response.status(201).json(body);
   });
 
   router.use('/:boardId/items', createItemsRouter());

@@ -12,6 +12,7 @@ import { createAuthenticate } from './modules/auth/auth.middleware.js';
 import { createAuthRouter } from './modules/auth/auth.router.js';
 import { createBoardsRouter } from './modules/boards/board.router.js';
 import { createHealthRouter } from './modules/health/health.router.js';
+import { createInvitationsRouter } from './modules/invitations/invitation.router.js';
 
 export interface AppDependencies {
   connection: Connection;
@@ -58,6 +59,7 @@ export function createApp(deps: AppDependencies): Express {
     }),
   );
   app.use('/api/v1/boards', authenticate, createBoardsRouter());
+  app.use('/api/v1/invitations', authenticate, createInvitationsRouter());
 
   app.use(notFoundHandler);
   app.use(createErrorHandler(deps.logger));

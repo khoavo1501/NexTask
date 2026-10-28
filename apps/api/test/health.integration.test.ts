@@ -43,6 +43,7 @@ describe('health với MongoDB thật', () => {
       version: '0.1.0-test',
       corsOrigin: 'http://localhost:3000',
       logger,
+      demoOwnerId: '000000000000000000000001',
     });
 
     const response = await request(app).get('/api/v1/health');

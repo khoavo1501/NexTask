@@ -42,6 +42,7 @@ services:
       CORS_ORIGIN: http://localhost:3000
       LOG_LEVEL: info
       SERVICE_VERSION: 0.1.0
+      DEMO_OWNER_ID: '000000000000000000000001'
     ports:
       - '127.0.0.1:4000:4000'
     depends_on:

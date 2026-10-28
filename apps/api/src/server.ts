@@ -3,6 +3,7 @@ import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { createApp } from './app.js';
 import { loadEnv } from './config/env.js';
+import { ensureIndexes } from './db/indexes.js';
 import { assertReplicaSet, connectMongo } from './db/mongoose.js';
 import { createLogger } from './lib/logger.js';
 
@@ -21,12 +22,15 @@ async function main(): Promise<void> {
     throw new Error('MongoDB replica set has no primary');
   }
 
+  await ensureIndexes();
+
   const app = createApp({
     connection,
     expectedReplicaSet: env.MONGODB_REPLICA_SET,
     version: env.SERVICE_VERSION,
     corsOrigin: env.CORS_ORIGIN,
     logger,
+    demoOwnerId: env.DEMO_OWNER_ID,
   });
   const server = createServer(app);
 

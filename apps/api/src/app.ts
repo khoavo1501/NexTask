@@ -14,6 +14,7 @@ export interface AppDependencies {
   version: string;
   corsOrigin: string;
   logger: Logger;
+  demoOwnerId: string;
 }
 
 export function createApp(deps: AppDependencies): Express {

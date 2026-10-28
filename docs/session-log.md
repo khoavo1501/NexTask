@@ -362,19 +362,21 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 ### Merge release
 
 - Merge `feat/phase-2a-auth-membership` vào `release/v0.2` bằng `--no-ff`: `c15603e`.
-- Chạy lại quality gate trên release:
+- Chạy quality gate trên release lần đầu: typecheck/lint/format pass; full suite ba lần 46 test, 7.84/7.83/8.02 s.
+- Xóa feature branch bằng `git branch -d`; branch đã merge.
+- Sau merge, rà soát UI phát hiện label stale `Demo owner`; sửa trên `fix/phase-2a-release-record` (`375cc07`), docs `a098a99`, merge follow-up `9aa67ec`; xóa fix branch.
+- Chạy quality gate cuối trên release sau fix:
   - Typecheck/lint/format pass.
   - Full suite ba lần, mỗi lần 10 file, 46 test pass:
-    - Lần 1: 7.84 s.
-    - Lần 2: 7.83 s.
-    - Lần 3: 8.02 s.
-- Xóa feature branch bằng `git branch -d`; branch đã merge.
+    - Lần 1: 7.95 s.
+    - Lần 2: 7.86 s.
+    - Lần 3: 8.01 s.
 - `main` vẫn ở `6d3d11b`, chưa nhận 2A.
 - Docker vẫn healthy; migration đã áp dụng trên app DB.
 
 ### Trạng thái cuối
 
 - 2A hoàn thành và đã merge `release/v0.2`.
-- Không còn feature 2A; release đang chờ 2B.
+- Không còn feature/fix 2A; release đang chờ 2B.
 - Chưa có `$jsonSchema`, expectedVersion, realtime hoặc demote.
 - Chưa merge `main`; v0.2 chỉ lên main sau khi 2B hoàn tất và được duyệt.

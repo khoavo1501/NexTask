@@ -6,7 +6,7 @@
 - Đề xuất gốc: [02-proposal.md](./02-proposal.md)
 - Implementation plan: [2026-10-28-phase-2a-auth-membership.md](../superpowers/plans/2026-10-28-phase-2a-auth-membership.md)
 - Kiến trúc: [../architecture.md](../architecture.md)
-- Nhánh: `feat/phase-2a-auth-membership`; merge commit `c15603e` vào `release/v0.2`; feature đã xóa
+- Nhánh: `feat/phase-2a-auth-membership`; merge `c15603e`; follow-up fix merge `9aa67ec`; feature/fix đã xóa
 
 ## 1. Mục tiêu
 
@@ -575,7 +575,10 @@ Các commit trên feature:
 - `766e6e0` invitation link và accept.
 - `500f8dc` web auth và board list bảo vệ.
 - `61879bf` invite/accept/rename UI.
-- Commit tài liệu cuối và merge release được tạo sau biên bản này; xem `git log`.
+- `69114a8` docs verification.
+- `c15603e` merge 2A vào `release/v0.2`.
+- `375cc07` fix label stale, `a098a99` docs follow-up, `9aa67ec` merge follow-up.
+- Xem `git log` để lấy commit tài liệu cuối trên release.
 
 `main` và `release/v0.2` vẫn ở `6d3d11b` trong lúc triển khai feature.
 

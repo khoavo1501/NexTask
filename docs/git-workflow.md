@@ -4,9 +4,10 @@
 
 - Repository cục bộ, chưa có remote.
 - Nhánh ổn định: `main` tại `6d3d11b`.
-- Nhánh phiên bản đang mở: `release/v0.2` tại merge `c15603e`.
+- Nhánh phiên bản đang mở: `release/v0.2` tại `9aa67ec`.
 - Phase 0 và Phase 1 đã nằm trên `main`.
-- Phase 2A đã merge vào `release/v0.2` bằng merge commit; feature `feat/phase-2a-auth-membership` đã xóa sau kiểm chứng.
+- Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`.
+- Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
 - Chưa có feature đang mở. Phase 2B sẽ tạo nhánh mới từ `release/v0.2`.
 - Từ Phase 2A trở đi, không commit trực tiếp vào `main`; mọi thay đổi đi qua nhánh feature và nhánh phiên bản.
 - Không có thao tác push, tag hoặc tạo PR ngoài quy trình dưới đây.
@@ -185,8 +186,8 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 
 ## 8. Phase 2A
 
-- Feature: `feat/phase-2a-auth-membership`.
-- Release: `release/v0.2`.
+- Feature: `feat/phase-2a-auth-membership`; đã merge và xóa.
+- Release: `release/v0.2`; 2A merge `c15603e`, follow-up `9aa67ec`.
 - Plan: `docs/superpowers/plans/2026-10-28-phase-2a-auth-membership.md`.
-- Sau khi 2A xong, merge feature vào `release/v0.2`.
+- 2A đã hoàn thành, kiểm chứng và nằm trên release.
 - Không merge `release/v0.2` vào `main` cho tới khi 2B hoàn tất, trừ khi người dùng yêu cầu phát hành sớm.

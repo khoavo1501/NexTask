@@ -2,7 +2,9 @@
 
 import type { BoardDto, ItemDto, TaskDto } from '@nextask/contracts';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
+import { AuthHeader } from '../../components/auth-header';
 import { ApiClientError, getBoard, getItems, getTasks, moveTask, promoteItem } from '../../lib/api';
 import { PromoteDialog } from '../whiteboard/promote-dialog';
 import { Whiteboard } from '../whiteboard/whiteboard';
@@ -19,6 +21,7 @@ interface WorkspaceData {
 }
 
 export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
+  const router = useRouter();
   const [data, setData] = useState<WorkspaceData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,13 +39,18 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       ]);
       setData({ board, items, tasks });
     } catch (caught) {
+      if (caught instanceof ApiClientError && caught.status === 401) {
+        const nextPath = `${window.location.pathname}${window.location.search}`;
+        router.replace(`/login?next=${encodeURIComponent(nextPath)}`);
+        return;
+      }
       setError(
         caught instanceof ApiClientError ? caught.message : 'Không tải được board, thử lại sau.',
       );
     } finally {
       setLoading(false);
     }
-  }, [boardId]);
+  }, [boardId, router]);
 
   useEffect(() => {
     void loadWorkspace();
@@ -147,9 +155,12 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
             </p>
           </div>
         </div>
-        <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">
-          Phase 1 · chưa realtime
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-medium text-emerald-800">
+            Phase 1 · chưa realtime
+          </span>
+          <AuthHeader compact />
+        </div>
       </header>
 
       {notice ? (

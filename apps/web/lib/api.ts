@@ -3,16 +3,22 @@ import {
   boardResponseSchema,
   boardsResponseSchema,
   itemsResponseSchema,
+  loginRequestSchema,
   promoteResponseSchema,
+  registerRequestSchema,
   taskResponseSchema,
   tasksResponseSchema,
+  userResponseSchema,
   type BoardDto,
   type CreateBoardRequest,
   type ItemDto,
+  type LoginRequest,
   type MoveTaskRequest,
   type PromoteRequest,
+  type RegisterRequest,
   type SyncItemInput,
   type TaskDto,
+  type UserDto,
 } from '@nextask/contracts';
 import type { z } from 'zod';
 
@@ -42,6 +48,7 @@ async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit
   const response = await fetch(`${browserApiBase}${path}`, {
     ...init,
     headers,
+    credentials: 'include',
     cache: 'no-store',
   });
   const json: unknown = await response.json().catch(() => null);
@@ -64,6 +71,55 @@ async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit
     throw new ApiClientError(500, 'INVALID_RESPONSE', 'Phản hồi API không đúng hợp đồng');
   }
   return parsed.data;
+}
+
+async function parseApiError(response: Response): Promise<never> {
+  const json: unknown = await response.json().catch(() => null);
+  const parsed = apiErrorSchema.safeParse(json);
+  if (parsed.success) {
+    throw new ApiClientError(
+      response.status,
+      parsed.data.error.code,
+      parsed.data.error.message,
+      parsed.data.error.details,
+    );
+  }
+  throw new ApiClientError(response.status, 'UNKNOWN_ERROR', 'API trả lỗi không xác định');
+}
+
+export async function register(input: RegisterRequest): Promise<UserDto> {
+  const body = registerRequestSchema.parse(input);
+  return (
+    await request('/auth/register', userResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function login(input: LoginRequest): Promise<UserDto> {
+  const body = loginRequestSchema.parse(input);
+  return (
+    await request('/auth/login', userResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function logout(): Promise<void> {
+  const response = await fetch(`${browserApiBase}/auth/logout`, {
+    method: 'POST',
+    credentials: 'include',
+    cache: 'no-store',
+  });
+  if (!response.ok) {
+    await parseApiError(response);
+  }
+}
+
+export async function getMe(): Promise<UserDto> {
+  return (await request('/auth/me', userResponseSchema)).data;
 }
 
 export async function listBoards(): Promise<BoardDto[]> {

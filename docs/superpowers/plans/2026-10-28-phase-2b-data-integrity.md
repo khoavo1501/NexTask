@@ -12,8 +12,8 @@
 
 **Branch:** `feat/phase-2b-data-integrity` từ `release/v0.2` tại `611e893`. Không commit trực tiếp vào `main`; không merge `main` trong phase này.
 
-**Trạng thái thực thi:** Hoàn thành ngày 2026-10-28; đã merge vào `release/v0.2`. Commit
-chính trên feature:
+**Trạng thái thực thi:** Hoàn thành ngày 2026-10-28; đã merge vào `release/v0.2` bằng
+`bfc1da2`; feature branch đã xóa. Commit chính trên feature:
 
 - `83ed3b2` `docs: plan phase 2b data integrity`
 - `46728d4` `feat: add version conflict contract`
@@ -23,6 +23,10 @@ chính trên feature:
 - `e9ef947` `feat: enforce expected item version on promote`
 - `60c6f68` `feat: make item sync versioned and transactional`
 - `d296e5f` `feat: send versions and handle conflicts in web`
+- `b5bcf28` `fix: format and lint phase 2b code`
+- `f69b746` `test: cover item sync create race`
+- `0054b46` `docs: record phase 2b verification`
+- `bfc1da2` `merge: phase 2b data integrity` vào `release/v0.2`
 
 **Điều chỉnh thực tế:**
 

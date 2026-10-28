@@ -455,3 +455,15 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 
 - Merge feature vào `release/v0.2` bằng `--no-ff`, chạy lại gate trên release, xóa feature.
 - Không merge `release/v0.2` vào `main`; chờ người dùng duyệt phát hành v0.2.
+
+### Merge release
+
+- Merge `feat/phase-2b-data-integrity` vào `release/v0.2` bằng `--no-ff`: `bfc1da2`.
+- Quality gate trên release: typecheck/lint/format pass; full suite 13 file, 67 test, ba
+  lần 8.87/8.64/8.65 s.
+- Xóa feature branch bằng `git branch -d`; branch đã merge.
+- `main` vẫn ở `6d3d11b`, chưa nhận 2A/2B.
+- Backups `nextask-before-2a-2026-10-28.gz` và `nextask-before-2b-2026-10-28.gz` vẫn giữ;
+  database rehearsal đã drop.
+- Trạng thái cuối: 2B hoàn thành trên `release/v0.2`; chờ người dùng duyệt phát hành v0.2
+  trước khi merge vào `main`.

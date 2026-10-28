@@ -1,6 +1,6 @@
 # Giai đoạn 2B - $jsonSchema và optimistic concurrency
 
-- Trạng thái: Hoàn thành ngày 2026-10-28; đã merge vào `release/v0.2`
+- Trạng thái: Hoàn thành ngày 2026-10-28; đã merge vào `release/v0.2` bằng `bfc1da2`
 - Ngày lập: 2026-10-28
 - Tiền đề: Giai đoạn 2A hoàn thành, đang nằm trên `release/v0.2`
 - Đề xuất gốc: [02-proposal.md](./02-proposal.md)
@@ -455,4 +455,6 @@ nới validator để che dữ liệu sai.
 - Test DB `nextask_phase2_test` được drop một lần trước khi áp 002 để migration chạy lại
   từ đầu với validator mới; không đụng database ứng dụng.
 - Backup 2A và 2B đều còn; database rehearsal đã drop sau kiểm tra.
-- `release/v0.2` chứa 2A + 2B; `main` chưa nhận v0.2.
+- `release/v0.2` chứa 2A + 2B; merge 2B `bfc1da2`; feature đã xóa; `main` chưa nhận v0.2.
+- Quality gate trên release sau merge: typecheck/lint/format pass; full suite 13 file,
+  67 test, ba lần 8.87/8.64/8.65 s.

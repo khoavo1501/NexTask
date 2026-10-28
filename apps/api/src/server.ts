@@ -2,7 +2,7 @@ import { createServer } from 'node:http';
 import { createApp } from './app.js';
 import { loadEnv } from './config/env.js';
 import { loadRootEnvFile } from './config/load-env-file.js';
-import { MIGRATION_001_NAME } from './db/migration-runner.js';
+import { LATEST_MIGRATION_NAME } from './db/migration-runner.js';
 import { assertReplicaSet, connectMongo } from './db/mongoose.js';
 import { assertSchemaVersion } from './db/schema-version.js';
 import { createLogger } from './lib/logger.js';
@@ -19,7 +19,7 @@ async function main(): Promise<void> {
     throw new Error('MongoDB replica set has no primary');
   }
 
-  await assertSchemaVersion(connection, MIGRATION_001_NAME);
+  await assertSchemaVersion(connection, LATEST_MIGRATION_NAME);
 
   const app = createApp({
     connection,

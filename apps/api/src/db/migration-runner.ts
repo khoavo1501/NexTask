@@ -1,5 +1,6 @@
 import type { Connection } from 'mongoose';
 import { phase2aMigration } from './migrations/001-phase-2a.js';
+import { phase2bMigration } from './migrations/002-phase-2b.js';
 
 export interface MigrationEnv {
   SEED_OWNER_EMAIL?: string;
@@ -18,13 +19,15 @@ export interface Migration {
 }
 
 export const MIGRATION_001_NAME = '001-phase-2a';
+export const MIGRATION_002_NAME = '002-phase-2b';
+export const LATEST_MIGRATION_NAME = MIGRATION_002_NAME;
 
 interface SchemaMigrationDocument {
   _id: string;
   appliedAt: Date;
 }
 
-const migrations: Migration[] = [phase2aMigration];
+const migrations: Migration[] = [phase2aMigration, phase2bMigration];
 
 export async function runMigrations(options: MigrationOptions): Promise<string[]> {
   const db = options.connection.db;

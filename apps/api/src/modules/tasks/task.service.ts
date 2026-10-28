@@ -2,6 +2,7 @@ import type { MoveTaskRequest } from '@nextask/contracts';
 import { generateKeyBetween } from 'fractional-indexing';
 import { Types } from 'mongoose';
 import { AppError } from '../../lib/errors.js';
+import { versionConflict } from '../../lib/versioning.js';
 import type { BoardDocument } from '../boards/board.model.js';
 import { TaskModel, type TaskDocument } from './task.model.js';
 
@@ -33,6 +34,9 @@ export async function moveTask(
   if (!task) {
     throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
   }
+  if (task.version !== input.expectedVersion) {
+    throw versionConflict(task.version);
+  }
   if (task.columnId === targetColumn.id) {
     return task;
   }
@@ -48,13 +52,26 @@ export async function moveTask(
   const order = generateKeyBetween(lastTask?.order ?? null, null);
 
   const updated = await TaskModel.findOneAndUpdate(
-    { _id: task._id, boardId: board._id, lifecycle: 'active' },
+    {
+      _id: task._id,
+      boardId: board._id,
+      lifecycle: 'active',
+      version: input.expectedVersion,
+    },
     { $set: { columnId: targetColumn.id, order }, $inc: { version: 1 } },
     { returnDocument: 'after' },
   ).exec();
 
   if (!updated) {
-    throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+    const current = await TaskModel.findOne({
+      _id: task._id,
+      boardId: board._id,
+      lifecycle: 'active',
+    }).exec();
+    if (!current) {
+      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+    }
+    throw versionConflict(current.version);
   }
   return updated;
 }

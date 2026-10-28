@@ -28,7 +28,7 @@ export function RenameBoardDialog({ board, onClose, onRenamed }: RenameBoardDial
     setPending(true);
     setError(null);
     try {
-      const updated = await renameBoard(board._id, name);
+      const updated = await renameBoard(board._id, name, board.version);
       onRenamed(updated);
       onClose();
     } catch (caught) {

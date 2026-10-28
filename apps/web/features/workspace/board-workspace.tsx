@@ -94,10 +94,10 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   }, []);
 
   const handleMoveTask = useCallback(
-    async (taskId: string, columnId: string) => {
+    async (taskId: string, columnId: string, expectedVersion: number) => {
       setNotice(null);
       try {
-        const moved = await moveTask(boardId, taskId, { columnId });
+        const moved = await moveTask(boardId, taskId, { columnId, expectedVersion });
         setData((current) => {
           if (!current) return current;
           return {

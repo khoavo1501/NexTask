@@ -132,8 +132,12 @@ export async function listBoards(): Promise<BoardDto[]> {
   return (await request('/boards', boardsResponseSchema)).data;
 }
 
-export async function renameBoard(boardId: string, name: string): Promise<BoardDto> {
-  const body: RenameBoardRequest = renameBoardRequestSchema.parse({ name });
+export async function renameBoard(
+  boardId: string,
+  name: string,
+  expectedVersion: number,
+): Promise<BoardDto> {
+  const body: RenameBoardRequest = renameBoardRequestSchema.parse({ name, expectedVersion });
   return (
     await request(`/boards/${boardId}`, boardResponseSchema, {
       method: 'PATCH',

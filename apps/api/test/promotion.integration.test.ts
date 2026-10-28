@@ -153,7 +153,7 @@ describe('promote', () => {
 
     const moved = await owner.agent
       .patch(`/api/v1/boards/${boardId}/tasks/${taskId}`)
-      .send({ columnId: 'done' })
+      .send({ columnId: 'done', expectedVersion: promoted.body.data.task.version })
       .expect(200);
 
     expect(moved.body.data.columnId).toBe('done');

@@ -5,6 +5,7 @@ import type {
 } from '@nextask/contracts';
 import { Types } from 'mongoose';
 import { AppError } from '../../lib/errors.js';
+import { versionConflict } from '../../lib/versioning.js';
 import { UserModel } from '../users/user.model.js';
 import { BoardModel, DEFAULT_COLUMNS, type BoardDocument } from './board.model.js';
 
@@ -65,12 +66,16 @@ export async function renameBoard(
   input: RenameBoardRequest,
 ): Promise<BoardDocument> {
   const updated = await BoardModel.findOneAndUpdate(
-    { _id: board._id },
+    { _id: board._id, version: input.expectedVersion },
     { $set: { name: input.name }, $inc: { version: 1 } },
     { returnDocument: 'after' },
   ).exec();
   if (!updated) {
-    throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
+    const current = await BoardModel.findById(board._id).select({ version: 1 }).exec();
+    if (!current) {
+      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
+    }
+    throw versionConflict(current.version);
   }
   return updated;
 }

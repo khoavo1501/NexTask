@@ -214,3 +214,172 @@ describe('promote OCC', () => {
     expect(response.body.error.code).toBe('ALREADY_PROMOTED');
   });
 });
+
+describe('item sync OCC', () => {
+  it('một item stale làm toàn bộ request không ghi', async () => {
+    const owner = await registerAgent(app, 'owner@example.com', 'Owner');
+    const board = await owner.agent
+      .post('/api/v1/boards')
+      .send({ name: 'Retro' })
+      .expect(201);
+    const boardId = board.body.data._id as string;
+
+    const first = await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({ items: [note('shape:one', 'Một'), note('shape:two', 'Hai')] })
+      .expect(200);
+    const one = first.body.data[0] as { _id: string; version: number };
+    const two = first.body.data[1] as { _id: string; version: number };
+
+    const response = await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({
+        items: [
+          { ...note('shape:one', 'Một đã sửa'), expectedVersion: 0 },
+          { ...note('shape:two', 'Hai đã sửa'), expectedVersion: two.version },
+        ],
+      })
+      .expect(409);
+
+    expect(response.body.error).toMatchObject({
+      code: 'VERSION_CONFLICT',
+      details: { shapeId: 'shape:one', currentVersion: one.version },
+    });
+
+    const saved = await ItemModel.find({ boardId }).sort({ shapeId: 1 }).exec();
+    expect(saved.map((item) => item.content)).toEqual(['Một', 'Hai']);
+    expect(saved.every((item) => item.version === 1)).toBe(true);
+  });
+
+  it('item mới phải gửi expectedVersion 0', async () => {
+    const owner = await registerAgent(app, 'owner@example.com', 'Owner');
+    const board = await owner.agent
+      .post('/api/v1/boards')
+      .send({ name: 'Retro' })
+      .expect(201);
+    const boardId = board.body.data._id as string;
+
+    const response = await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({ items: [{ ...note('shape:new', 'Mới'), expectedVersion: 5 }] })
+      .expect(409);
+
+    expect(response.body.error).toMatchObject({
+      code: 'VERSION_CONFLICT',
+      details: { shapeId: 'shape:new', currentVersion: 0 },
+    });
+  });
+
+  it('xóa đúng version, xóa stale 409, item promoted bị bỏ qua', async () => {
+    const owner = await registerAgent(app, 'owner@example.com', 'Owner');
+    const board = await owner.agent
+      .post('/api/v1/boards')
+      .send({ name: 'Retro' })
+      .expect(201);
+    const boardId = board.body.data._id as string;
+
+    const first = await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({
+        items: [note('shape:one', 'Một'), note('shape:two', 'Hai'), note('shape:three', 'Ba')],
+      })
+      .expect(200);
+    const one = first.body.data[0] as {
+      _id: string;
+      shapeId: string;
+      version: number;
+    };
+    const two = first.body.data[1] as {
+      _id: string;
+      shapeId: string;
+      version: number;
+    };
+    const three = first.body.data[2] as {
+      _id: string;
+      shapeId: string;
+      version: number;
+    };
+
+    const staleDelete = await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({
+        items: [],
+        deleted: [{ shapeId: two.shapeId, expectedVersion: two.version + 1 }],
+      })
+      .expect(409);
+    expect(staleDelete.body.error).toMatchObject({
+      code: 'VERSION_CONFLICT',
+      details: { currentVersion: two.version },
+    });
+
+    const deleted = await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({ items: [], deleted: [{ shapeId: two.shapeId, expectedVersion: two.version }] })
+      .expect(200);
+    expect(deleted.body.data.map((item: { shapeId: string }) => item.shapeId)).toEqual([
+      one.shapeId,
+      three.shapeId,
+    ]);
+
+    await owner.agent
+      .post(`/api/v1/boards/${boardId}/items/${three._id}/promote`)
+      .send({ columnId: 'todo', assignToMe: false, expectedItemVersion: three.version })
+      .expect(201);
+
+    const ignored = await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({
+        items: [],
+        deleted: [{ shapeId: three.shapeId, expectedVersion: three.version + 1 }],
+      })
+      .expect(200);
+    expect(ignored.body.data.map((item: { shapeId: string }) => item.shapeId)).toContain(
+      three.shapeId,
+    );
+  });
+
+  it('hai sync đồng thời trên cùng item chỉ một thành công', async () => {
+    const owner = await registerAgent(app, 'owner@example.com', 'Owner');
+    const board = await owner.agent
+      .post('/api/v1/boards')
+      .send({ name: 'Retro' })
+      .expect(201);
+    const boardId = board.body.data._id as string;
+
+    const first = await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({ items: [note('shape:one', 'Gốc')] })
+      .expect(200);
+    const item = first.body.data[0] as { version: number };
+
+    const [left, right] = await Promise.all([
+      owner.agent
+        .put(`/api/v1/boards/${boardId}/items`)
+        .send({ items: [{ ...note('shape:one', 'Trái'), expectedVersion: item.version }] }),
+      owner.agent
+        .put(`/api/v1/boards/${boardId}/items`)
+        .send({ items: [{ ...note('shape:one', 'Phải'), expectedVersion: item.version }] }),
+    ]);
+
+    expect([left.status, right.status].sort()).toEqual([200, 409]);
+    const saved = await ItemModel.findOne({ boardId, shapeId: 'shape:one' }).exec();
+    expect(saved?.version).toBe(2);
+  });
+
+  it('shapeId lặp giữa items và deleted trả 422', async () => {
+    const owner = await registerAgent(app, 'owner@example.com', 'Owner');
+    const board = await owner.agent
+      .post('/api/v1/boards')
+      .send({ name: 'Retro' })
+      .expect(201);
+    const boardId = board.body.data._id as string;
+
+    await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({
+        items: [note('shape:one', 'Một')],
+        deleted: [{ shapeId: 'shape:one', expectedVersion: 1 }],
+      })
+      .expect(422);
+  });
+});

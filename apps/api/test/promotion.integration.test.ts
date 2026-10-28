@@ -59,6 +59,7 @@ async function setupNote(content = 'Ý tưởng lớn') {
           rotation: 0,
           tldrawIndex: 'a1',
           parentFrameId: null,
+          expectedVersion: 0,
         },
       ],
     })

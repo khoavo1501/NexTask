@@ -122,6 +122,7 @@ describe('membership và role', () => {
             rotation: 0,
             tldrawIndex: 'a0',
             parentFrameId: null,
+            expectedVersion: 0,
           },
         ],
       })

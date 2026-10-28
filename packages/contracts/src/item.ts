@@ -42,11 +42,33 @@ export const syncItemInputSchema = z.object({
   rotation: z.number(),
   tldrawIndex: z.string().min(1).max(100),
   parentFrameId: z.null(),
+  expectedVersion: z.number().int().nonnegative(),
 });
 
-export const syncItemsRequestSchema = z.object({
-  items: z.array(syncItemInputSchema).max(200),
+export const syncDeletedItemInputSchema = z.object({
+  shapeId: z.string().min(1).max(200),
+  expectedVersion: z.number().int().positive(),
 });
+
+export const syncItemsRequestSchema = z
+  .object({
+    items: z.array(syncItemInputSchema).max(200),
+    deleted: z.array(syncDeletedItemInputSchema).max(200).default([]),
+  })
+  .superRefine((value, ctx) => {
+    const seen = new Set<string>();
+    for (const entry of [...value.items, ...value.deleted]) {
+      if (seen.has(entry.shapeId)) {
+        ctx.addIssue({
+          code: 'custom',
+          message: `shapeId bị lặp: ${entry.shapeId}`,
+          path: ['items'],
+        });
+        return;
+      }
+      seen.add(entry.shapeId);
+    }
+  });
 
 export const itemsResponseSchema = z.object({
   data: z.array(itemSchema),
@@ -55,3 +77,5 @@ export const itemsResponseSchema = z.object({
 
 export type ItemDto = z.infer<typeof itemSchema>;
 export type SyncItemInput = z.infer<typeof syncItemInputSchema>;
+export type SyncDeletedItemInput = z.infer<typeof syncDeletedItemInputSchema>;
+export type SyncItemsRequest = z.infer<typeof syncItemsRequestSchema>;

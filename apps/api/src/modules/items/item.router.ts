@@ -26,7 +26,7 @@ export function createItemsRouter(): Router {
     }
 
     const input = syncItemsRequestSchema.parse(request.body);
-    const items = await syncItems(request.board, request.user._id, input.items);
+    const items = await syncItems(request.board, request.user._id, input);
     const data: ItemDto[] = items.map(serializeItem);
 
     response.json({

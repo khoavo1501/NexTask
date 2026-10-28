@@ -1,5 +1,5 @@
 import type { SyncItemsRequest } from '@nextask/contracts';
-import mongoose, { Types } from 'mongoose';
+import mongoose, { type Types } from 'mongoose';
 import { AppError } from '../../lib/errors.js';
 import { versionConflict } from '../../lib/versioning.js';
 import type { BoardDocument } from '../boards/board.model.js';
@@ -29,9 +29,7 @@ function duplicateShapeId(error: unknown): string | null {
 }
 
 export async function listItems(board: BoardDocument): Promise<ItemDocument[]> {
-  return ItemModel.find({ boardId: board._id, type: 'note' })
-    .sort({ createdAt: 1, _id: 1 })
-    .exec();
+  return ItemModel.find({ boardId: board._id, type: 'note' }).sort({ createdAt: 1, _id: 1 }).exec();
 }
 
 async function runSyncTransaction(

@@ -92,9 +92,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           if (!current) return current;
           return {
             ...current,
-            items: current.items.map((item) =>
-              item._id === result.item._id ? result.item : item,
-            ),
+            items: current.items.map((item) => (item._id === result.item._id ? result.item : item)),
             tasks: [...current.tasks.filter((task) => task._id !== result.task._id), result.task],
           };
         });

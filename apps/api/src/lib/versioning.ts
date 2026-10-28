@@ -7,10 +7,5 @@ export function versionConflict(currentVersion: number, shapeId?: string): AppEr
     details.shapeId = shapeId;
   }
 
-  return new AppError(
-    409,
-    VERSION_CONFLICT_CODE,
-    'Dữ liệu đã thay đổi, vui lòng tải lại',
-    details,
-  );
+  return new AppError(409, VERSION_CONFLICT_CODE, 'Dữ liệu đã thay đổi, vui lòng tải lại', details);
 }

@@ -32,14 +32,7 @@ export const COLLECTION_VALIDATORS: Record<string, Document> = {
   users: {
     $jsonSchema: {
       bsonType: 'object',
-      required: [
-        'email',
-        'emailNormalized',
-        'name',
-        'passwordHash',
-        'createdAt',
-        'updatedAt',
-      ],
+      required: ['email', 'emailNormalized', 'name', 'passwordHash', 'createdAt', 'updatedAt'],
       additionalProperties: false,
       properties: {
         _id: objectId,
@@ -206,14 +199,7 @@ export const COLLECTION_VALIDATORS: Record<string, Document> = {
             { bsonType: 'null' },
             {
               bsonType: 'object',
-              required: [
-                'itemId',
-                'frameId',
-                'position',
-                'voteCount',
-                'authorId',
-                'itemCreatedAt',
-              ],
+              required: ['itemId', 'frameId', 'position', 'voteCount', 'authorId', 'itemCreatedAt'],
               additionalProperties: false,
               properties: {
                 itemId: objectId,

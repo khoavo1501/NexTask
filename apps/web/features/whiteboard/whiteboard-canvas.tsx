@@ -1,10 +1,6 @@
 'use client';
 
-import type {
-  ItemDto,
-  SyncDeletedItemInput,
-  SyncItemInput,
-} from '@nextask/contracts';
+import type { ItemDto, SyncDeletedItemInput, SyncItemInput } from '@nextask/contracts';
 import {
   DefaultColorStyle,
   Tldraw,

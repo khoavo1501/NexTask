@@ -31,15 +31,13 @@ describe('collection validators', () => {
 
   it('users thiếu passwordHash bị từ chối', async () => {
     await expect(
-      db()
-        .collection('users')
-        .insertOne({
-          email: 'raw@example.com',
-          emailNormalized: 'raw@example.com',
-          name: 'Raw',
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }),
+      db().collection('users').insertOne({
+        email: 'raw@example.com',
+        emailNormalized: 'raw@example.com',
+        name: 'Raw',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
     ).rejects.toMatchObject({ code: 121 });
   });
 
@@ -88,26 +86,24 @@ describe('collection validators', () => {
 
   it('tasks sai priority bị từ chối', async () => {
     await expect(
-      db()
-        .collection('tasks')
-        .insertOne({
-          boardId: new Types.ObjectId(),
-          columnId: 'todo',
-          order: 'a0',
-          title: 'Raw',
-          description: '',
-          assigneeId: null,
-          labels: [],
-          priority: 'critical',
-          dueDate: null,
-          lifecycle: 'active',
-          sourceItemId: null,
-          origin: null,
-          version: 1,
-          createdBy: new Types.ObjectId(),
-          createdAt: new Date(),
-          updatedAt: new Date(),
-        }),
+      db().collection('tasks').insertOne({
+        boardId: new Types.ObjectId(),
+        columnId: 'todo',
+        order: 'a0',
+        title: 'Raw',
+        description: '',
+        assigneeId: null,
+        labels: [],
+        priority: 'critical',
+        dueDate: null,
+        lifecycle: 'active',
+        sourceItemId: null,
+        origin: null,
+        version: 1,
+        createdBy: new Types.ObjectId(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
     ).rejects.toMatchObject({ code: 121 });
   });
 

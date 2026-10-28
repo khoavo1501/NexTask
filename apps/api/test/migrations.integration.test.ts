@@ -3,7 +3,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ItemModel } from '../src/modules/items/item.model.js';
 import { TaskModel } from '../src/modules/tasks/task.model.js';
 import { UserModel } from '../src/modules/users/user.model.js';
-import { runMigrations, MIGRATION_001_NAME, MIGRATION_002_NAME } from '../src/db/migration-runner.js';
+import {
+  runMigrations,
+  MIGRATION_001_NAME,
+  MIGRATION_002_NAME,
+} from '../src/db/migration-runner.js';
 import { COLLECTION_VALIDATORS } from '../src/db/collection-validators.js';
 import { assertSchemaVersion } from '../src/db/schema-version.js';
 import { connectMongo } from '../src/db/mongoose.js';

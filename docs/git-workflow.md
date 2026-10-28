@@ -4,7 +4,7 @@
 
 - Repository cục bộ, chưa có remote.
 - Nhánh ổn định: `main` tại `6d3d11b`.
-- Nhánh phiên bản đang mở: `release/v0.2` tại `bfc1da2`.
+- Nhánh phiên bản đang mở: `release/v0.2`; merge 2B `bfc1da2`, docs sau merge `5c3d9ce` và `9bd6351`.
 - Phase 0 và Phase 1 đã nằm trên `main`.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.

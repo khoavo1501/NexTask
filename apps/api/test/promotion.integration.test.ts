@@ -22,6 +22,9 @@ beforeAll(async () => {
     corsOrigin: 'http://localhost:3000',
     logger,
     demoOwnerId: ownerId,
+    jwtSecret: 'local-test-jwt-secret-at-least-32-bytes-long',
+    cookieSecure: false,
+    authRateLimitMax: 100,
   });
 });
 

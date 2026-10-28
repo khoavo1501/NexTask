@@ -12,3 +12,12 @@ export function sessionCookieOptions(secure: boolean): CookieOptions {
     maxAge: SESSION_MAX_AGE_MS,
   };
 }
+
+export function sessionCookieClearOptions(secure: boolean): CookieOptions {
+  return {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure,
+    path: '/',
+  };
+}

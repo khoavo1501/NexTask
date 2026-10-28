@@ -28,6 +28,9 @@ async function main(): Promise<void> {
     corsOrigin: env.CORS_ORIGIN,
     logger,
     demoOwnerId: env.DEMO_OWNER_ID,
+    jwtSecret: env.JWT_SECRET,
+    cookieSecure: env.COOKIE_SECURE,
+    authRateLimitMax: 5,
   });
   const server = createServer(app);
 

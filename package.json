@@ -1,0 +1,38 @@
+{
+  "name": "nextask",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=26.0.0"
+  },
+  "scripts": {
+    "build:contracts": "npm run build --workspace @nextask/contracts",
+    "build:api": "npm run build --workspace @nextask/api",
+    "build:web": "npm run build --workspace @nextask/web",
+    "build": "npm run build:contracts && npm run build:api && npm run build:web",
+    "dev": "npm run build:contracts && concurrently -n api,web -c blue,magenta \"npm:dev:api\" \"npm:dev:web\"",
+    "dev:api": "npm run dev --workspace @nextask/api",
+    "dev:web": "npm run dev --workspace @nextask/web",
+    "typecheck": "npm run build:contracts && npm run typecheck --workspaces --if-present",
+    "lint": "eslint .",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,yml,yaml,css}\"",
+    "test": "npm run build:contracts && npm run test --workspace @nextask/api",
+    "verify": "npm run typecheck && npm run lint && npm run test"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "concurrently": "10.0.6",
+    "eslint": "10.13.0",
+    "prettier": "3.9.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.1"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

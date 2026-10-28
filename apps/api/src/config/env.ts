@@ -16,6 +16,14 @@ const envSchema = z.object({
   CORS_ORIGIN: z.string().url().default('http://localhost:3000'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
   SERVICE_VERSION: z.string().min(1).default('0.1.0'),
+  JWT_SECRET: z.string().min(32, 'JWT_SECRET phải dài ít nhất 32 ký tự'),
+  COOKIE_SECURE: z
+    .enum(['true', 'false'])
+    .default('false')
+    .transform((value) => value === 'true'),
+  SEED_OWNER_EMAIL: z.string().email().optional(),
+  SEED_OWNER_PASSWORD: z.string().min(12).optional(),
+  SEED_OWNER_NAME: z.string().min(1).max(80).default('Demo Owner'),
   DEMO_OWNER_ID: z
     .string()
     .regex(/^[a-f0-9]{24}$/i, 'DEMO_OWNER_ID phải là ObjectId 24 ký tự')

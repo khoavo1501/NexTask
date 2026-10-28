@@ -10,6 +10,17 @@
 
 **Spec:** `docs/architecture.md` và `docs/phases/01-vertical-slice.md`
 
+**Trạng thái thực thi:** Hoàn thành ngày 2026-10-28, trừ xác nhận thủ công thao tác kéo chuột vật lý. Biên bản nằm trong `docs/session-log.md` và mục 11 của `docs/phases/01-vertical-slice.md`.
+
+**Điều chỉnh so với kế hoạch:**
+
+- Kanban đặt full-width dưới whiteboard để cả 5 cột hiện cùng lúc.
+- Browser automation không phát native HTML5 drag; pipeline được test bằng `DragEvent` + `DataTransfer`.
+- tldraw production hiển thị license watermark; cần license key trước khi phát hành.
+- Demo owner chưa có user document; auth/member để Giai đoạn 2.
+- Phase 1 chỉ hỗ trợ shape `note`; frame/text/arrow để sau.
+- Không có `$jsonSchema`, optimistic concurrency client-side, activity hoặc realtime.
+
 ## Global Constraints
 
 - Giữ nguyên stack và cấu trúc monorepo hiện có.

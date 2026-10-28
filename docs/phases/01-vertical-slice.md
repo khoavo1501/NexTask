@@ -1,9 +1,10 @@
 # Giai đoạn 1 - Slice dọc Promote
 
-- Trạng thái: Đang chuẩn bị triển khai
+- Trạng thái: Hoàn thành ngày 2026-10-28
 - Ngày lập: 2026-10-28
 - Kiến trúc: [../architecture.md](../architecture.md)
 - Kế hoạch thực thi: [../superpowers/plans/2026-10-28-phase-1-vertical-slice.md](../superpowers/plans/2026-10-28-phase-1-vertical-slice.md)
+- Biên bản kiểm chứng: [Kết quả triển khai](#11-kết-quả-triển-khai)
 
 ## 1. Mục tiêu
 
@@ -296,4 +297,70 @@ Mã lỗi mới:
 - Không có auth; mọi request dùng demo owner.
 - Note đã promote bị xóa trên canvas sẽ xuất hiện lại sau reload để bảo vệ liên kết.
 - Không có optimistic concurrency; hai tab sửa cùng note có thể ghi đè.
-- tldraw SDK có điều kiện license riêng; cần kiểm tra trước khi dùng thương mại.
+- tldraw SDK có điều kiện license riêng; build production hiển thị license watermark và cần license key trước khi dùng thương mại.
+
+## 11. Kết quả triển khai
+
+### Git
+
+- Commit kế hoạch: `18b7c03`.
+- Contracts/model/index: `b27e92c`.
+- Board/item API: `ef9e298`.
+- Promote transaction và task move: `8ab8261`.
+- Board list/create UI: `f53799a`.
+- tldraw workspace, promote, Kanban: `9f0d008`.
+- Layout/drag fix: `7058d5b`.
+- Fit cột và bỏ selection khi reload: `a7f804f`.
+- Commit tài liệu cuối được tạo sau biên bản này; xem `git log --oneline`.
+- Repository vẫn không có remote; không push.
+
+### Kiểm chứng tự động
+
+- `npm run typecheck`: pass.
+- `npm run lint`: pass.
+- `npm run format:check`: pass.
+- Full suite ba lần liên tiếp: mỗi lần `5` file, `18` test pass.
+  - Lần 1: `2.19 s`.
+  - Lần 2: `2.27 s`.
+  - Lần 3: `2.22 s`.
+- Integration test dùng MongoDB replica set thật, database `nextask_phase1_test`, không mock DB.
+- Test promote đồng thời: một request `201`, một request `409`, đúng một task.
+- Test rollback: tiêm lỗi sau insert task; task count `0`, item vẫn chưa promote.
+- Index thật trong database ứng dụng:
+
+```json
+{"key":{"sourceItemId":1},"name":"uniq_active_task_per_item","unique":true,"partialFilterExpression":{"sourceItemId":{"$type":"objectId"},"lifecycle":"active"}}
+```
+
+### Kiểm chứng Docker và browser
+
+- `docker compose ps`: `mongo`, `api`, `web` đều healthy.
+- API health: `status: "ok"`, `replicaSet: "rs0"`, `primary: true`, `latencyMs: 1`.
+- Tạo board qua UI thành công: board `Retro E2E Phase 1`.
+- Tạo note qua tldraw, nhập nội dung `Giữ daily ngắn và tập trung`; nội dung được lưu vào item.
+- Promote thành công: task xuất hiện ở cột `To Do`, assignee `Demo User`.
+- Badge trên note hiển thị `Đã thành task · To Do · Demo User`.
+- Task được chuyển sang `Done` bằng chuỗi `DragEvent` + `DataTransfer` trên card; badge đổi thành `Đã thành task · Done · Demo User`.
+- Reload trang: badge vẫn là `Done`, task vẫn nằm trong cột `Done`.
+- Gọi promote lại cùng item: HTTP `409 ALREADY_PROMOTED`; số task vẫn là `1`.
+- Restart API: health trả 200, task và badge vẫn còn sau reload.
+
+### Giới hạn kiểm chứng
+
+- Công cụ browser tự động không phát native HTML5 drag khi dùng thao tác `drag` phần tử; vì vậy drag được kiểm chứng bằng chuỗi sự kiện `dragstart` → `dragover` → `drop` với `DataTransfer`, không phải thao tác chuột vật lý. Người dùng cần xác nhận thêm bằng chuột thật.
+- tldraw production hiển thị license watermark vì chưa có license key. Không ẩn hoặc vô hiệu hóa watermark.
+- E2E tạo dữ liệu thật trong database ứng dụng `nextask`: một board, một note, một task. Dữ liệu được giữ lại để tiếp tục kiểm tra.
+
+### Tiêu chí Phase 1
+
+- [x] Tạo board từ UI, danh sách board hoạt động.
+- [x] Note tldraw được lưu và dựng lại sau reload.
+- [x] Promote tạo task và cập nhật item trong cùng transaction.
+- [x] Unique partial index chống task trùng.
+- [x] Lỗi sau insert task rollback toàn bộ.
+- [x] Task hiện trên Kanban.
+- [x] Chuyển task sang cột Done qua event drag/drop và API.
+- [x] Badge cập nhật sau reload với cột hiện tại.
+- [x] Owner scoping ở server.
+- [x] Test với MongoDB thật; typecheck/lint/format sạch.
+- [ ] Xác nhận thao tác kéo chuột vật lý bởi người dùng (công cụ hiện tại không mô phỏng native HTML5 drag).

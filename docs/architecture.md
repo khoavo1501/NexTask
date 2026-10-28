@@ -757,7 +757,7 @@ Không tính item đã demote là "chưa promote" nếu task demoted còn tồn 
 
 - Logic Promote/Demote và transaction phải test với MongoDB replica set thật, không mock DB cho các test chứng minh tính nguyên tử.
 - Có thể mock clock, ID generator và fault injection ở biên service, không mock transaction/index của Mongo.
-- Test chạy trên database riêng (`nextask_phase0_test` ở Giai đoạn 0), dọn dữ liệu có kiểm soát.
+- Test chạy trên database riêng theo giai đoạn (`nextask_phase0_test`, `nextask_phase1_test`), dọn dữ liệu có kiểm soát.
 - Test transaction chạy tuần tự trong một file để tránh nhiễu; test đọc/ghi độc lập có thể song song sau khi đo.
 - Mỗi test quan trọng phải chứng minh cả trạng thái cuối và lỗi trả về.
 
@@ -838,6 +838,8 @@ Seed tạo một board Retro có frame Start/Stop/Continue, nhiều note nhiều
 
 Mỗi giai đoạn có một file trong `docs/phases/` với mục tiêu, kiến thức MongoDB, danh sách file, cách chạy, câu hỏi kiểm tra và rủi ro. Chỉ chuyển giai đoạn sau khi người dùng duyệt cổng hiện tại.
 
+Trạng thái ngày 2026-10-28: Giai đoạn 0 và Giai đoạn 1 đã hoàn thành. Phase 1 dùng demo owner, chỉ hỗ trợ shape note, chưa có realtime; xem biên bản trong `docs/phases/01-vertical-slice.md`.
+
 ## 17. Rủi ro và giả định
 
 ### Rủi ro
@@ -848,6 +850,7 @@ Mỗi giai đoạn có một file trong `docs/phases/` với mục tiêu, kiến
 - At-least-once event có thể gửi lặp; client bắt buộc dedupe và so version.
 - Không có CRDT nên đồng thời sửa cùng shape có thể mất thay đổi nếu xử lý version sai.
 - tldraw có thể thay đổi cấu trúc shape giữa các phiên bản; lớp ánh xạ item-shape cần khóa phiên bản và test nâng cấp.
+- tldraw SDK yêu cầu license key cho production; build hiện tại hiển thị watermark và không được ẩn thủ công.
 - Transaction batch bị giới hạn 100 item; nhu cầu lớn hơn phải chia đợt và chấp nhận đánh đổi nguyên tử.
 - Không gửi email thật; mời qua email chỉ tạo link có ràng buộc.
 - Rate limit trong bộ nhớ không dùng được khi chạy nhiều instance.

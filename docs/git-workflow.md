@@ -3,9 +3,9 @@
 ## Trạng thái hiện tại
 
 - Repository cục bộ, nhánh `main`, chưa có remote.
-- Giai đoạn 0 đã hoàn thành và được kiểm chứng.
-- Các commit chính: `0058ff7`, `ce50898`, `cbefc35`, `ef1eaa4`, `eecd027`, `d9e87bd`.
-- Commit tài liệu hoàn tất Giai đoạn 0 được tạo sau biên bản này; xem `git log --oneline`.
+- Giai đoạn 0 và Giai đoạn 1 đã hoàn thành.
+- Các commit Phase 1: `18b7c03`, `b27e92c`, `ef9e298`, `8ab8261`, `f53799a`, `9f0d008`, `7058d5b`, `a7f804f`.
+- Commit tài liệu hoàn tất Giai đoạn 1 được tạo sau biên bản này; xem `git log --oneline`.
 - Không có thao tác push, merge, tag hoặc tạo PR.
 
 ## Quy tắc

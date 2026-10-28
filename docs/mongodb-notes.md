@@ -358,3 +358,49 @@ Replica set cấu hình member `mongo:27017`, tên chỉ phân giải trong mạ
 ### Health không chỉ là ping
 
 `ping` thành công không chứng minh transaction hay Change Streams dùng được. Health kiểm tra thêm `hello.setName` và `isWritablePrimary`; API từ chối khởi động nếu replica set không khớp. Đây là hành vi có chủ đích, không phải kiểm tra thừa.
+
+## 14. Quan sát Giai đoạn 1
+
+### Index thật trong database ứng dụng
+
+Lệnh:
+
+```bash
+docker compose exec -T mongo mongosh --quiet --eval 'JSON.stringify(db.getSiblingDB("nextask").tasks.getIndexes())'
+```
+
+Kết quả ngày 2026-10-28, rút gọn:
+
+```json
+{
+  "key": { "sourceItemId": 1 },
+  "name": "uniq_active_task_per_item",
+  "unique": true,
+  "partialFilterExpression": {
+    "sourceItemId": { "$type": "objectId" },
+    "lifecycle": "active"
+  }
+}
+```
+
+Index được tạo bởi `ensureIndexes()` khi API khởi động, không bởi `autoIndex`. Test integration cũng gọi cùng hàm trước khi chạy.
+
+### Transaction Promote
+
+- Test đồng thời hai promote: một request nhận 201, request còn lại nhận 409; task count bằng 1. Điều này chứng minh unique partial index là hàng rào cuối, không chỉ là kiểm tra `promotedTaskId` ở ứng dụng.
+- Test tiêm lỗi sau khi insert task: transaction abort, task count bằng 0, item vẫn `promotedTaskId: null`.
+- Promote tạo task trước, update item sau. Thứ tự này cố ý để test rollback chứng minh cả hai ghi nằm trong một transaction.
+- Task và item trả về trong cùng response; origin lưu snapshot vị trí, tác giả và thời điểm item được tạo.
+
+### Chưa áp dụng
+
+- Chưa có `$jsonSchema`; đây là hạng mục Giai đoạn 2.
+- Chưa có optimistic concurrency chặn ghi; trường `version` đã có và tăng khi sync/promote/move nhưng client chưa gửi expected version.
+- Chưa có `explain()` cho Kanban vì dữ liệu mẫu và báo cáo chưa đủ; kết quả sẽ được ghi khi làm index Phase 3.
+- `position` và `props` tldraw được lưu dạng Mixed. Phase 1 chỉ nhận shape `note`; frame/text/arrow chưa được ghi.
+
+### Test database
+
+- Phase 0 dùng `nextask_phase0_test`.
+- Phase 1 dùng `nextask_phase1_test`.
+- Test integration không mock MongoDB và không đụng database ứng dụng `nextask`.

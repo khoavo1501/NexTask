@@ -143,3 +143,80 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Giai đoạn 0 đạt các tiêu chí trong `docs/phases/00-setup.md`.
 - Chưa có auth, board, item, task, tldraw, Kanban hay Change Streams.
 - Chờ người dùng duyệt để chuyển sang Giai đoạn 1.
+
+---
+
+## 2026-10-28 - Phiên 3: Triển khai Giai đoạn 1
+
+### Bối cảnh
+
+- Người dùng duyệt Giai đoạn 1.
+- Phạm vi: slice dọc board, note tldraw, promote transaction, Kanban, badge sau reload.
+- Không làm auth, member, `$jsonSchema`, realtime, demote, voting hay report.
+
+### Commit
+
+- `18b7c03` `docs: plan phase 1 vertical promote slice`
+- `b27e92c` `feat: add phase 1 contracts, models, and indexes`
+- `ef9e298` `feat: add board and item workspace API`
+- `8ab8261` `feat: implement transactional promote and task move`
+- `f53799a` `feat: add board list and creation UI`
+- `9f0d008` `feat: add tldraw note workspace, promote flow, and kanban drag`
+- `7058d5b` `style: fit all kanban columns and stabilize card dragging`
+- `a7f804f` `style: fit kanban columns and clear selection on reload`
+- Commit tài liệu cuối được tạo sau biên bản này.
+
+### Đã triển khai
+
+- Contracts board/item/task, Mongoose model, serializer và lỗi API.
+- `ensureIndexes()` tường minh, gồm unique partial index `uniq_active_task_per_item`.
+- Demo owner qua `DEMO_OWNER_ID`, không có user document.
+- Board list/create/get; item list/sync; promote; task list/move.
+- Promote dùng `session.withTransaction`, `readConcern: snapshot`, `writeConcern: majority + journal`.
+- tldraw 5.5.2, dynamic import client-only, custom toolbar note/select/hand, màu note, zoom, lưu.
+- Note sync khi thả chuột và debounce; delete note chưa promote; giữ note đã promote.
+- Promote dialog chọn cột, checkbox giao Demo User.
+- Kanban 5 cột full-width, native HTML5 drag/drop; badge overlay theo task state.
+- Trang health chuyển sang `/health`; trang chủ thành danh sách board.
+
+### Kiểm chứng
+
+- `npm run typecheck`: pass.
+- `npm run lint`: pass.
+- `npm run format:check`: pass.
+- Full suite ba lần liên tiếp, mỗi lần 5 file, 18 test pass:
+  - Lần 1: 2.19 s.
+  - Lần 2: 2.27 s.
+  - Lần 3: 2.22 s.
+- Docker Compose: `mongo`, `api`, `web` healthy.
+- Health API: 200, `rs0`, primary, latency 1 ms.
+- Browser:
+  - Tạo board `Retro E2E Phase 1`.
+  - Tạo note `Giữ daily ngắn và tập trung`.
+  - Promote sang `To Do`, giao Demo User.
+  - Badge ban đầu `Đã thành task · To Do · Demo User`.
+  - Chuyển task sang `Done` bằng chuỗi `DragEvent`/`DataTransfer`.
+  - Reload: badge `Đã thành task · Done · Demo User`, task ở cột `Done`.
+  - Restart API: dữ liệu và badge vẫn còn.
+- Gọi promote lại cùng item: 409 `ALREADY_PROMOTED`, số task vẫn là 1.
+- Test transaction rollback pass: không task, item không đổi.
+- Index thật trong app DB có unique partial filter đúng.
+
+### Sự cố và điều chỉnh
+
+- Browser automation `drag` không phát native HTML5 drag; đã kiểm chứng pipeline bằng `DragEvent` + `DataTransfer`, chưa có thao tác chuột vật lý.
+- Layout ban đầu để Kanban hẹp và cột Done ngoài vùng nhìn; đã chuyển Kanban full-width dưới whiteboard và cho 5 cột co giãn.
+- tldraw production hiển thị license watermark; không ẩn vì đây là yêu cầu license. Cần license key trước khi dùng thương mại.
+- Note đã promote bị xóa trên canvas sẽ xuất hiện lại sau reload để tránh mất liên kết task.
+
+### Dữ liệu môi trường
+
+- Database ứng dụng `nextask` có một board, một note, một task từ browser E2E.
+- Database test Phase 1 là `nextask_phase1_test`; có thể override bằng `MONGODB_TEST_URI`.
+- Volume `nextask_mongo-data` cũ vẫn được giữ nguyên.
+
+### Kết quả
+
+- Slice dọc Phase 1 chạy được và đạt kiểm chứng tự động.
+- Còn một việc xác nhận thủ công: kéo task bằng chuột thật trong trình duyệt.
+- Chờ người dùng duyệt để chuyển sang Giai đoạn 2.

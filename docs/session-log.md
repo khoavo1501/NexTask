@@ -587,3 +587,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   14.01/13.98/14.17 s.
 - Docker rebuild; health `0.3.0`, `rs0`, primary; app DB vẫn 001/002/003.
 - `main` trước merge ở `da0547a`; tag `v0.2.0` giữ nguyên; chưa tạo tag v0.3.0.
+
+## 2026-11-10 - Phase 4 spec
+
+- Tạo `release/v0.4` từ `main` tại `52840fe` (v0.3.0) và feature
+  `feat/phase-4-realtime`.
+- Chốt phạm vi: Change Streams per board, resume token/checkpoint, Socket.IO auth/room,
+  Kanban+badge realtime, whiteboard refetch (không live-merge tldraw), presence/cursor.
+- Spec: `docs/phases/04-realtime.md`; chờ duyệt trước khi viết plan/code.

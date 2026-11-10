@@ -1,8 +1,13 @@
-import { moveTaskRequestSchema, taskListQuerySchema, type TaskDto } from '@nextask/contracts';
+import {
+  createTaskRequestSchema,
+  moveTaskRequestSchema,
+  taskListQuerySchema,
+  type TaskDto,
+} from '@nextask/contracts';
 import { Router } from 'express';
 import { AppError } from '../../lib/errors.js';
 import { serializeTask } from '../../lib/serialize.js';
-import { listTasks, moveTask } from './task.service.js';
+import { createTask, listTasks, moveTask } from './task.service.js';
 
 export function createTasksRouter(): Router {
   const router = Router({ mergeParams: true });
@@ -34,6 +39,21 @@ export function createTasksRouter(): Router {
     response.json({
       data,
       meta: { requestId: request.requestId, hasMore: result.hasMore },
+    });
+  });
+
+  router.post('/', async (request, response) => {
+    if (!request.board || !request.user) {
+      throw new AppError(401, 'UNAUTHENTICATED', 'Cần đăng nhập');
+    }
+
+    const input = createTaskRequestSchema.parse(request.body);
+    const task = await createTask(request.board, request.user._id, input);
+    const data: TaskDto = serializeTask(task);
+
+    response.status(201).json({
+      data,
+      meta: { requestId: request.requestId },
     });
   });
 

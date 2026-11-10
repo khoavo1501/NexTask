@@ -3,11 +3,11 @@
 ## 1. Trạng thái hiện tại
 
 - Repository cục bộ, chưa có remote.
-- Nhánh ổn định: `main` tại `de15b5a`; code Phase 4 đã lên main, version vẫn `0.3.0`.
-- Nhánh phiên bản: `release/v0.4` tại `b11b326`; đã merge Phase 4.
-- Phase 0–4 hoàn thành; Phase 4 đã merge `main`, chưa bump `0.4.0` và chưa tạo tag v0.4.0.
+- Nhánh ổn định: `main` tại `18588e6`; đã phát hành version `0.4.0`.
+- Nhánh phiên bản: `release/v0.4` tại `7276612`; đã merge Phase 4 và bump `0.4.0`.
+- Phase 0–4 hoàn thành; Phase 4 đã merge `main` và phát hành `0.4.0`.
 - Feature `feat/phase-4-realtime` đã merge và xóa.
-- Tag `v0.2.0` và `v0.3.0` giữ nguyên.
+- Tag annotated `v0.4.0` tạo sau docs release merge; tag `v0.2.0`/`v0.3.0` giữ nguyên.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
 - Phase 2B đã merge vào `release/v0.2` bằng `bfc1da2`; feature `feat/phase-2b-data-integrity` đã xóa.
@@ -273,14 +273,15 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   `release: v0.4 realtime`); main gate pass: typecheck/lint/format; full suite 24 file,
   106 test ba lần 15.60/15.55/15.60 s.
 - Docker rebuild; API health `0.3.0`, Mongo `rs0` primary.
-- Không bump `0.4.0`; chưa tạo tag v0.4.0; tag `v0.3.0` giữ nguyên; không push.
+- Thời điểm merge này chưa bump `0.4.0`; chưa tạo tag v0.4.0; không push.
 
 ## 15. Phát hành v0.4.0
 
 - Bump `package.json`, workspace packages, `package-lock.json` và `SERVICE_VERSION`
   lên `0.4.0` trên `release/v0.4`.
 - Release v0.4 gồm Phase 4; merge vào `main` bằng `--no-ff` với message
-  `release: v0.4.0 realtime`.
-- Sau merge main: typecheck/lint/format, full suite ba lần và Docker health `0.4.0`.
+  `release: v0.4.0 realtime`: `18588e6`.
+- Sau merge main: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
+  16.08/16.42/16.41 s; Docker health `0.4.0`, Mongo `rs0` primary.
 - Tạo tag annotated `v0.4.0` theo yêu cầu, sau khi main và docs release ổn định.
 - Không push.

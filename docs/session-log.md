@@ -639,7 +639,7 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Main gate: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
   15.60/15.55/15.60 s.
 - Docker rebuild; API health `0.3.0`, Mongo `rs0` primary.
-- Không bump `0.4.0`; chưa tạo tag v0.4.0; không push.
+- Thời điểm này chưa bump `0.4.0` và chưa tạo tag v0.4.0; không push.
 - Tag `v0.2.0` và `v0.3.0` giữ nguyên.
 
 ## 2026-11-10 - Phát hành v0.4.0
@@ -647,6 +647,9 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Bump version root/API/web/contracts và `package-lock.json` lên `0.4.0`.
 - Bump `SERVICE_VERSION` trong `.env.example` và `docker-compose.yml` lên `0.4.0`.
 - Merge `release/v0.4` vào `main` bằng `--no-ff` với message
-  `release: v0.4.0 realtime`.
-- Sau merge: gate 3 lần, Docker health `0.4.0`; tạo tag annotated `v0.4.0` theo yêu cầu.
-- Không push.
+  `release: v0.4.0 realtime`: `18588e6`.
+- Main gate: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
+  16.08/16.42/16.41 s.
+- Docker rebuild; health `0.4.0`, Mongo `rs0` primary.
+- Tạo tag annotated `v0.4.0` sau docs release merge; không push.
+- Tag `v0.2.0` và `v0.3.0` giữ nguyên.

@@ -3,6 +3,8 @@ import { generateKeyBetween } from 'fractional-indexing';
 import mongoose, { Types } from 'mongoose';
 import { AppError } from '../../lib/errors.js';
 import { versionConflict } from '../../lib/versioning.js';
+import type { ActivityDocument } from '../activities/activity.model.js';
+import { PROMOTE_UNDO_WINDOW_MS, recordActivity } from '../activities/activity.service.js';
 import type { BoardDocument } from '../boards/board.model.js';
 import { TaskModel, type TaskDocument } from '../tasks/task.model.js';
 import type { UserDocument } from '../users/user.model.js';
@@ -14,11 +16,13 @@ export interface PromoteInput {
   actor: UserDocument;
   request: PromoteRequest;
   afterTaskInsert?: () => Promise<void>;
+  beforeActivityInsert?: () => Promise<void>;
 }
 
 export interface PromoteResult {
   item: ItemDocument;
   task: TaskDocument;
+  activity: ActivityDocument;
 }
 
 function assertObjectId(value: string, message: string): void {
@@ -115,7 +119,27 @@ export async function promoteItem(input: PromoteInput): Promise<PromoteResult> {
           throw new AppError(409, 'ALREADY_PROMOTED', 'Item đã được promote');
         }
 
-        return { item: updatedItem, task };
+        await input.beforeActivityInsert?.();
+        const activity = await recordActivity({
+          session,
+          boardId: input.board._id,
+          actorId: input.actor._id,
+          action: 'item.promoted',
+          refs: {
+            itemId: updatedItem._id,
+            taskId: task._id,
+            columnId: task.columnId,
+          },
+          snapshot: {
+            taskTitle: task.title,
+            columnId: task.columnId,
+            taskVersionAtPromote: task.version,
+            itemVersionAtPromote: updatedItem.version,
+          },
+          undoableUntil: new Date(Date.now() + PROMOTE_UNDO_WINDOW_MS),
+        });
+
+        return { item: updatedItem, task, activity };
       },
       {
         readConcern: { level: 'snapshot' },

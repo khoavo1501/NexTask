@@ -67,7 +67,9 @@ export function KanbanBoard({
   function tasksForColumn(columnId: string): TaskDto[] {
     return tasks
       .filter((task) => task.columnId === columnId)
-      .sort((a, b) => (a.order < b.order ? -1 : a.order > b.order ? 1 : a._id.localeCompare(b._id)));
+      .sort((a, b) =>
+        a.order < b.order ? -1 : a.order > b.order ? 1 : a._id.localeCompare(b._id),
+      );
   }
 
   function assigneeName(assigneeId: string | null): string {

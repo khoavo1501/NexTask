@@ -11,7 +11,7 @@ x-api-environment: &api-environment
   MONGODB_REPLICA_SET: rs0
   CORS_ORIGIN: http://localhost:3000
   LOG_LEVEL: info
-  SERVICE_VERSION: 0.3.0
+  SERVICE_VERSION: 0.4.0
   JWT_SECRET: local-dev-only-nextask-jwt-secret-change-me
   COOKIE_SECURE: 'false'
   SEED_OWNER_EMAIL: owner@nextask.local

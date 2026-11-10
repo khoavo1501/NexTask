@@ -660,3 +660,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   `feat/phase-5a-demote-activity`.
 - Chốt tách 5A/5B; 5A gồm Demote + Activity; undo chỉ áp dụng promote và để 5B.
 - Spec: `docs/phases/05a-demote-activity.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-10 - Phase 5A plan
+
+- Spec `docs/phases/05a-demote-activity.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-10-phase-5a-demote-activity.md`.
+- Phạm vi: Demote transaction, activity TTL/index, API activity, web Demote/panel.
+- 5B để sau: batch, undo, fault injection toàn diện.
+- Bắt đầu Inline Execution; không merge `main`.

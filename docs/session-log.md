@@ -467,3 +467,13 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   database rehearsal đã drop.
 - Trạng thái cuối: 2B hoàn thành trên `release/v0.2`; chờ người dùng duyệt phát hành v0.2
   trước khi merge vào `main`.
+
+## 2026-11-10 - Phát hành v0.2.0
+
+- Người dùng duyệt phát hành v0.2 sau khi 2A và 2B hoàn tất trên `release/v0.2`.
+- Bump version root/API/web/contracts và `package-lock.json` lên `0.2.0`.
+- Bump `SERVICE_VERSION` trong `.env.example` và `docker-compose.yml` lên `0.2.0`.
+- Merge `release/v0.2` vào `main` bằng `--no-ff` với message
+  `release: v0.2 auth membership and data integrity`.
+- Sau merge main: chạy lại gate và kiểm tra Docker; không tạo tag v0.2.0 vì chưa được
+  yêu cầu rõ; không push.

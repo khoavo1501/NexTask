@@ -2,6 +2,8 @@
 
 Whiteboard và Kanban cho team Agile, gộp brainstorm và thực thi trên cùng một board.
 
+Phiên bản hiện tại: `0.2.0`.
+
 ## Trạng thái hiện tại
 
 - Phase 0: Docker Compose, MongoDB replica set, health.

@@ -206,4 +206,14 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Merge release `bfc1da2`; quality gate trên release: typecheck/lint/format pass; full
   suite 67 test ba lần 8.87/8.64/8.65 s.
 - Feature đã xóa; `main` vẫn ở `6d3d11b`, chưa nhận v0.2.
-- Bước tiếp theo: người dùng duyệt phát hành v0.2 trước khi merge release vào main.
+- Người dùng đã duyệt phát hành v0.2 ngày 2026-11-10; merge main theo mục 10.
+
+## 10. Phát hành v0.2.0
+
+- Version `package.json`, workspace packages, `package-lock.json` và `SERVICE_VERSION`
+  được bump lên `0.2.0` trên `release/v0.2`.
+- Release v0.2 gồm Phase 2A và 2B; merge vào `main` bằng `--no-ff` với message
+  `release: v0.2 auth membership and data integrity`.
+- Sau merge main, chạy lại typecheck/lint/format, full suite ba lần và kiểm tra Docker.
+- Không tạo tag `v0.2.0` nếu người dùng chưa yêu cầu rõ.
+- Không push; repository vẫn local.

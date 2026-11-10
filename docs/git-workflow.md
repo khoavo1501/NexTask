@@ -3,8 +3,9 @@
 ## 1. Trạng thái hiện tại
 
 - Repository cục bộ, chưa có remote.
-- Nhánh ổn định: `main` tại `53f2391` (release v0.2.0).
-- Nhánh phiên bản: `release/v0.2` đã merge vào `main`; merge 2B `bfc1da2`, chuẩn bị release `7e5f65d`.
+- Nhánh ổn định: `main` tại `da0547a` (v0.2.0, tag annotated `v0.2.0`).
+- Nhánh phiên bản: `release/v0.3` tạo từ `main`; chưa có commit riêng.
+- Feature đang mở: `feat/phase-3a-kanban-ordering`, tạo từ `release/v0.3`.
 - Phase 0, Phase 1, Phase 2A và Phase 2B đã nằm trên `main`.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.

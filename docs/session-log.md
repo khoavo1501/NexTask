@@ -482,3 +482,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Không tạo tag v0.2.0 vì chưa được yêu cầu rõ; không push.
 - Lưu ý: invitation cũ đã hết hạn và bị TTL index xóa trong lúc kiểm tra ngày
   2026-11-10; đây là hành vi đúng của TTL, không phải mất dữ liệu ngoài ý muốn.
+
+## 2026-11-10 - Phase 3A spec
+
+- Tạo `release/v0.3` từ `main` tại `da0547a` và feature
+  `feat/phase-3a-kanban-ordering`.
+- Chốt chia Phase 3 thành 3A/3B; 3A gồm fractional ordering, filter/search, limit 100,
+  index + explain, UI kéo thả/filter.
+- 3B dự kiến: sửa/tạo task, quản lý cột, cursor pagination.
+- Spec: `docs/phases/03a-kanban-ordering.md`; đang chờ duyệt trước khi viết plan/code.

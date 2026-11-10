@@ -5,5 +5,6 @@ export * from './envelope.js';
 export * from './health.js';
 export * from './invitation.js';
 export * from './item.js';
+export * from './realtime.js';
 export * from './task.js';
 export * from './version.js';

@@ -109,15 +109,17 @@ describe('collection validators', () => {
 
   it('activities sai action bị từ chối', async () => {
     await expect(
-      db().collection('activities').insertOne({
-        boardId: new Types.ObjectId(),
-        actorId: new Types.ObjectId(),
-        action: 'task.moved',
-        refs: { itemId: null, taskId: null, columnId: null },
-        snapshot: {},
-        undoableUntil: null,
-        createdAt: new Date(),
-      }),
+      db()
+        .collection('activities')
+        .insertOne({
+          boardId: new Types.ObjectId(),
+          actorId: new Types.ObjectId(),
+          action: 'task.moved',
+          refs: { itemId: null, taskId: null, columnId: null },
+          snapshot: {},
+          undoableUntil: null,
+          createdAt: new Date(),
+        }),
     ).rejects.toMatchObject({ code: 121 });
   });
 

@@ -222,9 +222,7 @@ describe('migration 2A', () => {
   it('005 tạo activities validator/index/TTL và task demote fields', async () => {
     if (!connection.db) throw new Error('DB chưa kết nối');
 
-    const [activityInfo] = await connection.db
-      .listCollections({ name: 'activities' })
-      .toArray();
+    const [activityInfo] = await connection.db.listCollections({ name: 'activities' }).toArray();
     const activityOptions = (activityInfo as { options?: Record<string, unknown> } | undefined)
       ?.options;
     expect(activityInfo).toBeDefined();

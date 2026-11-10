@@ -23,14 +23,15 @@ async function ensureActivitiesCollection(db: Db): Promise<void> {
     await db.command({ collMod: 'activities', validator, ...VALIDATION });
   }
 
-  await db.collection('activities').createIndex(
-    { boardId: 1, createdAt: -1 },
-    { name: 'activities_board_created' },
-  );
-  await db.collection('activities').createIndex(
-    { createdAt: 1 },
-    { expireAfterSeconds: 7_776_000, name: 'activities_created_ttl' },
-  );
+  await db
+    .collection('activities')
+    .createIndex({ boardId: 1, createdAt: -1 }, { name: 'activities_board_created' });
+  await db
+    .collection('activities')
+    .createIndex(
+      { createdAt: 1 },
+      { expireAfterSeconds: 7_776_000, name: 'activities_created_ttl' },
+    );
 }
 
 async function updateTasksValidator(db: Db): Promise<void> {

@@ -40,8 +40,5 @@ export async function listActivities(
   boardId: Types.ObjectId,
   limit: number,
 ): Promise<ActivityDocument[]> {
-  return ActivityModel.find({ boardId })
-    .sort({ createdAt: -1, _id: -1 })
-    .limit(limit)
-    .exec();
+  return ActivityModel.find({ boardId }).sort({ createdAt: -1, _id: -1 }).limit(limit).exec();
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import type { BoardDto, ItemDto, TaskDto } from '@nextask/contracts';
+import type { BoardDto, ItemDto, PresenceParticipant, TaskDto } from '@nextask/contracts';
 import dynamic from 'next/dynamic';
 
 export interface WhiteboardProps {
@@ -8,6 +8,8 @@ export interface WhiteboardProps {
   initialItems: ItemDto[];
   items: ItemDto[];
   tasks: TaskDto[];
+  presence?: PresenceParticipant[];
+  onCursorMove?: (point: { x: number; y: number }) => void;
   onItemsChange: (items: ItemDto[]) => void;
   onPromoteRequest: (item: ItemDto) => void;
 }

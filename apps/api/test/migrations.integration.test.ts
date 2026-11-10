@@ -8,6 +8,7 @@ import {
   MIGRATION_001_NAME,
   MIGRATION_002_NAME,
   MIGRATION_003_NAME,
+  MIGRATION_004_NAME,
 } from '../src/db/migration-runner.js';
 import { COLLECTION_VALIDATORS } from '../src/db/collection-validators.js';
 import { assertSchemaVersion } from '../src/db/schema-version.js';
@@ -137,9 +138,10 @@ describe('migration 2A', () => {
     expect(migrations).not.toContain(MIGRATION_001_NAME);
     expect(migrations).not.toContain(MIGRATION_002_NAME);
     expect(migrations).not.toContain(MIGRATION_003_NAME);
+    expect(migrations).not.toContain(MIGRATION_004_NAME);
     expect((await ItemModel.findOne({ shapeId: 'shape:legacy' }))?.version).toBe(9);
     expect((await TaskModel.findOne({ title: 'Legacy task' }))?.version).toBe(4);
-    await expect(assertSchemaVersion(connection, MIGRATION_003_NAME)).resolves.toBeUndefined();
+    await expect(assertSchemaVersion(connection, MIGRATION_004_NAME)).resolves.toBeUndefined();
   });
 
   it('áp validator 002 cho cả 5 collection', async () => {
@@ -188,6 +190,30 @@ describe('migration 2A', () => {
         indexes.some((index) => index.name === name),
         name,
       ).toBe(true);
+    }
+  });
+
+  it('004 tạo checkpoint collection/index và bật pre/post images', async () => {
+    if (!connection.db) throw new Error('DB chưa kết nối');
+
+    const [checkpointInfo] = await connection.db
+      .listCollections({ name: 'change_stream_checkpoints' })
+      .toArray();
+    const checkpointOptions = (checkpointInfo as { options?: Record<string, unknown> } | undefined)
+      ?.options;
+    expect(checkpointInfo).toBeDefined();
+    expect(checkpointOptions?.validationLevel).toBe('strict');
+
+    const indexes = await connection.db.collection('change_stream_checkpoints').indexes();
+    const unique = indexes.find(
+      (index) => index.name === 'change_stream_checkpoints_board_collection',
+    );
+    expect(unique).toMatchObject({ unique: true });
+
+    for (const name of ['items', 'tasks']) {
+      const [info] = await connection.db.listCollections({ name }).toArray();
+      const options = (info as { options?: Record<string, unknown> } | undefined)?.options;
+      expect(options?.changeStreamPreAndPostImages).toEqual({ enabled: true });
     }
   });
 });

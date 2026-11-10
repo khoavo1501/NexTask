@@ -60,7 +60,7 @@ NexTask/
       src/
         config/        # env, hằng số
         db/            # kết nối, session helper, migration runner,
-                       # collection-validators, migrations/002-phase-2b
+                       # collection-validators, migrations/001..004
         middleware/    # auth, board access, validation, lỗi, request id
         lib/           # serialize, versionConflict
         modules/
@@ -70,8 +70,8 @@ NexTask/
           tasks/
           promotions/
           reports/
-          realtime/
           health/
+        realtime/      # watcher/checkpoint, event mapper, Socket.IO, presence
         app.ts
         server.ts
       test/
@@ -550,6 +550,18 @@ Badge của note không cần ghi lại item khi task đổi cột. Frontend gi�
 - Client vẫn refetch snapshot khi socket reconnect để bảo đảm hội tụ, kể cả khi checkpoint hợp lệ.
 - Sự kiện có thể đến lặp; cập nhật theo `version` và dedupe theo `event.id` là bắt buộc.
 
+### 9.5 Triển khai
+
+- `apps/api/src/realtime/` gồm checkpoint service, event mapper, board watcher, socket
+  auth, presence và Socket.IO server; server gắn vào HTTP server hiện có.
+- Watcher mở riêng stream `items` và `tasks`; `event.id` là SHA-256 của resume token;
+  checkpoint upsert theo `(boardId, collection)`.
+- `ChangeStreamHistoryLost` (code 286) phát `board:resync` rồi mở lại không resume; lỗi
+  khác thử lại một lần với checkpoint trước khi phát `watcher_error`.
+- Web dùng `apps/web/lib/realtime.ts`; Kanban/badge cập nhật từ event, item event refetch
+  snapshot và remount whiteboard; presence list/cursor hiển thị trên board.
+- Migration 004 tạo `change_stream_checkpoints` và bật pre/post images cho hai collection.
+
 ## 10. Auth, phân quyền và bảo mật
 
 ### 10.1 JWT và cookie
@@ -775,6 +787,10 @@ Không tính item đã demote là "chưa promote" nếu task demoted còn tồn 
 8. Change Streams: task di chuyển cột phát `task:moved`; resume token cho phép watcher mới nhận sự kiện sau restart.
 9. Báo cáo trả đúng cả hai nhóm và có thể chạy `explain`.
 10. Playwright: tạo board, tạo note, promote, kéo task sang Done, badge cập nhật sau reload/realtime.
+11. Socket.IO: handshake thiếu/sai cookie bị từ chối; non-member không join được room;
+    member nhận event đúng board; presence join/leave/cursor hoạt động.
+12. Checkpoint: watcher dừng rồi mở lại nhận event còn trong oplog; token hỏng phát
+    `board:resync`.
 
 ### Công cụ
 
@@ -802,6 +818,7 @@ Không trả URI, credential hay chi tiết nội bộ.
 - MongoDB 8.0 một nút, replica set `rs0`.
 - `mongo-init` chạy idempotent: chờ Mongo, `rs.initiate`, chờ primary.
 - API và web build từ Dockerfile nhiều stage.
+- HTTP REST và Socket.IO dùng chung cổng API `4000`; web kết nối origin API.
 - Healthcheck cho Mongo, API, web.
 - Volume dữ liệu Mongo; `docker compose down` giữ dữ liệu, `down -v` xóa.
 - MongoDB không bật auth trong môi trường local, chỉ publish cổng ra loopback. Đây là quyết định có chủ đích để giảm ma sát học tập; production phải bật auth, TLS và mạng riêng. Ghi rõ trong README và không dùng cấu hình này ngoài local.
@@ -841,7 +858,7 @@ Seed tạo một board Retro có frame Start/Stop/Continue, nhiều note nhiều
 
 Mỗi giai đoạn có một file trong `docs/phases/` với mục tiêu, kiến thức MongoDB, danh sách file, cách chạy, câu hỏi kiểm tra và rủi ro. Chỉ chuyển giai đoạn sau khi người dùng duyệt cổng hiện tại.
 
-Trạng thái ngày 2026-11-10: Giai đoạn 0, 1, 2A, 2B, 3A và 3B đã hoàn thành. Phase 1 chỉ hỗ trợ shape note, chưa có realtime; xem biên bản trong `docs/phases/01-vertical-slice.md`. Phase 2A đã có auth, membership, role, invitation, migration và seed owner; xem `docs/phases/02a-auth-membership.md`. Phase 2B đã có `$jsonSchema` validator, expectedVersion, item sync transaction và client conflict handling; xem `docs/phases/02b-data-integrity.md`. Phase 3A đã có `POST /tasks/:id/move` với `beforeTaskId`, fractional order, filter task list, unique order index và explain; xem `docs/phases/03a-kanban-ordering.md`. Phase 3B đã có `POST /tasks`, `PATCH /tasks/:taskId` và `PATCH /boards/:boardId/columns`; xem `docs/phases/03b-task-editing-columns.md`. Cursor pagination và text index vẫn để phase sau.
+Trạng thái ngày 2026-11-10: Giai đoạn 0, 1, 2A, 2B, 3A, 3B và 4 đã hoàn thành. Phase 1 chỉ hỗ trợ shape note, chưa có realtime; xem biên bản trong `docs/phases/01-vertical-slice.md`. Phase 2A đã có auth, membership, role, invitation, migration và seed owner; xem `docs/phases/02a-auth-membership.md`. Phase 2B đã có `$jsonSchema` validator, expectedVersion, item sync transaction và client conflict handling; xem `docs/phases/02b-data-integrity.md`. Phase 3A đã có `POST /tasks/:id/move` với `beforeTaskId`, fractional order, filter task list, unique order index và explain; xem `docs/phases/03a-kanban-ordering.md`. Phase 3B đã có `POST /tasks`, `PATCH /tasks/:taskId` và `PATCH /boards/:boardId/columns`; xem `docs/phases/03b-task-editing-columns.md`. Phase 4 đã có Change Streams per board, checkpoint/resume, Socket.IO auth/room, Kanban/badge realtime, whiteboard refetch và presence; xem `docs/phases/04-realtime.md`. Release `v0.4` chưa merge `main`. Cursor pagination và text index vẫn để phase sau.
 
 ## 17. Rủi ro và giả định
 

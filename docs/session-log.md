@@ -587,3 +587,38 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   14.01/13.98/14.17 s.
 - Docker rebuild; health `0.3.0`, `rs0`, primary; app DB vẫn 001/002/003.
 - `main` trước merge ở `da0547a`; tag `v0.2.0` giữ nguyên; chưa tạo tag v0.3.0.
+
+## 2026-11-10 - Phase 4 spec
+
+- Tạo `release/v0.4` từ `main` tại `52840fe` (v0.3.0) và feature
+  `feat/phase-4-realtime`.
+- Chốt phạm vi: Change Streams per board, resume token/checkpoint, Socket.IO auth/room,
+  Kanban+badge realtime, whiteboard refetch (không live-merge tldraw), presence/cursor.
+- Spec: `docs/phases/04-realtime.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-10 - Phase 4 plan
+
+- Spec `docs/phases/04-realtime.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-10-phase-4-realtime.md`.
+- Phạm vi: Change Streams per board, checkpoint, Socket.IO auth/room, presence.
+- Bắt đầu Inline Execution; chưa merge `main`.
+
+## 2026-11-10 - Phase 4 verification
+
+- Migration 004 áp rehearsal/app; checkpoint collection/index; pre/post images bật.
+- Rehearsal counts giữ nguyên 1 board, 2 item, 2 task; backup trước migration hợp lệ.
+- Docker rebuild; migrate/api/web healthy; health `0.3.0`, Mongo `rs0` primary.
+- Browser: task create/move từ client thứ hai cập nhật Kanban/badge không reload.
+- Browser: item update kích hoạt refetch whiteboard (notice, GET items/tasks);
+  presence list và cursor overlay hiển thị.
+- Checkpoint/restart/socket integration tests pass (24 file, 106 test sau Task 4).
+- Đã dọn task test và khôi phục nội dung note; không có log lỗi API.
+- Gate cuối và merge `release/v0.4` thực hiện ở Task 7; không merge `main`.
+
+## 2026-11-10 - Phase 4 gate
+
+- Feature gate: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
+  16.67/16.88/19.67 s.
+- Cập nhật spec, plan, architecture, MongoDB notes, README và git workflow cho Phase 4.
+- Chờ merge `feat/phase-4-realtime` vào `release/v0.4` bằng `--no-ff`.
+- Không bump `0.4.0`; không merge `main`; tag `v0.3.0` giữ nguyên.

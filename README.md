@@ -12,7 +12,9 @@ Phiên bản hiện tại: `0.3.0`.
 - Phase 2B: `$jsonSchema` validator, expectedVersion, item sync transaction, client conflict handling.
 - Phase 3A: fractional ordering, filter/search task, unique order index, explain.
 - Phase 3B: tạo/sửa task tay, Owner quản lý cột, UI dialog.
-- Chưa có realtime, Demote, cursor pagination, activity/undo.
+- Phase 4: Change Streams per board, checkpoint/resume, Socket.IO auth/room, Kanban/badge
+  realtime, whiteboard refetch và presence.
+- Chưa có Demote, cursor pagination, activity/undo.
 
 ## Yêu cầu
 
@@ -59,12 +61,15 @@ Người dùng khác có thể đăng ký tài khoản mới. Owner tạo invita
 3. Chọn công cụ `Note`, bấm lên canvas và nhập nội dung.
 4. Chọn ghi chú, bấm `Promote thành task`, chọn cột và xác nhận.
 5. Kéo task trên Kanban sang cột khác.
-6. Reload: badge `Đã thành task` hiển thị cột hiện tại.
-7. Owner bấm `Mời`, copy invitation link.
-8. Tài khoản Member đăng nhập, mở link, accept và làm việc trên board.
-9. Member không thấy nút `Mời`/`Đổi tên`; gọi API trực tiếp vẫn bị server chặn `403`.
+6. Mở thêm tab hoặc client khác trên cùng board: task tạo/move cập nhật Kanban và
+   badge `Đã thành task` ngay, không cần reload.
+7. Sửa note từ client khác: whiteboard refetch snapshot và hiện notice.
+8. Owner bấm `Mời`, copy invitation link.
+9. Tài khoản Member đăng nhập, mở link, accept và làm việc trên board.
+10. Member không thấy nút `Mời`/`Đổi tên`; gọi API trực tiếp vẫn bị server chặn `403`.
 
-`Done` xác định bằng trường `isDone` của cột. Chưa có realtime nên badge cập nhật sau reload hoặc thao tác phía client.
+`Done` xác định bằng trường `isDone` của cột. Task move từ client khác đến qua Change
+Streams + Socket.IO; whiteboard không live-merge tldraw mà refetch snapshot khi item đổi.
 
 ## Đồng bộ và xung đột
 
@@ -98,6 +103,18 @@ Người dùng khác có thể đăng ký tài khoản mới. Owner tạo invita
 - Không xóa cột còn task active; API trả `409 COLUMN_NOT_EMPTY`.
 - Task tạo tay có `sourceItemId`/`origin` null; sửa task không đồng bộ ngược item nguồn.
 
+## Realtime và presence
+
+- Socket.IO dùng chung HTTP server API (cổng `4000`), xác thực cookie JWT khi handshake
+  và kiểm tra membership trước khi vào room board.
+- Mỗi board có watcher Change Streams riêng cho `items` và `tasks`; event phát vào room
+  dưới dạng envelope `{ id, boardId, type, version, occurredAt, payload }`.
+- Kanban/badge cập nhật từ event; item event khiến client refetch snapshot và remount
+  whiteboard, không live-merge tldraw/CRDT.
+- Resume token lưu trong `change_stream_checkpoints`; oplog cuốn hoặc token hỏng phát
+  `board:resync` để client tải lại snapshot.
+- Presence/cursor chỉ trong bộ nhớ API; v1 chạy một instance, không Redis adapter.
+
 ## Phát triển local
 
 Khởi động MongoDB replica set và migration:
@@ -126,8 +143,11 @@ docker compose exec -T mongo mongodump --archive --gzip --db=nextask > backups/n
 - Backup local đã dùng cho Phase 2A: `backups/nextask-before-2a-2026-10-28.gz`.
 - Backup local đã dùng cho Phase 2B: `backups/nextask-before-2b-2026-10-28.gz`.
 - Backup local đã dùng cho Phase 3A: `backups/nextask-before-3a-2026-11-10.gz`.
+- Backup local đã dùng cho Phase 4: `backups/nextask-before-4-2026-11-10.gz`.
 - Migration `002-phase-2b` áp `$jsonSchema` cho `users`, `boards`, `items`, `tasks`,
   `invitations`; không tự sửa dữ liệu cũ.
+- Migration `003-phase-3a` thêm index Kanban/order; migration `004-phase-4` tạo
+  `change_stream_checkpoints` và bật pre/post images cho `items`/`tasks`.
 - Không xóa backup hoặc chạy migration trên dữ liệu chưa backup.
 
 ## Kiểm tra
@@ -139,7 +159,7 @@ npm run format:check
 npm run test
 ```
 
-Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`.
+Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`. Test realtime dùng Change Streams và Socket.IO client thật; suite hiện có 24 file, 106 test.
 
 ## Bảo mật local
 
@@ -156,7 +176,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Tag `v0.2.0` giữ nguyên; chưa tạo tag v0.3.0. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đang hoàn tất trên `feat/phase-4-realtime`, chờ merge vào `release/v0.4`; chưa phát hành v0.4. Tag `v0.2.0` và `v0.3.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 
@@ -168,6 +188,7 @@ Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A/
 - [Phase 2B](docs/phases/02b-data-integrity.md)
 - [Phase 3A](docs/phases/03a-kanban-ordering.md)
 - [Phase 3B](docs/phases/03b-task-editing-columns.md)
+- [Phase 4](docs/phases/04-realtime.md)
 - [Ghi chú MongoDB](docs/mongodb-notes.md)
 - [Lịch sử phiên](docs/session-log.md)
 - [Quy trình Git](docs/git-workflow.md)

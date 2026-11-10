@@ -14,7 +14,9 @@ Phiên bản hiện tại: `0.4.0`.
 - Phase 3B: tạo/sửa task tay, Owner quản lý cột, UI dialog.
 - Phase 4: Change Streams per board, checkpoint/resume, Socket.IO auth/room, Kanban/badge
   realtime, whiteboard refetch và presence.
-- Chưa có Demote, cursor pagination, activity/undo.
+- Phase 5A: Demote transaction, activity promote/demote TTL 90 ngày, dialog Demote và tab
+  hoạt động.
+- Chưa có batch/undo promote, cursor pagination, activity đầy đủ cho mọi thao tác.
 
 ## Yêu cầu
 
@@ -115,6 +117,16 @@ Streams + Socket.IO; whiteboard không live-merge tldraw mà refetch snapshot kh
   `board:resync` để client tải lại snapshot.
 - Presence/cursor chỉ trong bộ nhớ API; v1 chạy một instance, không Redis adapter.
 
+## Demote và hoạt động
+
+- `POST /boards/:boardId/tasks/:taskId/demote` đưa task về whiteboard trong transaction:
+  task chuyển `lifecycle=demoted`, item `promotedTaskId=null`, cả hai tăng version.
+- Demote giữ task trong database và ghi activity `item.demoted`; promote ghi
+  `item.promoted` với `undoableUntil` 10 phút cho Phase 5B.
+- Activity TTL 90 ngày; `GET /boards/:boardId/activities?limit=50` trả hoạt động gần nhất.
+- UI có nút Demote cho task từ note (task tạo tay không có), dialog xác nhận và tab
+  `Hoạt động`; realtime gỡ task/badge khi client khác demote.
+
 ## Phát triển local
 
 Khởi động MongoDB replica set và migration:
@@ -144,10 +156,12 @@ docker compose exec -T mongo mongodump --archive --gzip --db=nextask > backups/n
 - Backup local đã dùng cho Phase 2B: `backups/nextask-before-2b-2026-10-28.gz`.
 - Backup local đã dùng cho Phase 3A: `backups/nextask-before-3a-2026-11-10.gz`.
 - Backup local đã dùng cho Phase 4: `backups/nextask-before-4-2026-11-10.gz`.
+- Backup local đã dùng cho Phase 5A: `backups/nextask-before-5a-2026-11-10.gz`.
 - Migration `002-phase-2b` áp `$jsonSchema` cho `users`, `boards`, `items`, `tasks`,
   `invitations`; không tự sửa dữ liệu cũ.
 - Migration `003-phase-3a` thêm index Kanban/order; migration `004-phase-4` tạo
-  `change_stream_checkpoints` và bật pre/post images cho `items`/`tasks`.
+  `change_stream_checkpoints` và bật pre/post images cho `items`/`tasks`; migration
+  `005-phase-5a` tạo `activities`, TTL 90 ngày và field demote cho task.
 - Không xóa backup hoặc chạy migration trên dữ liệu chưa backup.
 
 ## Kiểm tra
@@ -159,7 +173,7 @@ npm run format:check
 npm run test
 ```
 
-Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`. Test realtime dùng Change Streams và Socket.IO client thật; suite hiện có 24 file, 106 test.
+Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`. Test realtime dùng Change Streams và Socket.IO client thật; suite hiện có 28 file, 126 test.
 
 ## Bảo mật local
 
@@ -176,7 +190,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0` tạo sau docs release merge. Tag `v0.2.0` và `v0.3.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0`. Phase 5A đang trên `release/v0.5`; chưa merge `main`, chưa bump `0.5.0`. Tag `v0.2.0`, `v0.3.0` và `v0.4.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 
@@ -189,6 +203,7 @@ Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0
 - [Phase 3A](docs/phases/03a-kanban-ordering.md)
 - [Phase 3B](docs/phases/03b-task-editing-columns.md)
 - [Phase 4](docs/phases/04-realtime.md)
+- [Phase 5A](docs/phases/05a-demote-activity.md)
 - [Ghi chú MongoDB](docs/mongodb-notes.md)
 - [Lịch sử phiên](docs/session-log.md)
 - [Quy trình Git](docs/git-workflow.md)

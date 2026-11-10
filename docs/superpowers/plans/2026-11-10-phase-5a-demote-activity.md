@@ -12,6 +12,32 @@
 
 **Branch:** `feat/phase-5a-demote-activity` từ `release/v0.5`; release tạo từ `main` tại `9fd19b6`. Không merge `main`, không bump `0.5.0`, tag `v0.4.0` giữ nguyên.
 
+**Trạng thái thực thi:** Hoàn thành code, migration và browser verification ngày
+2026-11-10; chờ merge vào `release/v0.5`. Commit chính:
+
+- `996db73` `docs: specify phase 5a demote and activity`
+- `ed34789` `docs: plan phase 5a demote and activity`
+- `99175d4` `feat: add activity and demote contracts`
+- `82418ae` `feat: add phase 5a activity migration`
+- `4114cb5` `feat: record promote activity in transaction`
+- `abb1914` `feat: add demote transaction endpoint`
+- `2f507e9` `feat: expose board activity API`
+- `6c72172` `chore: format phase 5a api files`
+- `a60fb5e` `feat: add demote dialog and activity panel`
+- `659e935` `docs: record phase 5a verification`
+
+Feature gate: typecheck/lint/format pass; full suite 28 file, 126 test ba lần
+19.09/19.08/19.26 s. Merge commit và release gate ghi bổ sung sau khi merge.
+
+**Điều chỉnh thực tế:**
+
+- TaskDto model/serializer `demotedAt`/`demotedBy` được đưa vào Task 1 thay vì Task 3
+  để typecheck xanh ngay sau contract change.
+- Non-member board access trả `404` theo middleware hiện có, không phải `403`; test và
+  spec đã ghi đúng.
+- Browser verification dùng board tạm, xóa cả checkpoint của board tạm sau khi đóng tab.
+- Full suite tăng lên 28 file, 126 test do thêm contract/migration/demote/activity test.
+
 ## Global Constraints
 
 - MongoDB replica set thật cho test; không mock DB/transaction/Change Streams.

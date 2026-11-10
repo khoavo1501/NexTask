@@ -676,3 +676,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Browser: dialog Demote gỡ task, badge note biến mất, activity panel cập nhật; reload giữ trạng thái.
 - Client thứ hai demote cập nhật tab đang mở; manual task không có nút Demote.
 - Dữ liệu board tạm đã xóa; health `0.4.0`.
+
+## 2026-11-10 - Phase 5A gate
+
+- Feature gate: typecheck/lint/format pass; full suite 28 file, 126 test ba lần
+  19.09/19.08/19.26 s.
+- Cập nhật spec, plan, architecture, MongoDB notes, README và git workflow cho Phase 5A.
+- Chờ merge `feat/phase-5a-demote-activity` vào `release/v0.5` bằng `--no-ff`.
+- Không bump `0.5.0`; không merge `main`; tag `v0.4.0` giữ nguyên.

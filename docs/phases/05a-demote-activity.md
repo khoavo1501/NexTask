@@ -1,6 +1,7 @@
 # Giai đoạn 5A - Demote và Activity
 
-- Trạng thái: Draft chờ duyệt
+- Trạng thái: Hoàn thành code, migration, browser verification và feature gate;
+  chờ merge vào `release/v0.5`. Chưa merge `main`, chưa bump `0.5.0`.
 - Ngày lập: 2026-11-10
 - Tiền đề: v0.4.0 đã phát hành; `main` tại `9fd19b6`, tag annotated `v0.4.0`
 - Kiến trúc: [../architecture.md](../architecture.md), mục 6.5, 4.6 và 11

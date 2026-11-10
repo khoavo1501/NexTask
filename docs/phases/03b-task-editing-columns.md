@@ -1,12 +1,13 @@
 # Giai đoạn 3B - Task editing và quản lý cột
 
-- Trạng thái: Chờ duyệt spec
+- Trạng thái: Đã duyệt spec; implementation plan:
+  [2026-11-10-phase-3b-task-editing-columns.md](../superpowers/plans/2026-11-10-phase-3b-task-editing-columns.md)
 - Ngày lập: 2026-11-10
 - Tiền đề: Phase 3A hoàn thành trên `release/v0.3`; `main` và tag `v0.2.0` không đổi
 - Kiến trúc: [../architecture.md](../architecture.md)
 - Phase 3A: [03a-kanban-ordering.md](./03a-kanban-ordering.md)
 - Nhánh: `feat/phase-3b-task-editing`, tạo từ `release/v0.3`
-- Implementation plan: chưa viết, chờ duyệt spec
+- Implementation plan: [2026-11-10-phase-3b-task-editing-columns.md](../superpowers/plans/2026-11-10-phase-3b-task-editing-columns.md)
 - Không merge `release/v0.3` vào `main` trong phase này
 
 ## 1. Mục tiêu

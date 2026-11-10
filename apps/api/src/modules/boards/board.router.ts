@@ -10,6 +10,7 @@ import {
 import { Router } from 'express';
 import { AppError } from '../../lib/errors.js';
 import { serializeBoard } from '../../lib/serialize.js';
+import { createActivitiesRouter } from '../activities/activity.router.js';
 import { createInvitation } from '../invitations/invitation.service.js';
 import { createItemsRouter } from '../items/item.router.js';
 import { createTasksRouter } from '../tasks/task.router.js';
@@ -124,6 +125,7 @@ export function createBoardsRouter(): Router {
 
   router.use('/:boardId/items', createItemsRouter());
   router.use('/:boardId/tasks', createTasksRouter());
+  router.use('/:boardId/activities', createActivitiesRouter());
 
   return router;
 }

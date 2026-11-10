@@ -695,3 +695,33 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - `main` vẫn `9fd19b6`; tag `v0.2.0`, `v0.3.0`, `v0.4.0` giữ nguyên.
 - App DB đã áp 001–005; Docker health `0.4.0`.
 - Chờ người dùng duyệt phát hành v0.5 trước khi merge `main` và bump version.
+
+## 2026-11-10 - Phase 5B spec
+
+- Tạo feature `feat/phase-5b-batch-undo` từ `release/v0.5`.
+- Chốt batch promote bằng multi-select note (tối đa 100), transaction nguyên tử, mỗi note
+  một activity/undo riêng.
+- Chốt undo từng activity promote trong 10 phút; không undo nhóm; fault injection bằng hook test.
+- Spec: `docs/phases/05b-batch-undo.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-10 - Phase 5B plan
+
+- Spec `docs/phases/05b-batch-undo.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-10-phase-5b-batch-undo.md`.
+- Phạm vi: batch promote multi-select, undo từng activity promote, fault injection hook.
+- Bắt đầu Inline Execution; không merge `main`.
+
+## 2026-11-10 - Phase 5B verification
+
+- Browser: multi-select 3 note, batch promote 3 task, badge/activity đúng; reload giữ.
+- Undo một promote: task rời Kanban, task còn lại giữ, activity undo xuất hiện.
+- Undo stale sau move trả `409 UNDO_NO_LONGER_SAFE`; batch conflict/atomic có integration test.
+- Board tạm và checkpoint/activity đã xóa; health `0.4.0`; suite 31 file, 144 test.
+
+## 2026-11-10 - Phase 5B gate
+
+- Feature gate: typecheck/lint/format pass; full suite 31 file, 144 test ba lần
+  22.72/22.88/22.77 s.
+- Cập nhật spec, plan, architecture, MongoDB notes, README và git workflow cho Phase 5B.
+- Chờ merge `feat/phase-5b-batch-undo` vào `release/v0.5` bằng `--no-ff`.
+- Không bump `0.5.0`; không merge `main`; tag `v0.4.0` giữ nguyên.

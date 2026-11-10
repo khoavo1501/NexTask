@@ -1,13 +1,15 @@
 'use client';
 
-import type { ActivityDto, BoardMemberDetailDto } from '@nextask/contracts';
+import type { ActivityDto, BoardMemberDetailDto, TaskDto } from '@nextask/contracts';
 import { useCallback, useEffect, useState } from 'react';
 import { ApiClientError, getActivities } from '../../lib/api';
 
 interface ActivityPanelProps {
   boardId: string;
   members: BoardMemberDetailDto[];
+  tasks: TaskDto[];
   refreshKey: number;
+  onUndo: (activity: ActivityDto) => void;
 }
 
 const actionLabels: Record<ActivityDto['action'], string> = {
@@ -16,11 +18,18 @@ const actionLabels: Record<ActivityDto['action'], string> = {
   'item.promote_undone': 'Đã hoàn tác promote',
 };
 
-export function ActivityPanel({ boardId, members, refreshKey }: ActivityPanelProps) {
+export function ActivityPanel({ boardId, members, tasks, refreshKey, onUndo }: ActivityPanelProps) {
   const [activities, setActivities] = useState<ActivityDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const memberNames = new Map(members.map((member) => [member.userId, member.name]));
+  const activeTaskIds = new Set(tasks.map((task) => task._id));
+  const undoneActivityIds = new Set(
+    activities
+      .filter((activity) => activity.action === 'item.promote_undone')
+      .map((activity) => activity.snapshot.originalActivityId)
+      .filter((value): value is string => typeof value === 'string'),
+  );
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -95,6 +104,20 @@ export function ActivityPanel({ boardId, members, refreshKey }: ActivityPanelPro
                     ? activity.snapshot.taskTitle
                     : 'Task'}
                 </p>
+                {activity.action === 'item.promoted' &&
+                activity.refs.taskId &&
+                activeTaskIds.has(activity.refs.taskId) &&
+                !undoneActivityIds.has(activity._id) &&
+                activity.undoableUntil &&
+                new Date(activity.undoableUntil).getTime() > Date.now() ? (
+                  <button
+                    type="button"
+                    onClick={() => onUndo(activity)}
+                    className="mt-2 text-[11px] font-medium text-rose-700 hover:underline"
+                  >
+                    Undo
+                  </button>
+                ) : null}
               </li>
             ))}
           </ul>

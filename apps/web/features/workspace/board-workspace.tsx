@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  ActivityDto,
   BoardDto,
   BoardMemberDetailDto,
   ItemDto,
@@ -24,9 +25,12 @@ import {
   isOrderConflict,
   isVersionConflict,
   moveTask,
+  promoteBatch,
   promoteItem,
+  undoPromote,
 } from '../../lib/api';
 import { createBoardSocket } from '../../lib/realtime';
+import { BatchPromoteDialog } from '../whiteboard/batch-promote-dialog';
 import { PromoteDialog } from '../whiteboard/promote-dialog';
 import { Whiteboard } from '../whiteboard/whiteboard';
 import { ActivityPanel } from './activity-panel';
@@ -36,6 +40,7 @@ import { InviteDialog } from './invite-dialog';
 import { KanbanBoard, type KanbanFilters } from './kanban-board';
 import { RenameBoardDialog } from './rename-board-dialog';
 import { TaskEditorDialog } from './task-editor-dialog';
+import { UndoPromoteDialog } from './undo-promote-dialog';
 
 interface BoardWorkspaceProps {
   boardId: string;
@@ -54,6 +59,8 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [promoteTarget, setPromoteTarget] = useState<ItemDto | null>(null);
+  const [batchPromoteTarget, setBatchPromoteTarget] = useState<ItemDto[] | null>(null);
+  const [undoTarget, setUndoTarget] = useState<ActivityDto | null>(null);
   const [showInvite, setShowInvite] = useState(false);
   const [showRename, setShowRename] = useState(false);
   const [showColumns, setShowColumns] = useState(false);
@@ -288,6 +295,53 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     [boardId, loadWorkspace, promoteTarget],
   );
 
+  const handleBatchPromote = useCallback(
+    async (input: { columnId: string; assignToMe: boolean }) => {
+      if (!batchPromoteTarget) return;
+      try {
+        const result = await promoteBatch(boardId, {
+          columnId: input.columnId,
+          assignToMe: input.assignToMe,
+          items: batchPromoteTarget.map((item) => ({
+            itemId: item._id,
+            expectedItemVersion: item.version,
+          })),
+        });
+        setData((current) => {
+          if (!current) return current;
+          const itemMap = new Map(result.items.map((item) => [item._id, item]));
+          return {
+            ...current,
+            items: current.items.map((item) => itemMap.get(item._id) ?? item),
+            tasks: [
+              ...current.tasks.filter(
+                (task) => !result.tasks.some((incoming) => incoming._id === task._id),
+              ),
+              ...result.tasks,
+            ],
+          };
+        });
+        setBatchPromoteTarget(null);
+        setActivityRevision((value) => value + 1);
+        setWhiteboardRevision((value) => value + 1);
+        setNotice(`Đã promote ${result.tasks.length} ghi chú thành task`);
+      } catch (caught) {
+        if (
+          isVersionConflict(caught) ||
+          (caught instanceof ApiClientError && caught.code === 'BATCH_PROMOTE_CONFLICT')
+        ) {
+          setBatchPromoteTarget(null);
+          setNotice('Batch vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
+          await loadWorkspace();
+          await loadTasks(filters);
+          return;
+        }
+        throw caught;
+      }
+    },
+    [batchPromoteTarget, boardId, filters, loadTasks, loadWorkspace],
+  );
+
   const handleDemote = useCallback(async () => {
     if (!demoteTarget || !data) return;
     const item = data.items.find((entry) => entry._id === demoteTarget.sourceItemId);
@@ -338,6 +392,37 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       throw caught;
     }
   }, [boardId, data, demoteTarget, filters, loadTasks, loadWorkspace]);
+
+  const handleUndoPromote = useCallback(async () => {
+    if (!undoTarget) return;
+    try {
+      const result = await undoPromote(boardId, undoTarget._id);
+      setData((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          items: current.items.map((item) => (item._id === result.item._id ? result.item : item)),
+          tasks: current.tasks.filter((task) => task._id !== result.task._id),
+        };
+      });
+      setUndoTarget(null);
+      setActivityRevision((value) => value + 1);
+      setWhiteboardRevision((value) => value + 1);
+      setNotice('Đã hoàn tác promote.');
+    } catch (caught) {
+      if (
+        caught instanceof ApiClientError &&
+        (caught.code === 'UNDO_NO_LONGER_SAFE' || caught.code === 'UNDO_NOT_AVAILABLE')
+      ) {
+        setUndoTarget(null);
+        setNotice(caught.message);
+        await loadWorkspace();
+        await loadTasks(filters);
+        return;
+      }
+      throw caught;
+    }
+  }, [boardId, filters, loadTasks, loadWorkspace, undoTarget]);
 
   const handleRenamed = useCallback((board: BoardDto) => {
     setData((current) => (current ? { ...current, board } : current));
@@ -533,6 +618,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
             onCursorMove={(point) => socketRef.current?.emit(SOCKET_EVENTS.presenceCursor, point)}
             onItemsChange={handleItemsChange}
             onPromoteRequest={setPromoteTarget}
+            onPromoteBatchRequest={setBatchPromoteTarget}
           />
         </section>
 
@@ -579,7 +665,9 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
               <ActivityPanel
                 boardId={boardId}
                 members={data.members}
+                tasks={data.tasks}
                 refreshKey={activityRevision}
+                onUndo={setUndoTarget}
               />
             )}
           </div>
@@ -592,6 +680,15 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           columns={data.board.columns}
           onClose={() => setPromoteTarget(null)}
           onConfirm={handlePromote}
+        />
+      ) : null}
+
+      {batchPromoteTarget ? (
+        <BatchPromoteDialog
+          items={batchPromoteTarget}
+          columns={data.board.columns}
+          onClose={() => setBatchPromoteTarget(null)}
+          onConfirm={handleBatchPromote}
         />
       ) : null}
 
@@ -620,6 +717,14 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           task={demoteTarget}
           onClose={() => setDemoteTarget(null)}
           onConfirm={handleDemote}
+        />
+      ) : null}
+
+      {undoTarget ? (
+        <UndoPromoteDialog
+          activity={undoTarget}
+          onClose={() => setUndoTarget(null)}
+          onConfirm={handleUndoPromote}
         />
       ) : null}
 

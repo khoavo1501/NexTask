@@ -1,12 +1,13 @@
 # Giai đoạn 4 - Realtime Change Streams và presence
 
-- Trạng thái: Chờ duyệt spec
+- Trạng thái: Đã duyệt spec; implementation plan:
+  [2026-11-10-phase-4-realtime.md](../superpowers/plans/2026-11-10-phase-4-realtime.md)
 - Ngày lập: 2026-11-10
 - Tiền đề: v0.3.0 đã phát hành; tag `v0.3.0` tại `52840fe`
 - Kiến trúc: [../architecture.md](../architecture.md)
 - Phase 3A/3B: [03a-kanban-ordering.md](./03a-kanban-ordering.md), [03b-task-editing-columns.md](./03b-task-editing-columns.md)
 - Nhánh: `feat/phase-4-realtime`, tạo từ `release/v0.4`, release tạo từ `main`
-- Implementation plan: chưa viết, chờ duyệt spec
+- Implementation plan: [2026-11-10-phase-4-realtime.md](../superpowers/plans/2026-11-10-phase-4-realtime.md)
 - Không merge `release/v0.4` vào `main` trong phase này
 
 ## 1. Mục tiêu

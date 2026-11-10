@@ -17,9 +17,7 @@ const CHECKPOINT_VALIDATOR = {
 } as const;
 
 async function ensureCheckpointCollection(db: Db): Promise<void> {
-  const [existing] = await db
-    .listCollections({ name: 'change_stream_checkpoints' })
-    .toArray();
+  const [existing] = await db.listCollections({ name: 'change_stream_checkpoints' }).toArray();
 
   if (!existing) {
     await db.createCollection('change_stream_checkpoints', {

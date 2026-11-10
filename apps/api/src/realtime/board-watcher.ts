@@ -65,9 +65,7 @@ export class BoardWatcher {
     }
     this.refs = 0;
     this.started = false;
-    await Promise.all(
-      [...this.streams.keys()].map((collection) => this.closeStream(collection)),
-    );
+    await Promise.all([...this.streams.keys()].map((collection) => this.closeStream(collection)));
   }
 
   private async openAll(): Promise<void> {
@@ -101,10 +99,7 @@ export class BoardWatcher {
     ];
   }
 
-  private async startStream(
-    collection: CheckpointCollection,
-    useCheckpoint = true,
-  ): Promise<void> {
+  private async startStream(collection: CheckpointCollection, useCheckpoint = true): Promise<void> {
     const db = this.options.connection.db;
     if (!db) throw new Error('MongoDB connection is not ready');
 
@@ -146,10 +141,7 @@ export class BoardWatcher {
     }
   }
 
-  private async handleError(
-    collection: CheckpointCollection,
-    error: unknown,
-  ): Promise<void> {
+  private async handleError(collection: CheckpointCollection, error: unknown): Promise<void> {
     this.options.logger.error({ err: error, collection }, 'Change stream error');
     await this.closeStream(collection);
 

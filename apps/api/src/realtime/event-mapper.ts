@@ -20,14 +20,10 @@ export function mapChangeToEvent(
 ): RealtimeEvent | null {
   const before =
     ((change as { fullDocumentBeforeChange?: Document | null }).fullDocumentBeforeChange as
-      | Document
-      | null
-      | undefined) ?? null;
+      Document | null | undefined) ?? null;
   const after =
-    ((change as { fullDocument?: Document | null }).fullDocument as
-      | Document
-      | null
-      | undefined) ?? null;
+    ((change as { fullDocument?: Document | null }).fullDocument as Document | null | undefined) ??
+    null;
   const document = after ?? before;
   if (!document || String(document.boardId) !== boardId) return null;
 

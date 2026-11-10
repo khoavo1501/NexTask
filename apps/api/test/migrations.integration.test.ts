@@ -199,9 +199,8 @@ describe('migration 2A', () => {
     const [checkpointInfo] = await connection.db
       .listCollections({ name: 'change_stream_checkpoints' })
       .toArray();
-    const checkpointOptions = (
-      checkpointInfo as { options?: Record<string, unknown> } | undefined
-    )?.options;
+    const checkpointOptions = (checkpointInfo as { options?: Record<string, unknown> } | undefined)
+      ?.options;
     expect(checkpointInfo).toBeDefined();
     expect(checkpointOptions?.validationLevel).toBe('strict');
 

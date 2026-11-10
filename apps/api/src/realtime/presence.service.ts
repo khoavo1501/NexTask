@@ -18,7 +18,8 @@ export function addParticipant(
   socketId: string,
   user: UserDocument,
 ): PresenceParticipant {
-  const color = COLORS[Number.parseInt(user._id.toHexString().slice(-2), 16) % COLORS.length] ?? COLORS[0]!;
+  const color =
+    COLORS[Number.parseInt(user._id.toHexString().slice(-2), 16) % COLORS.length] ?? COLORS[0]!;
   const participant: PresenceParticipant = {
     socketId,
     userId: user._id.toHexString(),

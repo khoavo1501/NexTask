@@ -83,11 +83,7 @@ describe('event mapper', () => {
     );
     expect(promoted).toMatchObject({ type: 'item:promoted' });
 
-    const deleted = mapChangeToEvent(
-      'items',
-      change('delete', null, item),
-      boardId.toHexString(),
-    );
+    const deleted = mapChangeToEvent('items', change('delete', null, item), boardId.toHexString());
     expect(deleted).toMatchObject({
       type: 'item:deleted',
       payload: { itemId: item._id.toHexString() },

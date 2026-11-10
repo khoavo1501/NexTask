@@ -21,10 +21,7 @@ function readSessionCookie(header: string | undefined): string | null {
   return null;
 }
 
-export async function authenticateSocket(
-  socket: Socket,
-  jwtSecret: string,
-): Promise<UserDocument> {
+export async function authenticateSocket(socket: Socket, jwtSecret: string): Promise<UserDocument> {
   const token = readSessionCookie(socket.handshake.headers.cookie);
   if (!token) throw new Error('UNAUTHENTICATED');
   const userId = await verifySessionToken(token, jwtSecret);

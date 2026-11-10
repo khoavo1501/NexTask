@@ -40,10 +40,7 @@ export function createRealtimeServer(
 
   io.use(async (socket, next) => {
     try {
-      (socket.data as BoardSocketData).user = await authenticateSocket(
-        socket,
-        deps.jwtSecret,
-      );
+      (socket.data as BoardSocketData).user = await authenticateSocket(socket, deps.jwtSecret);
       next();
     } catch {
       next(new Error('UNAUTHENTICATED'));
@@ -84,10 +81,7 @@ export function createRealtimeServer(
     removeParticipant(boardId, socket.id);
     watcherFor(boardId).release();
     data.boardId = undefined;
-    io.to(room(boardId)).emit(
-      SOCKET_EVENTS.presenceList,
-      listParticipants(boardId),
-    );
+    io.to(room(boardId)).emit(SOCKET_EVENTS.presenceList, listParticipants(boardId));
   }
 
   io.on('connection', (socket) => {
@@ -115,10 +109,7 @@ export function createRealtimeServer(
         await socket.join(room(boardId));
         await watcherFor(boardId).acquire();
         addParticipant(boardId, socket.id, user);
-        io.to(room(boardId)).emit(
-          SOCKET_EVENTS.presenceList,
-          listParticipants(boardId),
-        );
+        io.to(room(boardId)).emit(SOCKET_EVENTS.presenceList, listParticipants(boardId));
         ack?.({ ok: true });
       },
     );

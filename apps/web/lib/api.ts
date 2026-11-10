@@ -1,10 +1,13 @@
 import {
+  activitiesResponseSchema,
   apiErrorSchema,
   boardMembersResponseSchema,
   boardResponseSchema,
   boardsResponseSchema,
   createInvitationRequestSchema,
   createTaskRequestSchema,
+  demoteTaskRequestSchema,
+  demoteTaskResponseSchema,
   invitationAcceptResponseSchema,
   invitationCreateResponseSchema,
   itemsResponseSchema,
@@ -18,11 +21,13 @@ import {
   updateColumnsRequestSchema,
   updateTaskRequestSchema,
   userResponseSchema,
+  type ActivityDto,
   type BoardDto,
   type BoardMemberDetailDto,
   type CreateBoardRequest,
   type CreateInvitationRequest,
   type CreateTaskRequest,
+  type DemoteTaskRequest,
   type ItemDto,
   type LoginRequest,
   type MoveTaskRequest,
@@ -315,5 +320,26 @@ export async function moveTask(
       method: 'POST',
       body: JSON.stringify(input),
     })
+  ).data;
+}
+
+export async function demoteTask(
+  boardId: string,
+  taskId: string,
+  input: DemoteTaskRequest,
+): Promise<{ task: TaskDto; item: ItemDto; activity: ActivityDto }> {
+  const body = demoteTaskRequestSchema.parse(input);
+  return (
+    await request(`/boards/${boardId}/tasks/${taskId}/demote`, demoteTaskResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function getActivities(boardId: string, limit = 50): Promise<ActivityDto[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  return (
+    await request(`/boards/${boardId}/activities?${params.toString()}`, activitiesResponseSchema)
   ).data;
 }

@@ -17,6 +17,7 @@ interface KanbanBoardProps {
   hasMore: boolean;
   onFiltersChange: (filters: KanbanFilters) => void;
   onEditTask: (task: TaskDto) => void;
+  onDemoteTask: (task: TaskDto) => void;
   onCreateTask: (columnId: string) => void;
   onMoveTask: (
     taskId: string,
@@ -56,6 +57,7 @@ export function KanbanBoard({
   hasMore,
   onFiltersChange,
   onEditTask,
+  onDemoteTask,
   onCreateTask,
   onMoveTask,
 }: KanbanBoardProps) {
@@ -298,17 +300,32 @@ export function KanbanBoard({
                       <p className="mt-2 text-[11px] text-stone-500">
                         {assigneeName(task.assigneeId)}
                       </p>
-                      <button
-                        type="button"
-                        onMouseDown={(event) => event.stopPropagation()}
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          onEditTask(task);
-                        }}
-                        className="mt-2 text-[11px] font-medium text-sky-700 hover:underline"
-                      >
-                        Sửa
-                      </button>
+                      <div className="mt-2 flex items-center gap-3">
+                        <button
+                          type="button"
+                          onMouseDown={(event) => event.stopPropagation()}
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            onEditTask(task);
+                          }}
+                          className="text-[11px] font-medium text-sky-700 hover:underline"
+                        >
+                          Sửa
+                        </button>
+                        {task.sourceItemId ? (
+                          <button
+                            type="button"
+                            onMouseDown={(event) => event.stopPropagation()}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              onDemoteTask(task);
+                            }}
+                            className="text-[11px] font-medium text-rose-700 hover:underline"
+                          >
+                            Demote
+                          </button>
+                        ) : null}
+                      </div>
                     </article>
                   );
                 })}

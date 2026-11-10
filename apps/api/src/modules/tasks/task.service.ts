@@ -2,7 +2,7 @@ import type { MoveTaskRequest } from '@nextask/contracts';
 import { generateKeyBetween } from 'fractional-indexing';
 import { Types } from 'mongoose';
 import { AppError } from '../../lib/errors.js';
-import { versionConflict } from '../../lib/versioning.js';
+import { orderConflict, versionConflict } from '../../lib/versioning.js';
 import type { BoardDocument } from '../boards/board.model.js';
 import { TaskModel, type TaskDocument } from './task.model.js';
 
@@ -10,6 +10,47 @@ export async function listTasks(board: BoardDocument): Promise<TaskDocument[]> {
   return TaskModel.find({ boardId: board._id, lifecycle: 'active' })
     .sort({ columnId: 1, order: 1 })
     .exec();
+}
+
+function isDuplicateKeyError(error: unknown): boolean {
+  const direct = error as { code?: number };
+  if (direct.code === 11_000) return true;
+
+  const writeErrors = (error as { writeErrors?: Array<{ err?: { code?: number } }> })
+    .writeErrors;
+  return writeErrors?.[0]?.err?.code === 11_000;
+}
+
+async function resolveOrder(
+  board: BoardDocument,
+  task: TaskDocument,
+  targetColumnId: string,
+  beforeTaskId: string | null,
+): Promise<string> {
+  let beforeTask: TaskDocument | null = null;
+  if (beforeTaskId) {
+    beforeTask = await TaskModel.findOne({
+      _id: beforeTaskId,
+      boardId: board._id,
+      columnId: targetColumnId,
+      lifecycle: 'active',
+    }).exec();
+    if (!beforeTask) {
+      throw new AppError(422, 'VALIDATION_ERROR', 'Task mốc không tồn tại trong cột đích');
+    }
+  }
+
+  const prevTask = await TaskModel.findOne({
+    boardId: board._id,
+    columnId: targetColumnId,
+    lifecycle: 'active',
+    _id: { $ne: task._id },
+    ...(beforeTask ? { order: { $lt: beforeTask.order } } : {}),
+  })
+    .sort({ order: -1 })
+    .exec();
+
+  return generateKeyBetween(prevTask?.order ?? null, beforeTask?.order ?? null);
 }
 
 export async function moveTask(
@@ -25,8 +66,11 @@ export async function moveTask(
   if (!targetColumn) {
     throw new AppError(422, 'VALIDATION_ERROR', 'Cột đích không tồn tại');
   }
+  if (input.beforeTaskId === taskId) {
+    throw new AppError(422, 'VALIDATION_ERROR', 'Không thể chèn task trước chính nó');
+  }
 
-  const task = await TaskModel.findOne({
+  let task = await TaskModel.findOne({
     _id: taskId,
     boardId: board._id,
     lifecycle: 'active',
@@ -37,41 +81,51 @@ export async function moveTask(
   if (task.version !== input.expectedVersion) {
     throw versionConflict(task.version);
   }
-  if (task.columnId === targetColumn.id) {
-    return task;
-  }
 
-  const lastTask = await TaskModel.findOne({
-    boardId: board._id,
-    columnId: targetColumn.id,
-    lifecycle: 'active',
-    _id: { $ne: task._id },
-  })
-    .sort({ order: -1 })
-    .exec();
-  const order = generateKeyBetween(lastTask?.order ?? null, null);
-
-  const updated = await TaskModel.findOneAndUpdate(
-    {
-      _id: task._id,
-      boardId: board._id,
-      lifecycle: 'active',
-      version: input.expectedVersion,
-    },
-    { $set: { columnId: targetColumn.id, order }, $inc: { version: 1 } },
-    { returnDocument: 'after' },
-  ).exec();
-
-  if (!updated) {
-    const current = await TaskModel.findOne({
-      _id: task._id,
-      boardId: board._id,
-      lifecycle: 'active',
-    }).exec();
-    if (!current) {
-      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const order = await resolveOrder(board, task, targetColumn.id, input.beforeTaskId);
+    if (task.columnId === targetColumn.id && order === task.order) {
+      return task;
     }
-    throw versionConflict(current.version);
+
+    try {
+      const updated = await TaskModel.findOneAndUpdate(
+        {
+          _id: task._id,
+          boardId: board._id,
+          lifecycle: 'active',
+          version: input.expectedVersion,
+        },
+        { $set: { columnId: targetColumn.id, order }, $inc: { version: 1 } },
+        { returnDocument: 'after' },
+      ).exec();
+
+      if (!updated) {
+        const current = await TaskModel.findOne({
+          _id: task._id,
+          boardId: board._id,
+          lifecycle: 'active',
+        }).exec();
+        if (!current) {
+          throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+        }
+        throw versionConflict(current.version);
+      }
+      return updated;
+    } catch (error) {
+      if (!isDuplicateKeyError(error)) throw error;
+      if (attempt === 1) throw orderConflict(targetColumn.id);
+
+      const current = await TaskModel.findById(task._id).exec();
+      if (!current) {
+        throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+      }
+      if (current.version !== input.expectedVersion) {
+        throw versionConflict(current.version);
+      }
+      task = current;
+    }
   }
-  return updated;
+
+  throw orderConflict(targetColumn.id);
 }

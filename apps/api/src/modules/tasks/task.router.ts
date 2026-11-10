@@ -20,7 +20,7 @@ export function createTasksRouter(): Router {
     });
   });
 
-  router.patch('/:taskId', async (request, response) => {
+  router.post('/:taskId/move', async (request, response) => {
     if (!request.board) {
       throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
     }

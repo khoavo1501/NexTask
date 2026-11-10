@@ -1,7 +1,7 @@
 # Giai đoạn 4 - Realtime Change Streams và presence
 
-- Trạng thái: Hoàn thành; merge vào `release/v0.4` tại `b11b326`, merge vào `main` tại
-  `de15b5a`; release/main gate pass. Chưa bump `0.4.0`, chưa tạo tag v0.4.0.
+- Trạng thái: Hoàn thành; bump `0.4.0` tại `7276612`, merge vào `main` tại `18588e6`;
+  release/main gate pass; tag annotated `v0.4.0` tạo sau docs release merge.
   Implementation plan:
   [2026-11-10-phase-4-realtime.md](../superpowers/plans/2026-11-10-phase-4-realtime.md)
 - Ngày lập: 2026-11-10
@@ -427,7 +427,8 @@ Payload:
 
 - `release/v0.4` tạo từ `main` tại `52840fe` (tag `v0.3.0`).
 - Feature `feat/phase-4-realtime` tạo từ `release/v0.4`.
-- Không bump version `0.4.0`; tag `v0.3.0` giữ nguyên.
+- Tag `v0.3.0` giữ nguyên.
 - Merge feature vào `release/v0.4` bằng `--no-ff` (`b11b326`); xóa feature.
-- Merge `release/v0.4` vào `main` bằng `--no-ff` (`de15b5a`); main gate pass.
-- Không tạo tag v0.4.0 và không push.
+- Bump version `0.4.0` tại `7276612`; merge `release/v0.4` vào `main` bằng `--no-ff`
+  (`18588e6`); main gate pass.
+- Tạo tag annotated `v0.4.0` sau docs release merge; không push.

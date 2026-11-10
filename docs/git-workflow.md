@@ -4,8 +4,8 @@
 
 - Repository cục bộ, chưa có remote.
 - Nhánh ổn định: `main` tại `da0547a` (v0.2.0, tag annotated `v0.2.0`).
-- Nhánh phiên bản: `release/v0.3` đang mở; feature `feat/phase-3a-kanban-ordering`.
-- Phase 0, Phase 1, Phase 2A, Phase 2B và 3A đã hoàn thành; 3A chưa merge release.
+- Nhánh phiên bản: `release/v0.3` tại `0d7dd2d`; feature 3A đã merge và xóa.
+- Phase 0, Phase 1, Phase 2A, Phase 2B và 3A đã hoàn thành; 3A nằm trên release.
 - Tag `v0.2.0` và `main` không đổi trong Phase 3A.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
@@ -230,5 +230,6 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   11.51/11.45/11.47 s.
 - Migration 003 đã áp rehearsal và app DB; backup
   `backups/nextask-before-3a-2026-11-10.gz`.
-- Merge feature vào `release/v0.3` bằng `--no-ff`; chạy lại gate trên release; xóa feature.
+- Merge feature vào `release/v0.3` bằng `--no-ff` (`0d7dd2d`); release gate pass:
+  typecheck/lint/format; full suite 82 test ba lần 11.43/11.54/11.54 s; feature đã xóa.
 - Không merge `release/v0.3` vào `main`; chưa bump version `0.3.0`; tag `v0.2.0` giữ nguyên.

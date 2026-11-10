@@ -1,6 +1,6 @@
 # Giai đoạn 3A - Kanban ordering, filter và index
 
-- Trạng thái: Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.3`
+- Trạng thái: Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.3` bằng `0d7dd2d`
 - Ngày lập: 2026-11-10
 - Tiền đề: v0.2.0 đã phát hành tại `main` (`da0547a`), tag `v0.2.0`
 - Kiến trúc: [../architecture.md](../architecture.md)
@@ -442,10 +442,12 @@ Sau migration, chạy `explain("executionStats")` cho:
 - `npm run typecheck`: pass.
 - `npm run lint`: pass.
 - `npm run format:check`: pass.
-- Full API suite 16 file, 82 test, ba lần liên tiếp:
+- Full API suite 16 file, 82 test, ba lần liên tiếp trên feature:
   - Lần 1: 11.51 s.
   - Lần 2: 11.45 s.
   - Lần 3: 11.47 s.
+- Gate trên `release/v0.3` sau merge: typecheck/lint/format pass; full suite 82 test ba
+  lần 11.43/11.54/11.54 s.
 - Docker `mongo`, `api`, `web` healthy; health `0.2.0` (chưa bump v0.3).
 - Explain 1000 task tạm:
   - assignee: 1 key/1 doc/0 ms.
@@ -462,4 +464,4 @@ Sau migration, chạy `explain("executionStats")` cho:
   cột `backlog`, không dùng `b0`.
 - Mongoose 9 không export `FilterQuery`; service dùng type `Filter` từ driver MongoDB.
 - Chưa có cursor pagination, text index, task edit/create hoặc column management.
-- `release/v0.3` chưa merge `main`; tag `v0.2.0` giữ nguyên.
+- `release/v0.3` chứa 3A, merge `0d7dd2d`; chưa merge `main`; tag `v0.2.0` giữ nguyên.

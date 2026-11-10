@@ -515,3 +515,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Explain 1000 task tạm; browser reorder/filter pass; task tạm đã xóa.
 - UI sort được sửa từ `localeCompare` sang so sánh chuỗi trực tiếp để khớp binary order.
 - Chờ merge `feat/phase-3a-kanban-ordering` vào `release/v0.3`; không merge `main`.
+
+### Merge release/v0.3
+
+- Merge `feat/phase-3a-kanban-ordering` vào `release/v0.3` bằng `--no-ff`: `0d7dd2d`.
+- Release gate: typecheck/lint/format pass; full suite 16 file, 82 test ba lần
+  11.43/11.54/11.54 s.
+- Xóa feature bằng `git branch -d`.
+- `main` vẫn `da0547a`, tag `v0.2.0` vẫn trỏ `da0547a`.
+- Docker chạy code 3A; migration 003 đã áp app DB; task test tạm đã xóa.

@@ -710,3 +710,10 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Plan `docs/superpowers/plans/2026-11-10-phase-5b-batch-undo.md`.
 - Phạm vi: batch promote multi-select, undo từng activity promote, fault injection hook.
 - Bắt đầu Inline Execution; không merge `main`.
+
+## 2026-11-10 - Phase 5B verification
+
+- Browser: multi-select 3 note, batch promote 3 task, badge/activity đúng; reload giữ.
+- Undo một promote: task rời Kanban, task còn lại giữ, activity undo xuất hiện.
+- Undo stale sau move trả `409 UNDO_NO_LONGER_SAFE`; batch conflict/atomic có integration test.
+- Board tạm và checkpoint/activity đã xóa; health `0.4.0`; suite 31 file, 144 test.

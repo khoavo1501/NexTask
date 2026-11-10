@@ -370,6 +370,17 @@ Thêm test dùng hook optional, không thay đổi production:
 - Docker rebuild; health `0.4.0`.
 - Full suite ba lần; typecheck/lint/format pass.
 
+### Kết quả verification 2026-11-10
+
+- Docker rebuild; health `0.4.0`; app DB vẫn 001–005.
+- Browser board tạm: chọn 3 note bằng Ctrl+A, panel hiện `Đã chọn 3 note`; batch promote
+  tạo 3 task, 3 badge và 3 activity.
+- Undo một activity promote: còn 2 task, 2 badge; activity `Đã hoàn tác promote` xuất hiện;
+  dòng promote đã undo không còn nút Undo; reload giữ trạng thái.
+- Move một task rồi undo activity cũ trả `409 UNDO_NO_LONGER_SAFE`.
+- Batch conflict/atomic được chứng minh bằng integration test; browser không có lỗi console/API.
+- Board tạm, activity và checkpoint của board tạm đã xóa; board thật giữ 1 board, 2 item, 2 task.
+
 ## 13. Tiêu chí chấp nhận
 
 1. Batch promote nhiều note trong một transaction; một lỗi làm rollback toàn bộ.

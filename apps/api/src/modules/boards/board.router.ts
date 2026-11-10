@@ -14,7 +14,13 @@ import { createInvitation } from '../invitations/invitation.service.js';
 import { createItemsRouter } from '../items/item.router.js';
 import { createTasksRouter } from '../tasks/task.router.js';
 import { loadBoardAccess, requireOwner } from './board-access.js';
-import { createBoard, listBoardMembers, listBoardsForUser, renameBoard, updateColumns } from './board.service.js';
+import {
+  createBoard,
+  listBoardMembers,
+  listBoardsForUser,
+  renameBoard,
+  updateColumns,
+} from './board.service.js';
 
 export function createBoardsRouter(): Router {
   const router = Router();

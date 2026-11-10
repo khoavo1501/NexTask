@@ -36,10 +36,7 @@ type OwnerAgent = Awaited<ReturnType<typeof registerAgent>>;
 
 async function setupBoard() {
   const owner = await registerAgent(app, 'owner@example.com', 'Owner');
-  const board = await owner.agent
-    .post('/api/v1/boards')
-    .send({ name: 'Columns' })
-    .expect(201);
+  const board = await owner.agent.post('/api/v1/boards').send({ name: 'Columns' }).expect(201);
   return { owner, boardId: board.body.data._id as string, board: board.body.data };
 }
 
@@ -89,9 +86,7 @@ describe('columns', () => {
     const reordered = editableColumns(current.columns)
       .slice()
       .reverse()
-      .map((column) =>
-        column.id === 'todo' ? { ...column, name: 'Việc cần làm' } : column,
-      );
+      .map((column) => (column.id === 'todo' ? { ...column, name: 'Việc cần làm' } : column));
 
     await owner.agent
       .patch(`/api/v1/boards/${boardId}/columns`)
@@ -113,9 +108,7 @@ describe('columns', () => {
       .expect(201);
 
     const current = await currentColumns(owner, boardId);
-    const withoutTodo = editableColumns(current.columns).filter(
-      (column) => column.id !== 'todo',
-    );
+    const withoutTodo = editableColumns(current.columns).filter((column) => column.id !== 'todo');
     const blocked = await owner.agent
       .patch(`/api/v1/boards/${boardId}/columns`)
       .send({ columns: withoutTodo, expectedVersion: current.version })

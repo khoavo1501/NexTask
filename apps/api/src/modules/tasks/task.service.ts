@@ -81,10 +81,7 @@ function normalizeLabels(labels?: string[]): string[] | undefined {
   return [...new Set(labels.map((label) => label.trim()).filter(Boolean))];
 }
 
-function assertAssigneeMember(
-  board: BoardDocument,
-  assigneeId: string | null | undefined,
-): void {
+function assertAssigneeMember(board: BoardDocument, assigneeId: string | null | undefined): void {
   if (!assigneeId) return;
   if (!board.members.some((member) => member.userId.equals(assigneeId))) {
     throw new AppError(422, 'VALIDATION_ERROR', 'Assignee phải là thành viên board');

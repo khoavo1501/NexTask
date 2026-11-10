@@ -16,9 +16,7 @@ describe('column contracts', () => {
   it('từ chối 0 hoặc 2 cột Done, id lặp, mảng rỗng', () => {
     const base = { columns: [{ name: 'A', isDone: false }], expectedVersion: 1 };
     expect(() => updateColumnsRequestSchema.parse(base)).toThrow();
-    expect(() =>
-      updateColumnsRequestSchema.parse({ columns: [], expectedVersion: 1 }),
-    ).toThrow();
+    expect(() => updateColumnsRequestSchema.parse({ columns: [], expectedVersion: 1 })).toThrow();
 
     expect(() =>
       updateColumnsRequestSchema.parse({

@@ -102,9 +102,7 @@ export async function updateColumns(
     }
   }
 
-  const providedIds = new Set(
-    input.columns.flatMap((column) => (column.id ? [column.id] : [])),
-  );
+  const providedIds = new Set(input.columns.flatMap((column) => (column.id ? [column.id] : [])));
   const removedIds = board.columns
     .filter((column) => !providedIds.has(column.id))
     .map((column) => column.id);
@@ -153,7 +151,8 @@ export async function updateColumns(
   return updated;
 }
 
-export async function listBoardMembers(board: BoardDocument): Promise<BoardMemberDetailDto[]> {  const users = await UserModel.find({
+export async function listBoardMembers(board: BoardDocument): Promise<BoardMemberDetailDto[]> {
+  const users = await UserModel.find({
     _id: { $in: board.members.map((member) => member.userId) },
   }).exec();
   const usersById = new Map(users.map((user) => [user._id.toHexString(), user]));

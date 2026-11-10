@@ -33,10 +33,7 @@ afterAll(async () => {
 
 async function setupTask() {
   const owner = await registerAgent(app, 'owner@example.com', 'Owner');
-  const board = await owner.agent
-    .post('/api/v1/boards')
-    .send({ name: 'Edit' })
-    .expect(201);
+  const board = await owner.agent.post('/api/v1/boards').send({ name: 'Edit' }).expect(201);
   const boardId = board.body.data._id as string;
   const task = await owner.agent
     .post(`/api/v1/boards/${boardId}/tasks`)

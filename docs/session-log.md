@@ -533,3 +533,10 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Quyết định: task create append fractional; edit không đổi cột/order; assignee phải là
   member; board 1–12 cột, đúng một Done, không xóa cột còn task active.
 - Spec: `docs/phases/03b-task-editing-columns.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-10 - Phase 3B plan
+
+- Spec `docs/phases/03b-task-editing-columns.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-10-phase-3b-task-editing-columns.md`.
+- Phạm vi: task create/edit, Owner columns, UI dialog; không migration/cursor.
+- Bắt đầu Inline Execution; chưa merge `main`.

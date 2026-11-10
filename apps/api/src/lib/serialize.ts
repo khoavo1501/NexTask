@@ -69,7 +69,7 @@ export function serializeTask(task: TaskDocument): TaskDto {
     labels: task.labels,
     priority: task.priority,
     dueDate: task.dueDate?.toISOString() ?? null,
-    lifecycle: 'active',
+    lifecycle: task.lifecycle,
     sourceItemId: task.sourceItemId?.toHexString() ?? null,
     origin: task.origin
       ? {
@@ -85,5 +85,7 @@ export function serializeTask(task: TaskDocument): TaskDto {
     createdBy: task.createdBy.toHexString(),
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
+    demotedAt: task.demotedAt?.toISOString() ?? null,
+    demotedBy: task.demotedBy?.toHexString() ?? null,
   };
 }

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { activitySchema } from './activity.js';
 import { isoDateSchema, objectIdSchema } from './common.js';
 import { envelopeMetaSchema } from './envelope.js';
 import { itemSchema } from './item.js';
@@ -25,19 +26,35 @@ export const taskSchema = z.object({
   labels: z.array(z.string()),
   priority: taskPrioritySchema,
   dueDate: isoDateSchema.nullable(),
-  lifecycle: z.literal('active'),
+  lifecycle: z.enum(['active', 'demoted']),
   sourceItemId: objectIdSchema.nullable(),
   origin: taskOriginSchema.nullable(),
   version: z.number().int().positive(),
   createdBy: objectIdSchema,
   createdAt: isoDateSchema,
   updatedAt: isoDateSchema,
+  demotedAt: isoDateSchema.nullable(),
+  demotedBy: objectIdSchema.nullable(),
 });
 
 export const promoteRequestSchema = z.object({
   columnId: z.string().min(1),
   assignToMe: z.boolean().default(false),
   expectedItemVersion: z.number().int().positive(),
+});
+
+export const demoteTaskRequestSchema = z.object({
+  expectedTaskVersion: z.number().int().positive(),
+  expectedItemVersion: z.number().int().positive(),
+});
+
+export const demoteTaskResponseSchema = z.object({
+  data: z.object({
+    task: taskSchema,
+    item: itemSchema,
+    activity: activitySchema,
+  }),
+  meta: envelopeMetaSchema,
 });
 
 export const moveTaskRequestSchema = z.object({
@@ -113,6 +130,7 @@ export type TaskDto = z.infer<typeof taskSchema>;
 export type TaskPriority = z.infer<typeof taskPrioritySchema>;
 export type TaskListQuery = z.infer<typeof taskListQuerySchema>;
 export type PromoteRequest = z.infer<typeof promoteRequestSchema>;
+export type DemoteTaskRequest = z.infer<typeof demoteTaskRequestSchema>;
 export type MoveTaskRequest = z.infer<typeof moveTaskRequestSchema>;
 export type CreateTaskRequest = z.infer<typeof createTaskRequestSchema>;
 export type UpdateTaskRequest = z.infer<typeof updateTaskRequestSchema>;

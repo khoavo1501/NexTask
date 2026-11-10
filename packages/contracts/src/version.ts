@@ -7,6 +7,7 @@ export const COLUMN_NOT_EMPTY_CODE = 'COLUMN_NOT_EMPTY' as const;
 export const versionConflictDetailsSchema = z.object({
   currentVersion: z.number().int().nonnegative(),
   shapeId: z.string().min(1).optional(),
+  field: z.enum(['task', 'item']).optional(),
 });
 
 export const orderConflictDetailsSchema = z.object({

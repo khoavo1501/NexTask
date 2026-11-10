@@ -602,3 +602,15 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Plan `docs/superpowers/plans/2026-11-10-phase-4-realtime.md`.
 - Phạm vi: Change Streams per board, checkpoint, Socket.IO auth/room, presence.
 - Bắt đầu Inline Execution; chưa merge `main`.
+
+## 2026-11-10 - Phase 4 verification
+
+- Migration 004 áp rehearsal/app; checkpoint collection/index; pre/post images bật.
+- Rehearsal counts giữ nguyên 1 board, 2 item, 2 task; backup trước migration hợp lệ.
+- Docker rebuild; migrate/api/web healthy; health `0.3.0`, Mongo `rs0` primary.
+- Browser: task create/move từ client thứ hai cập nhật Kanban/badge không reload.
+- Browser: item update kích hoạt refetch whiteboard (notice, GET items/tasks);
+  presence list và cursor overlay hiển thị.
+- Checkpoint/restart/socket integration tests pass (24 file, 106 test sau Task 4).
+- Đã dọn task test và khôi phục nội dung note; không có log lỗi API.
+- Gate cuối và merge `release/v0.4` thực hiện ở Task 7; không merge `main`.

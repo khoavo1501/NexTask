@@ -373,6 +373,25 @@ Payload:
 - Docker API/web healthy; Socket.IO handshake qua `localhost:4000`.
 - Không tạo tag; không merge main.
 
+### Kết quả verification 2026-11-10
+
+- Backup `backups/nextask-before-4-2026-11-10.gz` (gzip hợp lệ); restore rehearsal.
+- Rehearsal và app DB áp `004-phase-4`; checkpoint có validator + unique index
+  `change_stream_checkpoints_board_collection`; pre/post images bật cho `items`/`tasks`;
+  counts trước/sau giữ nguyên 1 board, 2 item, 2 task.
+- Docker migrate/api/web chạy; health `0.3.0`, Mongo `rs0` primary.
+- Browser (tab owner đang mở, client thứ hai bằng `fetch` cùng cookie):
+  - `POST /tasks` → Kanban tự thêm task ở Backlog, badge tổng task tăng, không reload.
+  - `POST /tasks/:id/move` → task tự chuyển sang In Progress, không reload.
+  - `PUT /items` → notice "Whiteboard vừa thay đổi...", tab gọi lại `GET /items` và
+    `GET /tasks`, whiteboard remount, không lỗi 500.
+  - Presence: dot online + chip participant; synthetic pointermove trong whiteboard
+    phát cursor và overlay hiển thị ở 40%/60%.
+- Dọn dữ liệu test: xóa task `Realtime E2E Task`; khôi phục nội dung note gốc
+  (version 45).
+- API không có log level 40/50 trong khoảng verification; checkpoint `items`/`tasks`
+  của board được lưu.
+
 ## 11. Tiêu chí chấp nhận
 
 1. Task move từ client khác cập nhật Kanban/badge trong tab đang mở.

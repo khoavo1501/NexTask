@@ -16,6 +16,8 @@ interface KanbanBoardProps {
   filters: KanbanFilters;
   hasMore: boolean;
   onFiltersChange: (filters: KanbanFilters) => void;
+  onEditTask: (task: TaskDto) => void;
+  onCreateTask: (columnId: string) => void;
   onMoveTask: (
     taskId: string,
     columnId: string,
@@ -53,6 +55,8 @@ export function KanbanBoard({
   filters,
   hasMore,
   onFiltersChange,
+  onEditTask,
+  onCreateTask,
   onMoveTask,
 }: KanbanBoardProps) {
   const [draggingTaskId, setDraggingTaskId] = useState<string | null>(null);
@@ -196,9 +200,19 @@ export function KanbanBoard({
             >
               <div className="flex items-center justify-between px-1 py-1">
                 <h3 className="text-sm font-semibold text-stone-700">{column.name}</h3>
-                <span className="rounded-full bg-white px-2 py-0.5 text-xs text-stone-500">
-                  {columnTasks.length}
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className="rounded-full bg-white px-2 py-0.5 text-xs text-stone-500">
+                    {columnTasks.length}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => onCreateTask(column.id)}
+                    aria-label={`Tạo task trong ${column.name}`}
+                    className="rounded-full bg-white px-2 py-0.5 text-xs font-medium text-stone-600 hover:bg-stone-100"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
 
               <div className="mt-1 flex min-h-24 flex-1 flex-col gap-2 overflow-y-auto">
@@ -284,6 +298,17 @@ export function KanbanBoard({
                       <p className="mt-2 text-[11px] text-stone-500">
                         {assigneeName(task.assigneeId)}
                       </p>
+                      <button
+                        type="button"
+                        onMouseDown={(event) => event.stopPropagation()}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onEditTask(task);
+                        }}
+                        className="mt-2 text-[11px] font-medium text-sky-700 hover:underline"
+                      >
+                        Sửa
+                      </button>
                     </article>
                   );
                 })}

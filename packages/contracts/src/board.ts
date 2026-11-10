@@ -43,6 +43,38 @@ export const renameBoardRequestSchema = z.object({
   expectedVersion: z.number().int().positive(),
 });
 
+export const updateColumnsRequestSchema = z
+  .object({
+    columns: z
+      .array(
+        z.object({
+          id: z.string().min(1).max(64).optional(),
+          name: z.string().trim().min(1).max(60),
+          isDone: z.boolean(),
+        }),
+      )
+      .min(1)
+      .max(12),
+    expectedVersion: z.number().int().positive(),
+  })
+  .superRefine((value, ctx) => {
+    const ids = value.columns.flatMap((column) => (column.id ? [column.id] : []));
+    if (new Set(ids).size !== ids.length) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Id cột bị lặp',
+        path: ['columns'],
+      });
+    }
+    if (value.columns.filter((column) => column.isDone).length !== 1) {
+      ctx.addIssue({
+        code: 'custom',
+        message: 'Phải có đúng một cột Done',
+        path: ['columns'],
+      });
+    }
+  });
+
 export const boardMemberDetailSchema = boardMemberSchema.extend({
   name: z.string(),
   email: z.string().email(),
@@ -68,3 +100,4 @@ export type BoardMemberDto = z.infer<typeof boardMemberSchema>;
 export type BoardMemberDetailDto = z.infer<typeof boardMemberDetailSchema>;
 export type CreateBoardRequest = z.infer<typeof createBoardRequestSchema>;
 export type RenameBoardRequest = z.infer<typeof renameBoardRequestSchema>;
+export type UpdateColumnsRequest = z.infer<typeof updateColumnsRequestSchema>;

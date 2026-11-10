@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { moveTaskRequestSchema, taskListQuerySchema, taskPrioritySchema } from '@nextask/contracts';
+import {
+  createTaskRequestSchema,
+  moveTaskRequestSchema,
+  taskListQuerySchema,
+  taskPrioritySchema,
+  updateTaskRequestSchema,
+} from '@nextask/contracts';
 
 describe('task contracts', () => {
   it('move mặc định beforeTaskId null và bắt buộc expectedVersion', () => {
@@ -36,5 +42,20 @@ describe('task contracts', () => {
     expect(() => taskPrioritySchema.parse('critical')).toThrow();
     expect(() => taskListQuerySchema.parse({ limit: '101' })).toThrow();
     expect(() => taskListQuerySchema.parse({ assigneeId: 'bad' })).toThrow();
+  });
+
+  it('create task trim title và optional field', () => {
+    expect(createTaskRequestSchema.parse({ columnId: 'todo', title: '  Task mới  ' })).toEqual({
+      columnId: 'todo',
+      title: 'Task mới',
+    });
+  });
+
+  it('update task cần expectedVersion và ít nhất một field', () => {
+    expect(() => updateTaskRequestSchema.parse({ expectedVersion: 1 })).toThrow();
+    expect(updateTaskRequestSchema.parse({ expectedVersion: 2, title: 'Mới' })).toMatchObject({
+      expectedVersion: 2,
+      title: 'Mới',
+    });
   });
 });

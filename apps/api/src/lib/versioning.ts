@@ -1,6 +1,8 @@
 import {
+  COLUMN_NOT_EMPTY_CODE,
   ORDER_CONFLICT_CODE,
   VERSION_CONFLICT_CODE,
+  type ColumnNotEmptyDetails,
   type OrderConflictDetails,
   type VersionConflictDetails,
 } from '@nextask/contracts';
@@ -18,4 +20,9 @@ export function versionConflict(currentVersion: number, shapeId?: string): AppEr
 export function orderConflict(columnId: string): AppError {
   const details: OrderConflictDetails = { columnId };
   return new AppError(409, ORDER_CONFLICT_CODE, 'Vị trí vừa thay đổi, vui lòng tải lại', details);
+}
+
+export function columnNotEmpty(columnId: string, taskCount: number): AppError {
+  const details: ColumnNotEmptyDetails = { columnId, taskCount };
+  return new AppError(409, COLUMN_NOT_EMPTY_CODE, 'Cột còn task, không thể xóa', details);
 }

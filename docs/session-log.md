@@ -641,3 +641,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Docker rebuild; API health `0.3.0`, Mongo `rs0` primary.
 - Không bump `0.4.0`; chưa tạo tag v0.4.0; không push.
 - Tag `v0.2.0` và `v0.3.0` giữ nguyên.
+
+## 2026-11-10 - Phát hành v0.4.0
+
+- Bump version root/API/web/contracts và `package-lock.json` lên `0.4.0`.
+- Bump `SERVICE_VERSION` trong `.env.example` và `docker-compose.yml` lên `0.4.0`.
+- Merge `release/v0.4` vào `main` bằng `--no-ff` với message
+  `release: v0.4.0 realtime`.
+- Sau merge: gate 3 lần, Docker health `0.4.0`; tạo tag annotated `v0.4.0` theo yêu cầu.
+- Không push.

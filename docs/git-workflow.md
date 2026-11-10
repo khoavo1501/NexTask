@@ -274,3 +274,13 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   106 test ba lần 15.60/15.55/15.60 s.
 - Docker rebuild; API health `0.3.0`, Mongo `rs0` primary.
 - Không bump `0.4.0`; chưa tạo tag v0.4.0; tag `v0.3.0` giữ nguyên; không push.
+
+## 15. Phát hành v0.4.0
+
+- Bump `package.json`, workspace packages, `package-lock.json` và `SERVICE_VERSION`
+  lên `0.4.0` trên `release/v0.4`.
+- Release v0.4 gồm Phase 4; merge vào `main` bằng `--no-ff` với message
+  `release: v0.4.0 realtime`.
+- Sau merge main: typecheck/lint/format, full suite ba lần và Docker health `0.4.0`.
+- Tạo tag annotated `v0.4.0` theo yêu cầu, sau khi main và docs release ổn định.
+- Không push.

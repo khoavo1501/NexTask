@@ -2,7 +2,7 @@
 
 Whiteboard và Kanban cho team Agile, gộp brainstorm và thực thi trên cùng một board.
 
-Phiên bản hiện tại: `0.3.0`.
+Phiên bản hiện tại: `0.4.0`.
 
 ## Trạng thái hiện tại
 

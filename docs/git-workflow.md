@@ -4,10 +4,9 @@
 
 - Repository cục bộ, chưa có remote.
 - Nhánh ổn định: `main` tại `9fd19b6`; đã phát hành version `0.4.0`.
-- Nhánh phiên bản: `release/v0.5` tạo từ `main`; Phase 5A đang hoàn tất trên feature.
-- Feature đang mở: `feat/phase-5a-demote-activity`.
-- Phase 0–5A hoàn thành; Phase 5A chờ merge `release/v0.5`, chưa phát hành v0.5.
-- Feature `feat/phase-4-realtime` đã merge và xóa.
+- Nhánh phiên bản: `release/v0.5` tại `0a34cce`; đã merge Phase 5A.
+- Phase 0–5A hoàn thành; Phase 5A đã merge `release/v0.5`, chưa phát hành v0.5.
+- Feature `feat/phase-5a-demote-activity` và `feat/phase-4-realtime` đã merge và xóa.
 - Tag annotated `v0.4.0` và các tag cũ giữ nguyên.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
@@ -295,5 +294,7 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Migration 005 áp rehearsal/app; backup `backups/nextask-before-5a-2026-11-10.gz`.
 - Feature gate: typecheck/lint/format pass; full suite 28 file, 126 test ba lần
   19.09/19.08/19.26 s.
-- Merge feature vào `release/v0.5` bằng `--no-ff` sau docs commit; xóa feature.
+- Merge feature vào `release/v0.5` bằng `--no-ff` (`0a34cce`); release gate pass:
+  typecheck/lint/format; full suite 28 file, 126 test ba lần 19.47/20.76/19.37 s.
+- Feature đã xóa; `release/v0.5` chứa Phase 5A.
 - Không bump `0.5.0`; không merge `main`; tag `v0.4.0` giữ nguyên; không push.

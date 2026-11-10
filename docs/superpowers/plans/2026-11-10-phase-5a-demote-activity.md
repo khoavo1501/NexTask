@@ -12,8 +12,8 @@
 
 **Branch:** `feat/phase-5a-demote-activity` từ `release/v0.5`; release tạo từ `main` tại `9fd19b6`. Không merge `main`, không bump `0.5.0`, tag `v0.4.0` giữ nguyên.
 
-**Trạng thái thực thi:** Hoàn thành code, migration và browser verification ngày
-2026-11-10; chờ merge vào `release/v0.5`. Commit chính:
+**Trạng thái thực thi:** Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.5` bằng
+`--no-ff` (`0a34cce`); feature branch đã xóa. Commit chính:
 
 - `996db73` `docs: specify phase 5a demote and activity`
 - `ed34789` `docs: plan phase 5a demote and activity`
@@ -25,9 +25,12 @@
 - `6c72172` `chore: format phase 5a api files`
 - `a60fb5e` `feat: add demote dialog and activity panel`
 - `659e935` `docs: record phase 5a verification`
+- `96d52eb` `docs: record phase 5a verification`
+- `0a34cce` `merge: phase 5a demote and activity` vào `release/v0.5`
 
 Feature gate: typecheck/lint/format pass; full suite 28 file, 126 test ba lần
-19.09/19.08/19.26 s. Merge commit và release gate ghi bổ sung sau khi merge.
+19.09/19.08/19.26 s. Release gate: typecheck/lint/format pass; full suite 28 file,
+126 test ba lần 19.47/20.76/19.37 s.
 
 **Điều chỉnh thực tế:**
 

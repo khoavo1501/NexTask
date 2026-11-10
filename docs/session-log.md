@@ -684,3 +684,14 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Cập nhật spec, plan, architecture, MongoDB notes, README và git workflow cho Phase 5A.
 - Chờ merge `feat/phase-5a-demote-activity` vào `release/v0.5` bằng `--no-ff`.
 - Không bump `0.5.0`; không merge `main`; tag `v0.4.0` giữ nguyên.
+
+### Merge release/v0.5
+
+- Merge `feat/phase-5a-demote-activity` vào `release/v0.5` bằng `--no-ff`:
+  `0a34cce` (`merge: phase 5a demote and activity`).
+- Release gate: typecheck/lint/format pass; full suite 28 file, 126 test ba lần
+  19.47/20.76/19.37 s.
+- Xóa feature bằng `git branch -d`.
+- `main` vẫn `9fd19b6`; tag `v0.2.0`, `v0.3.0`, `v0.4.0` giữ nguyên.
+- App DB đã áp 001–005; Docker health `0.4.0`.
+- Chờ người dùng duyệt phát hành v0.5 trước khi merge `main` và bump version.

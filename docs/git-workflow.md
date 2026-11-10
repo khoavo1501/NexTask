@@ -5,8 +5,9 @@
 - Repository cục bộ, chưa có remote.
 - Nhánh ổn định: `main` tại `da0547a` (v0.2.0, tag annotated `v0.2.0`).
 - Nhánh phiên bản: `release/v0.3`; merge 3A `0d7dd2d`, sau đó có commit docs release.
-- Phase 0, Phase 1, Phase 2A, Phase 2B và 3A đã hoàn thành; 3A nằm trên release.
-- Tag `v0.2.0` và `main` không đổi trong Phase 3A.
+- Feature đang mở: `feat/phase-3b-task-editing`, tạo từ `release/v0.3`.
+- Phase 0, Phase 1, Phase 2A, Phase 2B và 3A đã hoàn thành; 3B đang ở spec.
+- Tag `v0.2.0` và `main` không đổi trong Phase 3A/3B.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
 - Phase 2B đã merge vào `release/v0.2` bằng `bfc1da2`; feature `feat/phase-2b-data-integrity` đã xóa.

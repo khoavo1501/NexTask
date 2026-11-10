@@ -524,3 +524,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Xóa feature bằng `git branch -d`.
 - `main` vẫn `da0547a`, tag `v0.2.0` vẫn trỏ `da0547a`.
 - Docker chạy code 3A; migration 003 đã áp app DB; task test tạm đã xóa.
+
+## 2026-11-10 - Phase 3B spec
+
+- Tạo feature `feat/phase-3b-task-editing` từ `release/v0.3`.
+- Phạm vi: tạo/sửa task, Owner quản lý cột, UI dialog; không cursor/text index,
+  không migration mới.
+- Quyết định: task create append fractional; edit không đổi cột/order; assignee phải là
+  member; board 1–12 cột, đúng một Done, không xóa cột còn task active.
+- Spec: `docs/phases/03b-task-editing-columns.md`; chờ duyệt trước khi viết plan/code.

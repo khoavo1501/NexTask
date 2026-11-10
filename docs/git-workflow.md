@@ -4,9 +4,9 @@
 
 - Repository cục bộ, chưa có remote.
 - Nhánh ổn định: `main` tại `52840fe` (v0.3.0, tag `v0.3.0`).
-- Nhánh phiên bản: `release/v0.4` tạo từ `main`; Phase 4 đang hoàn tất trên feature.
-- Feature đang mở: `feat/phase-4-realtime`, tạo từ `release/v0.4`.
-- Phase 0–4 hoàn thành; Phase 4 chờ merge vào `release/v0.4`, chưa phát hành v0.4.
+- Nhánh phiên bản: `release/v0.4` tại `b11b326`; đã merge Phase 4.
+- Phase 0–4 hoàn thành; Phase 4 đã merge `release/v0.4`, chưa phát hành v0.4.
+- Feature `feat/phase-4-realtime` đã merge và xóa.
 - Tag `v0.2.0` và `v0.3.0` giữ nguyên.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
@@ -266,5 +266,7 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   `backups/nextask-before-4-2026-11-10.gz`; rehearsal đã drop.
 - Feature gate: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
   16.67/16.88/19.67 s.
-- Chờ merge feature vào `release/v0.4` bằng `--no-ff`; sau merge xóa feature.
+- Merge feature vào `release/v0.4` bằng `--no-ff` (`b11b326`); release gate pass:
+  typecheck/lint/format; full suite 24 file, 106 test ba lần 20.27/16.62/16.63 s.
+- Feature đã xóa; `release/v0.4` chứa Phase 4.
 - Không bump `0.4.0`; không merge `main`; tag `v0.3.0` giữ nguyên.

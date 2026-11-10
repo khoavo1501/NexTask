@@ -12,8 +12,8 @@
 
 **Branch:** `feat/phase-4-realtime` từ `release/v0.4`; release tạo từ `main` tại `52840fe`. Không merge `main` trong phase này.
 
-**Trạng thái thực thi:** Hoàn thành code, migration và browser verification ngày
-2026-11-10; chờ merge vào `release/v0.4`. Commit chính:
+**Trạng thái thực thi:** Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.4` bằng
+`--no-ff` (`b11b326`); feature branch đã xóa. Commit chính:
 
 - `3b57dcf` `docs: specify phase 4 realtime`
 - `b264d31` `docs: plan phase 4 realtime`
@@ -25,9 +25,12 @@
 - `48834e7` `chore: format realtime api files`
 - `0861418` `feat: add realtime web client and presence`
 - `84cfa62` `docs: record phase 4 verification`
+- `4e31180` `docs: record phase 4 verification`
+- `b11b326` `merge: phase 4 realtime` vào `release/v0.4`
 
 Feature gate: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
-16.67/16.88/19.67 s. Merge commit và release gate ghi bổ sung sau khi merge.
+16.67/16.88/19.67 s. Release gate: typecheck/lint/format pass; full suite 24 file,
+106 test ba lần 20.27/16.62/16.63 s.
 
 **Điều chỉnh thực tế:**
 

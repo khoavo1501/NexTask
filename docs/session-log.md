@@ -622,3 +622,14 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Cập nhật spec, plan, architecture, MongoDB notes, README và git workflow cho Phase 4.
 - Chờ merge `feat/phase-4-realtime` vào `release/v0.4` bằng `--no-ff`.
 - Không bump `0.4.0`; không merge `main`; tag `v0.3.0` giữ nguyên.
+
+### Merge release/v0.4
+
+- Merge `feat/phase-4-realtime` vào `release/v0.4` bằng `--no-ff`: `b11b326`
+  (`merge: phase 4 realtime`).
+- Release gate: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
+  20.27/16.62/16.63 s.
+- Xóa feature bằng `git branch -d`.
+- `main` vẫn `52840fe`; tag `v0.2.0` và `v0.3.0` giữ nguyên.
+- App DB đã áp 001–004; Docker health `0.3.0`; checkpoint/pre-post images đã kiểm tra.
+- Chờ người dùng duyệt phát hành v0.4 trước khi merge `main`.

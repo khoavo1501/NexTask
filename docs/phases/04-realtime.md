@@ -1,7 +1,7 @@
 # Giai đoạn 4 - Realtime Change Streams và presence
 
-- Trạng thái: Hoàn thành code, migration, browser verification và quality gate;
-  chờ merge vào `release/v0.4`. Implementation plan:
+- Trạng thái: Hoàn thành; merge vào `release/v0.4` bằng `--no-ff` tại `b11b326`;
+  release gate pass; chờ duyệt phát hành v0.4. Implementation plan:
   [2026-11-10-phase-4-realtime.md](../superpowers/plans/2026-11-10-phase-4-realtime.md)
 - Ngày lập: 2026-11-10
 - Tiền đề: v0.3.0 đã phát hành; tag `v0.3.0` tại `52840fe`

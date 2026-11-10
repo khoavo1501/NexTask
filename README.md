@@ -176,7 +176,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đang hoàn tất trên `feat/phase-4-realtime`, chờ merge vào `release/v0.4`; chưa phát hành v0.4. Tag `v0.2.0` và `v0.3.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã merge vào `release/v0.4` tại `b11b326`; chưa phát hành v0.4 và chưa merge `main`. Tag `v0.2.0` và `v0.3.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 

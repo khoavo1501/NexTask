@@ -6,6 +6,7 @@ import { LATEST_MIGRATION_NAME } from './db/migration-runner.js';
 import { assertReplicaSet, connectMongo } from './db/mongoose.js';
 import { assertSchemaVersion } from './db/schema-version.js';
 import { createLogger } from './lib/logger.js';
+import { createRealtimeServer } from './realtime/realtime.server.js';
 
 loadRootEnvFile();
 
@@ -32,6 +33,12 @@ async function main(): Promise<void> {
     authRateLimitMax: 5,
   });
   const server = createServer(app);
+  const realtime = createRealtimeServer(server, {
+    connection,
+    jwtSecret: env.JWT_SECRET,
+    corsOrigin: env.CORS_ORIGIN,
+    logger,
+  });
 
   server.listen(env.PORT, '0.0.0.0', () => {
     logger.info({ port: env.PORT, replicaSet: replica.replicaSet }, 'Nextask API listening');
@@ -42,8 +49,10 @@ async function main(): Promise<void> {
     if (shuttingDown) return;
     shuttingDown = true;
     logger.info({ signal }, 'Shutting down');
-    server.close(() => {
-      void connection.close().finally(() => process.exit(0));
+    void realtime.close().finally(() => {
+      server.close(() => {
+        void connection.close().finally(() => process.exit(0));
+      });
     });
     setTimeout(() => process.exit(1), 10_000).unref();
   };

@@ -269,11 +269,18 @@ Không dán số liệu giả hoặc số liệu từ dataset khác.
 
 ## 8. Change Streams
 
-- Watch theo board để pipeline lọc đúng board.
-- Bật pre/post images cho collection cần bắt delete.
-- Lưu resume token theo board và collection.
-- Ghi checkpoint sau xử lý; gửi lặp có thể xảy ra.
-- Token hết hạn hoặc oplog cuốn: phát `board:resync`.
+- Watch theo board: watcher riêng cho `items` và `tasks`; pipeline lọc
+  `fullDocument.boardId` hoặc `fullDocumentBeforeChange.boardId`.
+- Bật `changeStreamPreAndPostImages` bằng migration 004 để delete vẫn lấy được `boardId`
+  từ pre-image.
+- Mở stream với `fullDocument: "updateLookup"` và
+  `fullDocumentBeforeChange: "whenAvailable"`.
+- Checkpoint collection `change_stream_checkpoints`, unique `(boardId, collection)`;
+  resume token lưu sau khi emit sự kiện.
+- Event id là hash SHA-256 của resume token; client dedupe id và so version.
+- At-least-once: emit trước, lưu checkpoint sau; crash giữa hai bước có thể gửi lặp.
+- Token hỏng hoặc oplog cuốn (`ChangeStreamHistoryLost`, code 286): phát `board:resync`
+  và mở lại không resume.
 - Không ghi presence/cursor vào MongoDB.
 - Mỗi API instance có watcher riêng; v1 một instance.
 
@@ -558,3 +565,35 @@ drop sau khi đo. Query sort `{ columnId: 1, order: 1, _id: 1 }`.
 - Phát hiện UI sort dùng `localeCompare` không khớp thứ tự binary của MongoDB với key
   `Zz`/`a0`; đã đổi sang so sánh chuỗi trực tiếp và rebuild web.
 - Task test tạm đã xóa; dữ liệu ứng dụng trở lại 2 task.
+
+## 18. Quan sát Giai đoạn 4
+
+### Migration 004
+
+- Backup trước migration: `backups/nextask-before-4-2026-11-10.gz`, 3.5 KB, `gzip -t` pass.
+- Rehearsal `nextask_4_rehearsal`: restore 1 board, 2 item, 2 task; migration
+  `applied: ["004-phase-4"]`; đã drop sau kiểm tra.
+- App DB: `applied: ["004-phase-4"]`; counts và nội dung item/task giữ nguyên.
+- Collection `change_stream_checkpoints` có validator strict/error; unique index
+  `change_stream_checkpoints_board_collection` trên `(boardId, collection)`.
+- `items` và `tasks` có `changeStreamPreAndPostImages.enabled = true` sau `collMod`.
+- Migration idempotent: collection đã tồn tại thì chỉ cập nhật validator/index.
+
+### Checkpoint và resume
+
+- Watcher mở stream riêng cho `items` và `tasks`; checkpoint key theo board/collection.
+- Test dừng watcher, move task, mở lại với checkpoint: event còn trong oplog vẫn đến.
+- Event id ổn định theo hash token; client dedupe id và bỏ event có version cũ hơn state.
+- Emit trước rồi lưu checkpoint: chấp nhận gửi lặp; đây là at-least-once, không phải
+  exactly-once.
+- Token không dùng được phát `board:resync`; client tải lại snapshot thay vì giả vờ
+  không mất sự kiện.
+
+### Browser
+
+- Task tạo/move từ client thứ hai (fetch cùng cookie) cập nhật Kanban và badge trong tab
+  đang mở, không reload.
+- Item update từ client thứ hai khiến tab refetch `GET /items` + `GET /tasks`, remount
+  whiteboard và hiện notice; không có lỗi 500.
+- Presence list và cursor overlay hoạt động; cursor chỉ trong bộ nhớ, không ghi DB.
+- Task test đã xóa và note được khôi phục nội dung; checkpoint của board vẫn còn.

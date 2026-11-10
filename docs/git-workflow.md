@@ -3,12 +3,10 @@
 ## 1. Trạng thái hiện tại
 
 - Repository cục bộ, chưa có remote.
-- Nhánh ổn định: `main` tại `da0547a` (v0.2.0, tag annotated `v0.2.0`).
-- Nhánh phiên bản: `release/v0.3`; merge 3A `0d7dd2d`, sau đó có commit docs release.
 - Nhánh ổn định: `main` tại `52840fe` (v0.3.0, tag `v0.3.0`).
-- Nhánh phiên bản: `release/v0.4` tạo từ `main`; chưa có commit riêng.
+- Nhánh phiên bản: `release/v0.4` tạo từ `main`; Phase 4 đang hoàn tất trên feature.
 - Feature đang mở: `feat/phase-4-realtime`, tạo từ `release/v0.4`.
-- Phase 0–3B hoàn thành; Phase 4 đang ở spec.
+- Phase 0–4 hoàn thành; Phase 4 chờ merge vào `release/v0.4`, chưa phát hành v0.4.
 - Tag `v0.2.0` và `v0.3.0` giữ nguyên.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
@@ -258,3 +256,15 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   14.01/13.98/14.17 s; Docker health `0.3.0`.
 - Không tạo tag `v0.3.0` nếu người dùng chưa yêu cầu rõ.
 - Không push; repository vẫn local.
+
+## 14. Phase 4
+
+- Feature: `feat/phase-4-realtime`, tạo từ `release/v0.4`.
+- Phạm vi: Change Streams per board, checkpoint/resume, Socket.IO auth/room, presence,
+  Kanban/badge realtime và whiteboard refetch.
+- Migration 004 áp rehearsal và app DB; backup
+  `backups/nextask-before-4-2026-11-10.gz`; rehearsal đã drop.
+- Feature gate: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
+  16.67/16.88/19.67 s.
+- Chờ merge feature vào `release/v0.4` bằng `--no-ff`; sau merge xóa feature.
+- Không bump `0.4.0`; không merge `main`; tag `v0.3.0` giữ nguyên.

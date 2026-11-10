@@ -12,6 +12,33 @@
 
 **Branch:** `feat/phase-4-realtime` từ `release/v0.4`; release tạo từ `main` tại `52840fe`. Không merge `main` trong phase này.
 
+**Trạng thái thực thi:** Hoàn thành code, migration và browser verification ngày
+2026-11-10; chờ merge vào `release/v0.4`. Commit chính:
+
+- `3b57dcf` `docs: specify phase 4 realtime`
+- `b264d31` `docs: plan phase 4 realtime`
+- `2f0ce0a` `docs: start phase 4 execution`
+- `08c76a9` `feat: add phase 4 checkpoint migration`
+- `005dccc` `feat: add realtime event mapping and checkpoints`
+- `a9ad1c9` `feat: add per-board change stream watcher`
+- `f4eba3e` `feat: add realtime socket server and presence`
+- `48834e7` `chore: format realtime api files`
+- `0861418` `feat: add realtime web client and presence`
+- `84cfa62` `docs: record phase 4 verification`
+
+Feature gate: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
+16.67/16.88/19.67 s. Merge commit và release gate ghi bổ sung sau khi merge.
+
+**Điều chỉnh thực tế:**
+
+- Kiểu `ChangeStreamDocument` không lộ `fullDocument`/`fullDocumentBeforeChange` trên
+  mọi biến thể; event mapper cast hai field này.
+- Presence cursor overlay dùng lớp `z-30`, không phải `z-40` như snippet plan; hành vi
+  không đổi.
+- Browser verification dùng `fetch` cùng cookie cho client thứ hai; cursor kiểm chứng
+  bằng synthetic `pointermove`.
+- Task test đã xóa và note được khôi phục; version note tăng do cập nhật thật.
+
 ## Global Constraints
 
 - MongoDB replica set thật cho test; không mock DB/Change Streams.

@@ -614,3 +614,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Checkpoint/restart/socket integration tests pass (24 file, 106 test sau Task 4).
 - Đã dọn task test và khôi phục nội dung note; không có log lỗi API.
 - Gate cuối và merge `release/v0.4` thực hiện ở Task 7; không merge `main`.
+
+## 2026-11-10 - Phase 4 gate
+
+- Feature gate: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
+  16.67/16.88/19.67 s.
+- Cập nhật spec, plan, architecture, MongoDB notes, README và git workflow cho Phase 4.
+- Chờ merge `feat/phase-4-realtime` vào `release/v0.4` bằng `--no-ff`.
+- Không bump `0.4.0`; không merge `main`; tag `v0.3.0` giữ nguyên.

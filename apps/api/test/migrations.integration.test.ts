@@ -167,10 +167,14 @@ describe('migration 2A', () => {
       .find({ lifecycle: 'active' })
       .sort({ boardId: 1, columnId: 1, order: 1, _id: 1 })
       .toArray();
-    const keys = tasks.map((task) => `${String(task.boardId)}:${String(task.columnId)}:${task.order}`);
+    const keys = tasks.map(
+      (task) => `${String(task.boardId)}:${String(task.columnId)}:${task.order}`,
+    );
     expect(new Set(keys).size).toBe(keys.length);
 
-    const duplicates = await TaskModel.find({ title: /^Duplicate order/ }).sort({ _id: 1 }).exec();
+    const duplicates = await TaskModel.find({ title: /^Duplicate order/ })
+      .sort({ _id: 1 })
+      .exec();
     expect(duplicates.map((task) => task.version).sort()).toEqual([1, 2]);
 
     const indexes = await TaskModel.collection.indexes();
@@ -180,7 +184,10 @@ describe('migration 2A', () => {
       partialFilterExpression: { lifecycle: 'active' },
     });
     for (const name of ['tasks_board_assignee', 'tasks_board_priority', 'tasks_board_labels']) {
-      expect(indexes.some((index) => index.name === name), name).toBe(true);
+      expect(
+        indexes.some((index) => index.name === name),
+        name,
+      ).toBe(true);
     }
   });
 });

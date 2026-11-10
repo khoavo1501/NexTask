@@ -34,7 +34,10 @@ describe('indexes', () => {
     expect(order?.unique).toBe(true);
     expect(order?.partialFilterExpression).toEqual({ lifecycle: 'active' });
     for (const name of ['tasks_board_assignee', 'tasks_board_priority', 'tasks_board_labels']) {
-      expect(indexes.some((entry) => entry.name === name), name).toBe(true);
+      expect(
+        indexes.some((entry) => entry.name === name),
+        name,
+      ).toBe(true);
     }
   });
 });

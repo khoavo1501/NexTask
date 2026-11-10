@@ -67,8 +67,7 @@ function isDuplicateKeyError(error: unknown): boolean {
   const direct = error as { code?: number };
   if (direct.code === 11_000) return true;
 
-  const writeErrors = (error as { writeErrors?: Array<{ err?: { code?: number } }> })
-    .writeErrors;
+  const writeErrors = (error as { writeErrors?: Array<{ err?: { code?: number } }> }).writeErrors;
   return writeErrors?.[0]?.err?.code === 11_000;
 }
 

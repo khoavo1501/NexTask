@@ -34,10 +34,7 @@ afterAll(async () => {
 
 async function setupFilterTasks() {
   const owner = await registerAgent(app, 'owner@example.com', 'Owner');
-  const board = await owner.agent
-    .post('/api/v1/boards')
-    .send({ name: 'Filters' })
-    .expect(201);
+  const board = await owner.agent.post('/api/v1/boards').send({ name: 'Filters' }).expect(201);
   const boardId = board.body.data._id as string;
   const member = await registerAgent(app, 'member@example.com', 'Member');
 
@@ -126,10 +123,7 @@ describe('task filters', () => {
   it('query sai trả 422', async () => {
     const { owner, boardId } = await setupFilterTasks();
 
-    await owner.agent
-      .get(`/api/v1/boards/${boardId}/tasks`)
-      .query({ limit: 101 })
-      .expect(422);
+    await owner.agent.get(`/api/v1/boards/${boardId}/tasks`).query({ limit: 101 }).expect(422);
     await owner.agent
       .get(`/api/v1/boards/${boardId}/tasks`)
       .query({ priority: 'critical' })

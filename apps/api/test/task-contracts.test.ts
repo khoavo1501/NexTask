@@ -1,9 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  moveTaskRequestSchema,
-  taskListQuerySchema,
-  taskPrioritySchema,
-} from '@nextask/contracts';
+import { moveTaskRequestSchema, taskListQuerySchema, taskPrioritySchema } from '@nextask/contracts';
 
 describe('task contracts', () => {
   it('move mặc định beforeTaskId null và bắt buộc expectedVersion', () => {

@@ -1,11 +1,12 @@
 # Giai đoạn 3A - Kanban ordering, filter và index
 
-- Trạng thái: Chờ duyệt spec
+- Trạng thái: Đã duyệt spec; implementation plan:
+  [2026-11-10-phase-3a-kanban-ordering.md](../superpowers/plans/2026-11-10-phase-3a-kanban-ordering.md)
 - Ngày lập: 2026-11-10
 - Tiền đề: v0.2.0 đã phát hành tại `main` (`da0547a`), tag `v0.2.0`
 - Kiến trúc: [../architecture.md](../architecture.md)
 - Nhánh: `feat/phase-3a-kanban-ordering`, tạo từ `release/v0.3`, release tạo từ `main`
-- Implementation plan: chưa viết, chờ duyệt spec
+- Implementation plan: [2026-11-10-phase-3a-kanban-ordering.md](../superpowers/plans/2026-11-10-phase-3a-kanban-ordering.md)
 - Phase 3B dự kiến: task detail edit, tạo task tay, quản lý cột, cursor pagination
 
 ## 1. Mục tiêu

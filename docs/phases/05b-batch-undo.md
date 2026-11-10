@@ -1,7 +1,7 @@
 # Giai đoạn 5B - Batch promote và Undo promote
 
-- Trạng thái: Hoàn thành code, browser verification và feature gate; chờ merge vào
-  `release/v0.5`. Chưa merge `main`, chưa bump `0.5.0`.
+- Trạng thái: Hoàn thành; merge vào `release/v0.5` bằng `--no-ff` tại `f2c194d`;
+  release gate pass. Chưa merge `main`, chưa bump `0.5.0`, chưa tạo tag v0.5.
 - Ngày lập: 2026-11-10
 - Tiền đề: Phase 5A đã merge `release/v0.5` tại `0a34cce`; `main` tại `9fd19b6`,
   tag annotated `v0.4.0`

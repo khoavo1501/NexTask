@@ -725,3 +725,13 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Cập nhật spec, plan, architecture, MongoDB notes, README và git workflow cho Phase 5B.
 - Chờ merge `feat/phase-5b-batch-undo` vào `release/v0.5` bằng `--no-ff`.
 - Không bump `0.5.0`; không merge `main`; tag `v0.4.0` giữ nguyên.
+
+### Merge release/v0.5 (5B)
+
+- Merge `feat/phase-5b-batch-undo` vào `release/v0.5` bằng `--no-ff`:
+  `f2c194d` (`merge: phase 5b batch and undo`).
+- Release gate: typecheck/lint/format pass; full suite 31 file, 144 test ba lần
+  25.23/22.74/22.92 s.
+- Xóa feature bằng `git branch -d`.
+- `main` vẫn `9fd19b6`; tag `v0.2.0`, `v0.3.0`, `v0.4.0` giữ nguyên.
+- `release/v0.5` chứa Phase 5A và 5B; chưa bump `0.5.0`, chưa merge `main`.

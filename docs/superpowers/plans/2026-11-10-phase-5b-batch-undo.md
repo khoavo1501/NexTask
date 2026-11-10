@@ -12,8 +12,8 @@
 
 **Branch:** `feat/phase-5b-batch-undo` từ `release/v0.5` (5A tại `0a34cce`). Không merge `main`, không bump `0.5.0`, tag `v0.4.0` giữ nguyên.
 
-**Trạng thái thực thi:** Hoàn thành code, browser verification ngày 2026-11-10; chờ merge
-vào `release/v0.5`. Commit chính:
+**Trạng thái thực thi:** Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.5` bằng
+`--no-ff` (`f2c194d`); feature branch đã xóa. Commit chính:
 
 - `234aab9` `docs: specify phase 5b batch and undo`
 - `9a6c2c6` `docs: plan phase 5b batch and undo`
@@ -23,9 +23,12 @@ vào `release/v0.5`. Commit chính:
 - `709105a` `feat: add batch promote UI`
 - `78dfc01` `feat: add undo promote UI`
 - `a9d2120` `docs: record phase 5b verification`
+- `c333e1d` `docs: record phase 5b verification`
+- `f2c194d` `merge: phase 5b batch and undo` vào `release/v0.5`
 
 Feature gate: typecheck/lint/format pass; full suite 31 file, 144 test ba lần
-22.72/22.88/22.77 s. Merge commit và release gate ghi bổ sung sau khi merge.
+22.72/22.88/22.77 s. Release gate: typecheck/lint/format pass; full suite 31 file,
+144 test ba lần 25.23/22.74/22.92 s.
 
 **Điều chỉnh thực tế:**
 

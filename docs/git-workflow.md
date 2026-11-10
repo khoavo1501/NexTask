@@ -4,9 +4,9 @@
 
 - Repository cục bộ, chưa có remote.
 - Nhánh ổn định: `main` tại `9fd19b6`; đã phát hành version `0.4.0`.
-- Nhánh phiên bản: `release/v0.5` tại `0a34cce`; đã merge Phase 5A, Phase 5B đang trên feature.
-- Phase 0–5B hoàn thành code; Phase 5B chờ merge `release/v0.5`, chưa phát hành v0.5.
-- Feature `feat/phase-5b-batch-undo` đang mở; các feature cũ đã merge/xóa.
+- Nhánh phiên bản: `release/v0.5` tại `f2c194d`; đã merge Phase 5A và 5B.
+- Phase 0–5B hoàn thành; chưa phát hành v0.5.
+- Feature `feat/phase-5b-batch-undo` và các feature cũ đã merge/xóa.
 - Tag annotated `v0.4.0` và các tag cũ giữ nguyên.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
@@ -306,5 +306,7 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   10 phút, fault injection hook; không migration 006.
 - Feature gate: typecheck/lint/format pass; full suite 31 file, 144 test ba lần
   22.72/22.88/22.77 s.
-- Merge feature vào `release/v0.5` bằng `--no-ff` sau docs commit; xóa feature.
+- Merge feature vào `release/v0.5` bằng `--no-ff` (`f2c194d`); release gate pass:
+  typecheck/lint/format; full suite 31 file, 144 test ba lần 25.23/22.74/22.92 s.
+- Feature đã xóa; `release/v0.5` chứa Phase 5A và 5B.
 - Không bump `0.5.0`; không merge `main`; tag `v0.4.0` giữ nguyên; không push.

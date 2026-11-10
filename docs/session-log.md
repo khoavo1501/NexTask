@@ -632,4 +632,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Xóa feature bằng `git branch -d`.
 - `main` vẫn `52840fe`; tag `v0.2.0` và `v0.3.0` giữ nguyên.
 - App DB đã áp 001–004; Docker health `0.3.0`; checkpoint/pre-post images đã kiểm tra.
-- Chờ người dùng duyệt phát hành v0.4 trước khi merge `main`.
+
+### Merge main v0.4
+
+- Merge `release/v0.4` vào `main` bằng `--no-ff`: `de15b5a` (`release: v0.4 realtime`).
+- Main gate: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
+  15.60/15.55/15.60 s.
+- Docker rebuild; API health `0.3.0`, Mongo `rs0` primary.
+- Không bump `0.4.0`; chưa tạo tag v0.4.0; không push.
+- Tag `v0.2.0` và `v0.3.0` giữ nguyên.

@@ -3,9 +3,9 @@
 ## 1. Trạng thái hiện tại
 
 - Repository cục bộ, chưa có remote.
-- Nhánh ổn định: `main` tại `52840fe` (v0.3.0, tag `v0.3.0`).
+- Nhánh ổn định: `main` tại `de15b5a`; code Phase 4 đã lên main, version vẫn `0.3.0`.
 - Nhánh phiên bản: `release/v0.4` tại `b11b326`; đã merge Phase 4.
-- Phase 0–4 hoàn thành; Phase 4 đã merge `release/v0.4`, chưa phát hành v0.4.
+- Phase 0–4 hoàn thành; Phase 4 đã merge `main`, chưa bump `0.4.0` và chưa tạo tag v0.4.0.
 - Feature `feat/phase-4-realtime` đã merge và xóa.
 - Tag `v0.2.0` và `v0.3.0` giữ nguyên.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
@@ -269,4 +269,8 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Merge feature vào `release/v0.4` bằng `--no-ff` (`b11b326`); release gate pass:
   typecheck/lint/format; full suite 24 file, 106 test ba lần 20.27/16.62/16.63 s.
 - Feature đã xóa; `release/v0.4` chứa Phase 4.
-- Không bump `0.4.0`; không merge `main`; tag `v0.3.0` giữ nguyên.
+- Merge `release/v0.4` vào `main` bằng `--no-ff` (`de15b5a`,
+  `release: v0.4 realtime`); main gate pass: typecheck/lint/format; full suite 24 file,
+  106 test ba lần 15.60/15.55/15.60 s.
+- Docker rebuild; API health `0.3.0`, Mongo `rs0` primary.
+- Không bump `0.4.0`; chưa tạo tag v0.4.0; tag `v0.3.0` giữ nguyên; không push.

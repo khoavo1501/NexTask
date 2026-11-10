@@ -51,7 +51,7 @@ const taskSchema = new Schema<Task>(
     columnId: { type: String, required: true },
     order: { type: String, required: true },
     title: { type: String, required: true, trim: true, maxlength: 200 },
-    description: { type: String, required: true, default: '' },
+    description: { type: String, default: '' },
     assigneeId: { type: Schema.Types.ObjectId, default: null },
     labels: { type: [String], required: true, default: [] },
     priority: {

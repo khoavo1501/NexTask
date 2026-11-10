@@ -482,3 +482,99 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Không tạo tag v0.2.0 vì chưa được yêu cầu rõ; không push.
 - Lưu ý: invitation cũ đã hết hạn và bị TTL index xóa trong lúc kiểm tra ngày
   2026-11-10; đây là hành vi đúng của TTL, không phải mất dữ liệu ngoài ý muốn.
+
+## 2026-11-10 - Phase 3A spec
+
+- Tạo `release/v0.3` từ `main` tại `da0547a` và feature
+  `feat/phase-3a-kanban-ordering`.
+- Chốt chia Phase 3 thành 3A/3B; 3A gồm fractional ordering, filter/search, limit 100,
+  index + explain, UI kéo thả/filter.
+- 3B dự kiến: sửa/tạo task, quản lý cột, cursor pagination.
+- Spec: `docs/phases/03a-kanban-ordering.md`; đang chờ duyệt trước khi viết plan/code.
+
+## 2026-11-10 - Phase 3A verification
+
+- Backup `backups/nextask-before-3a-2026-11-10.gz`; rehearsal `nextask_3a_rehearsal`
+  áp `003-phase-3a`, dữ liệu/version giữ nguyên; đã drop.
+- App DB áp `003-phase-3a`; unique order index và 3 filter indexes tồn tại.
+- Explain trên 1000 task tạm: assignee 1 key/1 doc; priority 250/250; labels 250/250;
+  toàn board 1000/1000; `q` 1000/1000 trả 143 trong 6 ms.
+- Browser: reorder đầu/cuối cột, reload giữ thứ tự; filter search/priority đúng; drag bị
+  khóa khi filter bật; POST move 200.
+- Sửa UI sort từ `localeCompare` sang so sánh chuỗi trực tiếp để khớp thứ tự binary
+  MongoDB (`Zz` trước `a0`).
+- Task test tạm đã xóa; app còn 2 task, version `4`, `4`.
+
+## 2026-11-10 - Phase 3A hoàn thành
+
+- Commit chính: contracts `55cb4d8`, migration `1a2d5c6`, move API `8a84809`, filter
+  `294db5b`, web `ad08ea5`, sort fix `4483ee2`, docs evidence `d87fb0f`.
+- Feature gate: typecheck/lint/format pass; full suite 16 file, 82 test ba lần
+  11.51/11.45/11.47 s.
+- Migration 003 đã áp rehearsal và app DB; backup 3A còn; rehearsal đã drop.
+- Explain 1000 task tạm; browser reorder/filter pass; task tạm đã xóa.
+- UI sort được sửa từ `localeCompare` sang so sánh chuỗi trực tiếp để khớp binary order.
+- Chờ merge `feat/phase-3a-kanban-ordering` vào `release/v0.3`; không merge `main`.
+
+### Merge release/v0.3
+
+- Merge `feat/phase-3a-kanban-ordering` vào `release/v0.3` bằng `--no-ff`: `0d7dd2d`.
+- Release gate: typecheck/lint/format pass; full suite 16 file, 82 test ba lần
+  11.43/11.54/11.54 s.
+- Xóa feature bằng `git branch -d`.
+- `main` vẫn `da0547a`, tag `v0.2.0` vẫn trỏ `da0547a`.
+- Docker chạy code 3A; migration 003 đã áp app DB; task test tạm đã xóa.
+
+## 2026-11-10 - Phase 3B spec
+
+- Tạo feature `feat/phase-3b-task-editing` từ `release/v0.3`.
+- Phạm vi: tạo/sửa task, Owner quản lý cột, UI dialog; không cursor/text index,
+  không migration mới.
+- Quyết định: task create append fractional; edit không đổi cột/order; assignee phải là
+  member; board 1–12 cột, đúng một Done, không xóa cột còn task active.
+- Spec: `docs/phases/03b-task-editing-columns.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-10 - Phase 3B plan
+
+- Spec `docs/phases/03b-task-editing-columns.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-10-phase-3b-task-editing-columns.md`.
+- Phạm vi: task create/edit, Owner columns, UI dialog; không migration/cursor.
+- Bắt đầu Inline Execution; chưa merge `main`.
+
+## 2026-11-10 - Phase 3B verification
+
+- Browser tạo board tạm `Phase 3B E2E`, tạo task tay với assignee/priority/labels/due date.
+- Sửa task qua dialog: title, labels, priority; card cập nhật, filter priority `Khẩn cấp` đúng.
+- Owner mở `Cột`, thêm `QA`, đổi thứ tự; lưu thành công.
+- Xóa cột `To Do` còn task bị chặn, UI hiện `Cột còn task, không thể xóa`.
+- Board tạm và task/item của nó đã xóa; app còn 1 board, 2 task.
+- Member bị 403 quản lý cột được kiểm chứng ở API test, không chạy browser vì cần đăng nhập lại.
+
+## 2026-11-10 - Phase 3B hoàn thành
+
+- Commit chính: contracts `ed6375b`, create `cde3356`, edit `c45eeaf`, columns `ae1bd52`,
+  web dialogs `8a92808`, docs verification `b376b74`.
+- Feature gate: typecheck/lint/format pass; full suite 20 file, 99 test ba lần
+  14.42/14.35/14.62 s.
+- Browser: tạo/sửa task, filter priority, thêm/reorder cột; xóa cột còn task bị chặn
+  `COLUMN_NOT_EMPTY`; board test đã xóa.
+- Không migration; app DB vẫn 001/002/003.
+- Chờ merge `feat/phase-3b-task-editing` vào `release/v0.3`; không merge `main`.
+
+### Merge release/v0.3 (3B)
+
+- Merge `feat/phase-3b-task-editing` vào `release/v0.3` bằng `--no-ff`: `463a294`.
+- Release gate: typecheck/lint/format pass; full suite 20 file, 99 test ba lần
+  14.52/14.40/14.32 s.
+- Xóa feature bằng `git branch -d`.
+- `main` vẫn `da0547a`, tag `v0.2.0` vẫn trỏ `da0547a`.
+- Docker chạy code 3B; không migration mới; app DB vẫn 001/002/003.
+- Chờ người dùng duyệt v0.3 trước khi merge `main`.
+
+## 2026-11-10 - Phát hành v0.3.0
+
+- Bump version root/API/web/contracts và `package-lock.json` lên `0.3.0`.
+- Bump `SERVICE_VERSION` trong `.env.example` và `docker-compose.yml` lên `0.3.0`.
+- Merge `release/v0.3` vào `main` bằng `--no-ff` với message
+  `release: v0.3 kanban editing`.
+- Sau merge: gate 3 lần, Docker health `0.3.0`; không tạo tag nếu chưa được yêu cầu rõ.

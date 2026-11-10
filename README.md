@@ -2,7 +2,7 @@
 
 Whiteboard và Kanban cho team Agile, gộp brainstorm và thực thi trên cùng một board.
 
-Phiên bản hiện tại: `0.2.0`.
+Phiên bản hiện tại: `0.3.0`.
 
 ## Trạng thái hiện tại
 
@@ -10,7 +10,9 @@ Phiên bản hiện tại: `0.2.0`.
 - Phase 1: tldraw note, Promote transaction, Kanban, badge sau reload.
 - Phase 2A: tài khoản, JWT cookie, board membership, Owner/Member, invitation link.
 - Phase 2B: `$jsonSchema` validator, expectedVersion, item sync transaction, client conflict handling.
-- Chưa có realtime hoặc Demote; các phần này thuộc giai đoạn sau.
+- Phase 3A: fractional ordering, filter/search task, unique order index, explain.
+- Phase 3B: tạo/sửa task tay, Owner quản lý cột, UI dialog.
+- Chưa có realtime, Demote, cursor pagination, activity/undo.
 
 ## Yêu cầu
 
@@ -76,6 +78,26 @@ Người dùng khác có thể đăng ký tài khoản mới. Owner tạo invita
   có trong `deleted` được giữ nguyên.
 - Toàn bộ sync chạy trong transaction; một item stale làm cả request không ghi.
 
+## Kanban ordering và filter
+
+- Kéo thả dùng `POST /tasks/:taskId/move` với `beforeTaskId`; server tự sinh fractional
+  `order`, không cập nhật hàng loạt.
+- Thả lên card để chèn trước; thả vùng trống cuối cột để append; kéo sang cột khác được.
+- `GET /tasks` lọc theo `columnId`, `assigneeId`, `priority`, `labels`, `q`; trả tối đa
+  100 task kèm `meta.hasMore`.
+- Filter đang bật thì tạm khóa kéo thả để tránh chèn sai tương quan với task bị ẩn.
+- Chưa có cursor pagination; thu hẹp filter nếu còn task chưa tải.
+
+## Task và cột
+
+- `POST /tasks` tạo task tay, append cuối cột; `PATCH /tasks/:taskId` sửa title,
+  description, assignee, labels, priority, due date với `expectedVersion`.
+- Assignee phải là member board; sửa task không đổi cột/order.
+- Owner dùng `PATCH /boards/:boardId/columns` để thêm/đổi tên/đổi thứ tự cột, chọn cột
+  Done; board phải có 1–12 cột và đúng một cột Done.
+- Không xóa cột còn task active; API trả `409 COLUMN_NOT_EMPTY`.
+- Task tạo tay có `sourceItemId`/`origin` null; sửa task không đồng bộ ngược item nguồn.
+
 ## Phát triển local
 
 Khởi động MongoDB replica set và migration:
@@ -103,6 +125,7 @@ docker compose exec -T mongo mongodump --archive --gzip --db=nextask > backups/n
 
 - Backup local đã dùng cho Phase 2A: `backups/nextask-before-2a-2026-10-28.gz`.
 - Backup local đã dùng cho Phase 2B: `backups/nextask-before-2b-2026-10-28.gz`.
+- Backup local đã dùng cho Phase 3A: `backups/nextask-before-3a-2026-11-10.gz`.
 - Migration `002-phase-2b` áp `$jsonSchema` cho `users`, `boards`, `items`, `tasks`,
   `invitations`; không tự sửa dữ liệu cũ.
 - Không xóa backup hoặc chạy migration trên dữ liệu chưa backup.
@@ -133,7 +156,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A và 2B đã merge vào `release/v0.2`; release v0.2.0 đã merge vào `main` tại `53f2391`. Feature branch đã xóa. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A và 2B đã merge vào `release/v0.2` và `main` tại `53f2391` (tag `v0.2.0`). Phase 3A/3B đang trên `release/v0.3`, chưa merge `main`. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 
@@ -143,6 +166,8 @@ Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A 
 - [Đề xuất Phase 2](docs/phases/02-proposal.md)
 - [Phase 2A](docs/phases/02a-auth-membership.md)
 - [Phase 2B](docs/phases/02b-data-integrity.md)
+- [Phase 3A](docs/phases/03a-kanban-ordering.md)
+- [Phase 3B](docs/phases/03b-task-editing-columns.md)
 - [Ghi chú MongoDB](docs/mongodb-notes.md)
 - [Lịch sử phiên](docs/session-log.md)
 - [Quy trình Git](docs/git-workflow.md)

@@ -1,8 +1,10 @@
 import {
   apiErrorSchema,
+  boardMembersResponseSchema,
   boardResponseSchema,
   boardsResponseSchema,
   createInvitationRequestSchema,
+  createTaskRequestSchema,
   invitationAcceptResponseSchema,
   invitationCreateResponseSchema,
   itemsResponseSchema,
@@ -12,11 +14,15 @@ import {
   renameBoardRequestSchema,
   syncItemsRequestSchema,
   taskResponseSchema,
-  tasksResponseSchema,
+  tasksListResponseSchema,
+  updateColumnsRequestSchema,
+  updateTaskRequestSchema,
   userResponseSchema,
   type BoardDto,
+  type BoardMemberDetailDto,
   type CreateBoardRequest,
   type CreateInvitationRequest,
+  type CreateTaskRequest,
   type ItemDto,
   type LoginRequest,
   type MoveTaskRequest,
@@ -26,6 +32,9 @@ import {
   type SyncDeletedItemInput,
   type SyncItemInput,
   type TaskDto,
+  type TaskPriority,
+  type UpdateColumnsRequest,
+  type UpdateTaskRequest,
   type UserDto,
 } from '@nextask/contracts';
 import type { z } from 'zod';
@@ -49,6 +58,14 @@ export class ApiClientError extends Error {
 
 export function isVersionConflict(error: unknown): error is ApiClientError {
   return error instanceof ApiClientError && error.code === 'VERSION_CONFLICT';
+}
+
+export function isOrderConflict(error: unknown): error is ApiClientError {
+  return error instanceof ApiClientError && error.code === 'ORDER_CONFLICT';
+}
+
+export function isColumnNotEmpty(error: unknown): error is ApiClientError {
+  return error instanceof ApiClientError && error.code === 'COLUMN_NOT_EMPTY';
 }
 
 async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit): Promise<T> {
@@ -208,8 +225,71 @@ export async function syncItems(
   ).data;
 }
 
-export async function getTasks(boardId: string): Promise<TaskDto[]> {
-  return (await request(`/boards/${boardId}/tasks`, tasksResponseSchema)).data;
+export async function getTasks(
+  boardId: string,
+  filters: TaskListFilters = {},
+): Promise<{ tasks: TaskDto[]; hasMore: boolean }> {
+  const params = new URLSearchParams();
+  if (filters.q) params.set('q', filters.q);
+  if (filters.assigneeId) params.set('assigneeId', filters.assigneeId);
+  if (filters.priority) params.set('priority', filters.priority);
+  if (filters.columnId) params.set('columnId', filters.columnId);
+  if (filters.labels) params.set('labels', filters.labels);
+  if (filters.limit) params.set('limit', String(filters.limit));
+
+  const suffix = params.toString() ? `?${params.toString()}` : '';
+  const body = await request(`/boards/${boardId}/tasks${suffix}`, tasksListResponseSchema);
+  return { tasks: body.data, hasMore: body.meta.hasMore };
+}
+
+export async function getBoardMembers(boardId: string): Promise<BoardMemberDetailDto[]> {
+  return (await request(`/boards/${boardId}/members`, boardMembersResponseSchema)).data;
+}
+
+export async function updateColumns(
+  boardId: string,
+  input: UpdateColumnsRequest,
+): Promise<BoardDto> {
+  const body = updateColumnsRequestSchema.parse(input);
+  return (
+    await request(`/boards/${boardId}/columns`, boardResponseSchema, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function createTask(boardId: string, input: CreateTaskRequest): Promise<TaskDto> {
+  const body = createTaskRequestSchema.parse(input);
+  return (
+    await request(`/boards/${boardId}/tasks`, taskResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function updateTask(
+  boardId: string,
+  taskId: string,
+  input: UpdateTaskRequest,
+): Promise<TaskDto> {
+  const body = updateTaskRequestSchema.parse(input);
+  return (
+    await request(`/boards/${boardId}/tasks/${taskId}`, taskResponseSchema, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export interface TaskListFilters {
+  q?: string;
+  assigneeId?: string;
+  priority?: TaskPriority;
+  columnId?: string;
+  labels?: string;
+  limit?: number;
 }
 
 export async function promoteItem(
@@ -231,8 +311,8 @@ export async function moveTask(
   input: MoveTaskRequest,
 ): Promise<TaskDto> {
   return (
-    await request(`/boards/${boardId}/tasks/${taskId}`, taskResponseSchema, {
-      method: 'PATCH',
+    await request(`/boards/${boardId}/tasks/${taskId}/move`, taskResponseSchema, {
+      method: 'POST',
       body: JSON.stringify(input),
     })
   ).data;

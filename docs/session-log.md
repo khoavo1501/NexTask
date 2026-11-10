@@ -653,3 +653,10 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Docker rebuild; health `0.4.0`, Mongo `rs0` primary.
 - Tạo tag annotated `v0.4.0` sau docs release merge; không push.
 - Tag `v0.2.0` và `v0.3.0` giữ nguyên.
+
+## 2026-11-10 - Phase 5A spec
+
+- Tạo `release/v0.5` từ `main` tại `9fd19b6` và feature
+  `feat/phase-5a-demote-activity`.
+- Chốt tách 5A/5B; 5A gồm Demote + Activity; undo chỉ áp dụng promote và để 5B.
+- Spec: `docs/phases/05a-demote-activity.md`; chờ duyệt trước khi viết plan/code.

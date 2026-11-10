@@ -4,7 +4,7 @@
 
 - Repository cục bộ, chưa có remote.
 - Nhánh ổn định: `main` tại `da0547a` (v0.2.0, tag annotated `v0.2.0`).
-- Nhánh phiên bản: `release/v0.3` tại `0d7dd2d`; feature 3A đã merge và xóa.
+- Nhánh phiên bản: `release/v0.3`; merge 3A `0d7dd2d`, sau đó có commit docs release.
 - Phase 0, Phase 1, Phase 2A, Phase 2B và 3A đã hoàn thành; 3A nằm trên release.
 - Tag `v0.2.0` và `main` không đổi trong Phase 3A.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.

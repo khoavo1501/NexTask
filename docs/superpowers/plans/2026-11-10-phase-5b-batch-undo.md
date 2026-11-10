@@ -12,6 +12,30 @@
 
 **Branch:** `feat/phase-5b-batch-undo` từ `release/v0.5` (5A tại `0a34cce`). Không merge `main`, không bump `0.5.0`, tag `v0.4.0` giữ nguyên.
 
+**Trạng thái thực thi:** Hoàn thành code, browser verification ngày 2026-11-10; chờ merge
+vào `release/v0.5`. Commit chính:
+
+- `234aab9` `docs: specify phase 5b batch and undo`
+- `9a6c2c6` `docs: plan phase 5b batch and undo`
+- `ff0bce8` `feat: add batch and undo contracts`
+- `ab9c50b` `feat: add atomic batch promote`
+- `674d690` `feat: add promote undo transaction`
+- `709105a` `feat: add batch promote UI`
+- `78dfc01` `feat: add undo promote UI`
+- `a9d2120` `docs: record phase 5b verification`
+
+Feature gate: typecheck/lint/format pass; full suite 31 file, 144 test ba lần
+22.72/22.88/22.77 s. Merge commit và release gate ghi bổ sung sau khi merge.
+
+**Điều chỉnh thực tế:**
+
+- Mongoose 9 yêu cầu `create()` với array + session phải có `ordered: true`; batch dùng
+  option này.
+- Browser verification dùng Ctrl+A để chọn 3 note; batch/undo UI và guard stale đã chạy.
+- Note tạo qua API có content rỗng sau whiteboard sync là hành vi có sẵn, không thuộc 5B;
+  batch/undo không thay đổi cơ chế sync này.
+- Full suite tăng lên 31 file, 144 test do thêm batch/undo contract và integration test.
+
 ## Global Constraints
 
 - MongoDB replica set thật cho test; không mock DB/transaction/Change Streams.

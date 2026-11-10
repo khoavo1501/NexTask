@@ -16,7 +16,8 @@ Phiên bản hiện tại: `0.4.0`.
   realtime, whiteboard refetch và presence.
 - Phase 5A: Demote transaction, activity promote/demote TTL 90 ngày, dialog Demote và tab
   hoạt động.
-- Chưa có batch/undo promote, cursor pagination, activity đầy đủ cho mọi thao tác.
+- Phase 5B: batch promote từ multi-select note, undo promote trong 10 phút, fault injection.
+- Chưa có cursor pagination, activity đầy đủ cho mọi thao tác.
 
 ## Yêu cầu
 
@@ -126,6 +127,10 @@ Streams + Socket.IO; whiteboard không live-merge tldraw mà refetch snapshot kh
 - Activity TTL 90 ngày; `GET /boards/:boardId/activities?limit=50` trả hoạt động gần nhất.
 - UI có nút Demote cho task từ note (task tạo tay không có), dialog xác nhận và tab
   `Hoạt động`; realtime gỡ task/badge khi client khác demote.
+- `POST /items/promote-batch` nhận tối đa 100 note từ multi-select, chạy một transaction
+  và ghi activity từng note.
+- `POST /activities/:activityId/undo` hoàn tác promote trong 10 phút nếu task chưa sửa
+  hoặc di chuyển; nút Undo nằm trong tab Hoạt động.
 
 ## Phát triển local
 
@@ -173,7 +178,7 @@ npm run format:check
 npm run test
 ```
 
-Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`. Test realtime dùng Change Streams và Socket.IO client thật; suite hiện có 28 file, 126 test.
+Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`. Test realtime dùng Change Streams và Socket.IO client thật; suite hiện có 31 file, 144 test.
 
 ## Bảo mật local
 
@@ -190,7 +195,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0`. Phase 5A đã merge `release/v0.5` tại `0a34cce`; chưa merge `main`, chưa bump `0.5.0`. Tag `v0.2.0`, `v0.3.0` và `v0.4.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0`. Phase 5A/5B đang trên `release/v0.5`; chưa merge `main`, chưa bump `0.5.0`. Tag `v0.2.0`, `v0.3.0` và `v0.4.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 
@@ -204,6 +209,7 @@ Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0
 - [Phase 3B](docs/phases/03b-task-editing-columns.md)
 - [Phase 4](docs/phases/04-realtime.md)
 - [Phase 5A](docs/phases/05a-demote-activity.md)
+- [Phase 5B](docs/phases/05b-batch-undo.md)
 - [Ghi chú MongoDB](docs/mongodb-notes.md)
 - [Lịch sử phiên](docs/session-log.md)
 - [Quy trình Git](docs/git-workflow.md)

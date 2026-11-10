@@ -578,3 +578,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Merge `release/v0.3` vào `main` bằng `--no-ff` với message
   `release: v0.3 kanban editing`.
 - Sau merge: gate 3 lần, Docker health `0.3.0`; không tạo tag nếu chưa được yêu cầu rõ.
+
+### Merge main v0.3.0
+
+- Merge `release/v0.3` vào `main` bằng `--no-ff`: `d327c74`
+  (`release: v0.3 kanban editing`).
+- Main gate: typecheck/lint/format pass; full suite 20 file, 99 test ba lần
+  14.01/13.98/14.17 s.
+- Docker rebuild; health `0.3.0`, `rs0`, primary; app DB vẫn 001/002/003.
+- `main` trước merge ở `da0547a`; tag `v0.2.0` giữ nguyên; chưa tạo tag v0.3.0.

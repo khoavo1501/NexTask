@@ -1,4 +1,9 @@
-import type { CreateTaskRequest, MoveTaskRequest, TaskPriority } from '@nextask/contracts';
+import type {
+  CreateTaskRequest,
+  MoveTaskRequest,
+  TaskPriority,
+  UpdateTaskRequest,
+} from '@nextask/contracts';
 import { generateKeyBetween } from 'fractional-indexing';
 import { Types } from 'mongoose';
 import type { Filter } from 'mongodb';
@@ -135,6 +140,65 @@ export async function createTask(
   }
 
   throw orderConflict(column.id);
+}
+
+export async function updateTask(
+  board: BoardDocument,
+  taskId: string,
+  input: UpdateTaskRequest,
+): Promise<TaskDocument> {
+  if (!Types.ObjectId.isValid(taskId)) {
+    throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+  }
+
+  const task = await TaskModel.findOne({
+    _id: taskId,
+    boardId: board._id,
+    lifecycle: 'active',
+  }).exec();
+  if (!task) {
+    throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+  }
+  if (task.version !== input.expectedVersion) {
+    throw versionConflict(task.version);
+  }
+  assertAssigneeMember(board, input.assigneeId);
+
+  const updates: Record<string, unknown> = {};
+  if (input.title !== undefined) updates.title = input.title;
+  if (input.description !== undefined) updates.description = input.description;
+  if (input.assigneeId !== undefined) {
+    updates.assigneeId = input.assigneeId ? new Types.ObjectId(input.assigneeId) : null;
+  }
+  if (input.labels !== undefined) updates.labels = normalizeLabels(input.labels);
+  if (input.priority !== undefined) updates.priority = input.priority;
+  if (input.dueDate !== undefined) {
+    updates.dueDate = input.dueDate ? new Date(input.dueDate) : null;
+  }
+
+  const updated = await TaskModel.findOneAndUpdate(
+    {
+      _id: task._id,
+      boardId: board._id,
+      lifecycle: 'active',
+      version: input.expectedVersion,
+    },
+    { $set: updates, $inc: { version: 1 } },
+    { returnDocument: 'after' },
+  ).exec();
+
+  if (!updated) {
+    const current = await TaskModel.findOne({
+      _id: task._id,
+      boardId: board._id,
+      lifecycle: 'active',
+    }).exec();
+    if (!current) {
+      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+    }
+    throw versionConflict(current.version);
+  }
+  return updated;
 }
 
 async function resolveOrder(

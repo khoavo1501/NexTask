@@ -1,15 +1,17 @@
 'use client';
 
-import type { BoardDto, ItemDto, TaskDto } from '@nextask/contracts';
+import type { BoardDto, BoardMemberDetailDto, ItemDto, TaskDto } from '@nextask/contracts';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AuthHeader } from '../../components/auth-header';
 import {
   ApiClientError,
   getBoard,
+  getBoardMembers,
   getItems,
   getTasks,
+  isOrderConflict,
   isVersionConflict,
   moveTask,
   promoteItem,
@@ -17,7 +19,7 @@ import {
 import { PromoteDialog } from '../whiteboard/promote-dialog';
 import { Whiteboard } from '../whiteboard/whiteboard';
 import { InviteDialog } from './invite-dialog';
-import { KanbanBoard } from './kanban-board';
+import { KanbanBoard, type KanbanFilters } from './kanban-board';
 import { RenameBoardDialog } from './rename-board-dialog';
 
 interface BoardWorkspaceProps {
@@ -26,6 +28,7 @@ interface BoardWorkspaceProps {
 
 interface WorkspaceData {
   board: BoardDto;
+  members: BoardMemberDetailDto[];
   items: ItemDto[];
   tasks: TaskDto[];
 }
@@ -39,17 +42,26 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const [showInvite, setShowInvite] = useState(false);
   const [showRename, setShowRename] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
+  const [filters, setFilters] = useState<KanbanFilters>({
+    q: '',
+    assigneeId: '',
+    priority: '',
+  });
+  const [hasMoreTasks, setHasMoreTasks] = useState(false);
+  const taskRequestRef = useRef(0);
 
   const loadWorkspace = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const [board, items, tasks] = await Promise.all([
+      const [board, members, items, taskPage] = await Promise.all([
         getBoard(boardId),
+        getBoardMembers(boardId),
         getItems(boardId),
         getTasks(boardId),
       ]);
-      setData({ board, items, tasks });
+      setData({ board, members, items, tasks: taskPage.tasks });
+      setHasMoreTasks(taskPage.hasMore);
     } catch (caught) {
       if (caught instanceof ApiClientError && caught.status === 401) {
         const nextPath = `${window.location.pathname}${window.location.search}`;
@@ -77,6 +89,40 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const handleItemsChange = useCallback((items: ItemDto[]) => {
     setData((current) => (current ? { ...current, items } : current));
   }, []);
+
+  const loadTasks = useCallback(
+    async (currentFilters: KanbanFilters) => {
+      const requestId = taskRequestRef.current + 1;
+      taskRequestRef.current = requestId;
+
+      try {
+        const page = await getTasks(boardId, {
+          q: currentFilters.q.trim() || undefined,
+          assigneeId: currentFilters.assigneeId || undefined,
+          priority: currentFilters.priority || undefined,
+        });
+        if (requestId !== taskRequestRef.current) return;
+        setData((current) => (current ? { ...current, tasks: page.tasks } : current));
+        setHasMoreTasks(page.hasMore);
+      } catch (caught) {
+        if (requestId !== taskRequestRef.current) return;
+        setNotice(
+          caught instanceof ApiClientError
+            ? caught.message
+            : 'Không tải được danh sách task đã lọc.',
+        );
+      }
+    },
+    [boardId],
+  );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      void loadTasks(filters);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [filters, loadTasks]);
 
   const handlePromote = useCallback(
     async (input: { columnId: string; assignToMe: boolean }) => {
@@ -122,12 +168,17 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   }, [loadWorkspace]);
 
   const handleMoveTask = useCallback(
-    async (taskId: string, columnId: string, expectedVersion: number) => {
+    async (
+      taskId: string,
+      columnId: string,
+      beforeTaskId: string | null,
+      expectedVersion: number,
+    ) => {
       setNotice(null);
       try {
         const moved = await moveTask(boardId, taskId, {
           columnId,
-          beforeTaskId: null,
+          beforeTaskId,
           expectedVersion,
         });
         setData((current) => {
@@ -138,15 +189,16 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           };
         });
       } catch (caught) {
-        if (isVersionConflict(caught)) {
-          setNotice('Board vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
+        if (isVersionConflict(caught) || isOrderConflict(caught)) {
+          setNotice('Kanban vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
           await loadWorkspace();
+          await loadTasks(filters);
           return;
         }
         setNotice(caught instanceof ApiClientError ? caught.message : 'Không di chuyển được task.');
       }
     },
-    [boardId, loadWorkspace],
+    [boardId, filters, loadTasks, loadWorkspace],
   );
 
   if (loading) {
@@ -248,7 +300,15 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
         </section>
 
         <aside className="h-[440px] w-full overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
-          <KanbanBoard board={data.board} tasks={data.tasks} onMoveTask={handleMoveTask} />
+          <KanbanBoard
+            board={data.board}
+            tasks={data.tasks}
+            members={data.members}
+            filters={filters}
+            hasMore={hasMoreTasks}
+            onFiltersChange={setFilters}
+            onMoveTask={handleMoveTask}
+          />
         </aside>
       </div>
 

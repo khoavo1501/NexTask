@@ -560,3 +560,13 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   `COLUMN_NOT_EMPTY`; board test đã xóa.
 - Không migration; app DB vẫn 001/002/003.
 - Chờ merge `feat/phase-3b-task-editing` vào `release/v0.3`; không merge `main`.
+
+### Merge release/v0.3 (3B)
+
+- Merge `feat/phase-3b-task-editing` vào `release/v0.3` bằng `--no-ff`: `463a294`.
+- Release gate: typecheck/lint/format pass; full suite 20 file, 99 test ba lần
+  14.52/14.40/14.32 s.
+- Xóa feature bằng `git branch -d`.
+- `main` vẫn `da0547a`, tag `v0.2.0` vẫn trỏ `da0547a`.
+- Docker chạy code 3B; không migration mới; app DB vẫn 001/002/003.
+- Chờ người dùng duyệt v0.3 trước khi merge `main`.

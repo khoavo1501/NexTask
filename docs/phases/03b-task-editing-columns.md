@@ -1,6 +1,6 @@
 # Giai đoạn 3B - Task editing và quản lý cột
 
-- Trạng thái: Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.3`
+- Trạng thái: Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.3` bằng `463a294`
 - Ngày lập: 2026-11-10
 - Tiền đề: Phase 3A hoàn thành trên `release/v0.3`; `main` và tag `v0.2.0` không đổi
 - Kiến trúc: [../architecture.md](../architecture.md)
@@ -368,4 +368,6 @@ Thêm:
 - Member 403 column management được kiểm chứng bằng API integration test.
 - Feature gate: typecheck/lint/format pass; full suite 20 file, 99 test ba lần
   14.42/14.35/14.62 s.
-- `release/v0.3` chứa 3A + 3B; chưa merge `main`; tag `v0.2.0` giữ nguyên.
+- Gate trên `release/v0.3` sau merge: typecheck/lint/format pass; full suite 99 test ba
+  lần 14.52/14.40/14.32 s.
+- `release/v0.3` chứa 3A + 3B, merge 3B `463a294`; chưa merge `main`; tag `v0.2.0` giữ nguyên.

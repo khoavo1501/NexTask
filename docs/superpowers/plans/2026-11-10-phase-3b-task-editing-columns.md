@@ -13,7 +13,7 @@
 **Branch:** `feat/phase-3b-task-editing` từ `release/v0.3`. Không merge `main` trong phase này.
 
 **Trạng thái thực thi:** Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.3` bằng
-`--no-ff`; feature branch đã xóa. Commit chính:
+`--no-ff` (`463a294`); feature branch đã xóa. Commit chính:
 
 - `0619149` `docs: specify phase 3b task editing and columns`
 - `f165947` `docs: plan phase 3b task editing and columns`
@@ -25,6 +25,10 @@
 - `1926b59` `style: format phase 3b api files`
 - `8a92808` `feat: add task and column dialogs`
 - `b376b74` `docs: record phase 3b verification`
+- `a6deac7` `docs: record phase 3b verification`
+- `463a294` `merge: phase 3b task editing and columns` vào `release/v0.3`
+
+Release gate: typecheck/lint/format pass; full suite 99 test ba lần 14.52/14.40/14.32 s.
 
 **Điều chỉnh thực tế:**
 

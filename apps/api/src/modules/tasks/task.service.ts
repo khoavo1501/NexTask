@@ -1,15 +1,66 @@
-import type { MoveTaskRequest } from '@nextask/contracts';
+import type { MoveTaskRequest, TaskPriority } from '@nextask/contracts';
 import { generateKeyBetween } from 'fractional-indexing';
 import { Types } from 'mongoose';
+import type { Filter } from 'mongodb';
 import { AppError } from '../../lib/errors.js';
 import { orderConflict, versionConflict } from '../../lib/versioning.js';
 import type { BoardDocument } from '../boards/board.model.js';
-import { TaskModel, type TaskDocument } from './task.model.js';
+import { TaskModel, type Task, type TaskDocument } from './task.model.js';
 
-export async function listTasks(board: BoardDocument): Promise<TaskDocument[]> {
-  return TaskModel.find({ boardId: board._id, lifecycle: 'active' })
-    .sort({ columnId: 1, order: 1 })
+export interface TaskListOptions {
+  columnId?: string;
+  assigneeId?: string;
+  priority?: TaskPriority;
+  labels: string[];
+  q?: string;
+  limit: number;
+}
+
+export interface TaskListResult {
+  tasks: TaskDocument[];
+  hasMore: boolean;
+}
+
+function escapeRegex(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+export async function listTasks(
+  board: BoardDocument,
+  options: TaskListOptions,
+): Promise<TaskListResult> {
+  if (options.columnId && !board.columns.some((column) => column.id === options.columnId)) {
+    throw new AppError(422, 'VALIDATION_ERROR', 'Cột lọc không tồn tại');
+  }
+
+  const filter: Filter<Task> = {
+    boardId: board._id,
+    lifecycle: 'active',
+  };
+  if (options.columnId) filter.columnId = options.columnId;
+  if (options.assigneeId === 'none') {
+    filter.assigneeId = null;
+  } else if (options.assigneeId) {
+    filter.assigneeId = new Types.ObjectId(options.assigneeId);
+  }
+  if (options.priority) filter.priority = options.priority;
+  if (options.labels.length > 0) filter.labels = { $all: options.labels };
+
+  const q = options.q?.trim();
+  if (q) {
+    const regex = new RegExp(escapeRegex(q), 'i');
+    filter.$or = [{ title: regex }, { description: regex }];
+  }
+
+  const tasks = await TaskModel.find(filter)
+    .sort({ columnId: 1, order: 1, _id: 1 })
+    .limit(options.limit + 1)
     .exec();
+
+  return {
+    tasks: tasks.slice(0, options.limit),
+    hasMore: tasks.length > options.limit,
+  };
 }
 
 function isDuplicateKeyError(error: unknown): boolean {

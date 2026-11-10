@@ -695,3 +695,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - `main` vẫn `9fd19b6`; tag `v0.2.0`, `v0.3.0`, `v0.4.0` giữ nguyên.
 - App DB đã áp 001–005; Docker health `0.4.0`.
 - Chờ người dùng duyệt phát hành v0.5 trước khi merge `main` và bump version.
+
+## 2026-11-10 - Phase 5B spec
+
+- Tạo feature `feat/phase-5b-batch-undo` từ `release/v0.5`.
+- Chốt batch promote bằng multi-select note (tối đa 100), transaction nguyên tử, mỗi note
+  một activity/undo riêng.
+- Chốt undo từng activity promote trong 10 phút; không undo nhóm; fault injection bằng hook test.
+- Spec: `docs/phases/05b-batch-undo.md`; chờ duyệt trước khi viết plan/code.

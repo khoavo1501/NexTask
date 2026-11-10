@@ -12,7 +12,14 @@ import {
   type TLShapeId,
 } from 'tldraw';
 import 'tldraw/tldraw.css';
-import { useCallback, useEffect, useReducer, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+  type PointerEvent as ReactPointerEvent,
+} from 'react';
 import { ApiClientError, getItems, isVersionConflict, syncItems } from '../../lib/api';
 import type { WhiteboardProps } from './whiteboard';
 
@@ -35,10 +42,14 @@ export function WhiteboardCanvas({
   initialItems,
   items,
   tasks,
+  presence,
+  onCursorMove,
   onItemsChange,
   onPromoteRequest,
 }: WhiteboardProps) {
   const initialItemsRef = useRef(initialItems);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const lastCursorAtRef = useRef(0);
   const knownItemsRef = useRef(
     new Map(
       initialItems.map((item) => [
@@ -382,8 +393,25 @@ export function WhiteboardCanvas({
           ? 'Đã lưu'
           : 'Sẵn sàng';
 
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    if (!onCursorMove) return;
+    const now = performance.now();
+    if (now - lastCursorAtRef.current < 50) return;
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect || rect.width === 0 || rect.height === 0) return;
+    lastCursorAtRef.current = now;
+    onCursorMove({
+      x: Math.min(1, Math.max(0, (event.clientX - rect.left) / rect.width)),
+      y: Math.min(1, Math.max(0, (event.clientY - rect.top) / rect.height)),
+    });
+  }
+
   return (
-    <div className="relative h-full w-full overflow-hidden bg-stone-50">
+    <div
+      ref={containerRef}
+      onPointerMove={handlePointerMove}
+      className="relative h-full w-full overflow-hidden bg-stone-50"
+    >
       <Tldraw hideUi onMount={handleMount} />
 
       <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
@@ -396,6 +424,29 @@ export function WhiteboardCanvas({
             {badge.text}
           </span>
         ))}
+      </div>
+
+      <div className="pointer-events-none absolute inset-0 z-30 overflow-hidden">
+        {presence
+          ?.filter((entry) => entry.cursor)
+          .map((entry) => (
+            <div
+              key={entry.socketId}
+              className="absolute -translate-x-1 -translate-y-1"
+              style={{
+                left: `${entry.cursor!.x * 100}%`,
+                top: `${entry.cursor!.y * 100}%`,
+              }}
+            >
+              <div className="size-2 rounded-full" style={{ backgroundColor: entry.color }} />
+              <span
+                className="ml-1 rounded px-1 text-[10px] text-white"
+                style={{ backgroundColor: entry.color }}
+              >
+                {entry.name}
+              </span>
+            </div>
+          ))}
       </div>
 
       <div className="absolute left-3 top-3 z-30 flex max-w-[calc(100%-24px)] flex-wrap items-center gap-1 rounded-xl border border-stone-200 bg-white/95 p-1.5 shadow-md backdrop-blur">

@@ -1,9 +1,18 @@
 'use client';
 
-import type { BoardDto, BoardMemberDetailDto, ItemDto, TaskDto } from '@nextask/contracts';
+import type {
+  BoardDto,
+  BoardMemberDetailDto,
+  ItemDto,
+  PresenceParticipant,
+  RealtimeEvent,
+  TaskDto,
+} from '@nextask/contracts';
+import { SOCKET_EVENTS } from '@nextask/contracts';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { Socket } from 'socket.io-client';
 import { AuthHeader } from '../../components/auth-header';
 import {
   ApiClientError,
@@ -16,6 +25,7 @@ import {
   moveTask,
   promoteItem,
 } from '../../lib/api';
+import { createBoardSocket } from '../../lib/realtime';
 import { PromoteDialog } from '../whiteboard/promote-dialog';
 import { Whiteboard } from '../whiteboard/whiteboard';
 import { ColumnManagerDialog } from './column-manager-dialog';
@@ -53,7 +63,15 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     priority: '',
   });
   const [hasMoreTasks, setHasMoreTasks] = useState(false);
+  const [participants, setParticipants] = useState<PresenceParticipant[]>([]);
+  const [realtimeStatus, setRealtimeStatus] = useState<'connecting' | 'online' | 'offline'>(
+    'connecting',
+  );
+  const [whiteboardRevision, setWhiteboardRevision] = useState(0);
   const taskRequestRef = useRef(0);
+  const socketRef = useRef<Socket | null>(null);
+  const seenEventIdsRef = useRef(new Set<string>());
+  const hasJoinedRef = useRef(false);
 
   const loadWorkspace = useCallback(async () => {
     setLoading(true);
@@ -128,6 +146,105 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
 
     return () => clearTimeout(timer);
   }, [filters, loadTasks]);
+
+  const refreshRealtimeSnapshot = useCallback(async () => {
+    const [items, taskPage] = await Promise.all([getItems(boardId), getTasks(boardId)]);
+    setData((current) => (current ? { ...current, items, tasks: taskPage.tasks } : current));
+    setHasMoreTasks(taskPage.hasMore);
+    setWhiteboardRevision((value) => value + 1);
+  }, [boardId]);
+
+  const handleRealtimeEvent = useCallback(
+    (event: RealtimeEvent) => {
+      if (seenEventIdsRef.current.has(event.id)) return;
+      seenEventIdsRef.current.add(event.id);
+      if (seenEventIdsRef.current.size > 500) {
+        const oldest = seenEventIdsRef.current.values().next().value;
+        if (oldest) seenEventIdsRef.current.delete(oldest);
+      }
+
+      if (event.type === 'board:resync') {
+        setNotice('Board cần đồng bộ lại sau realtime. Đang tải dữ liệu.');
+        void loadWorkspace();
+        return;
+      }
+
+      if (event.type.startsWith('item:')) {
+        setNotice('Whiteboard vừa thay đổi từ tab/người khác. Đã tải lại.');
+        void refreshRealtimeSnapshot();
+        return;
+      }
+
+      if (event.type === 'task:demoted') {
+        const payload = event.payload as { taskId?: string };
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                tasks: current.tasks.filter((task) => task._id !== payload.taskId),
+              }
+            : current,
+        );
+        return;
+      }
+
+      const payload = event.payload as { task?: TaskDto };
+      const incoming = payload.task;
+      if (!incoming) return;
+      setData((current) => {
+        if (!current) return current;
+        const existing = current.tasks.find((task) => task._id === incoming._id);
+        if (existing && existing.version > incoming.version) return current;
+        return {
+          ...current,
+          tasks: existing
+            ? current.tasks.map((task) => (task._id === incoming._id ? incoming : task))
+            : [...current.tasks, incoming],
+        };
+      });
+    },
+    [loadWorkspace, refreshRealtimeSnapshot],
+  );
+
+  useEffect(() => {
+    const socket = createBoardSocket();
+    socketRef.current = socket;
+
+    socket.on('connect', () => {
+      setRealtimeStatus('online');
+      socket.emit(SOCKET_EVENTS.boardJoin, { boardId }, (ack: { ok: boolean; error?: string }) => {
+        if (!ack.ok) {
+          setRealtimeStatus('offline');
+          return;
+        }
+        if (hasJoinedRef.current) void loadWorkspace();
+        hasJoinedRef.current = true;
+      });
+    });
+    socket.on('disconnect', () => setRealtimeStatus('offline'));
+    socket.on('connect_error', () => setRealtimeStatus('offline'));
+    socket.on(SOCKET_EVENTS.boardEvent, handleRealtimeEvent);
+    socket.on(SOCKET_EVENTS.presenceList, (list: PresenceParticipant[]) => {
+      setParticipants(list);
+    });
+    socket.on(
+      SOCKET_EVENTS.presenceCursor,
+      (payload: { socketId: string; x: number; y: number }) => {
+        setParticipants((current) =>
+          current.map((entry) =>
+            entry.socketId === payload.socketId
+              ? { ...entry, cursor: { x: payload.x, y: payload.y } }
+              : entry,
+          ),
+        );
+      },
+    );
+
+    return () => {
+      socket.disconnect();
+      socketRef.current = null;
+    };
+  }, [boardId, handleRealtimeEvent, loadWorkspace]);
 
   const handlePromote = useCallback(
     async (input: { columnId: string; assignToMe: boolean }) => {
@@ -289,6 +406,23 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           <span className="rounded-full bg-stone-100 px-3 py-1 text-xs font-medium text-stone-600">
             {data.board.viewerRole === 'owner' ? 'Owner' : 'Member'}
           </span>
+          <div className="flex items-center gap-1">
+            <span
+              className={`size-2 rounded-full ${
+                realtimeStatus === 'online' ? 'bg-emerald-500' : 'bg-stone-300'
+              }`}
+              title={realtimeStatus}
+            />
+            {participants.map((participant) => (
+              <span
+                key={participant.socketId}
+                className="rounded-full px-2 py-0.5 text-[11px] font-medium text-white"
+                style={{ backgroundColor: participant.color }}
+              >
+                {participant.name}
+              </span>
+            ))}
+          </div>
           {data.board.viewerRole === 'owner' ? (
             <>
               <button
@@ -330,10 +464,13 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       <div className="flex flex-1 flex-col gap-4 p-4">
         <section className="relative h-[62vh] min-h-[520px] overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
           <Whiteboard
+            key={`whiteboard-${whiteboardRevision}`}
             board={data.board}
             initialItems={data.items}
             items={data.items}
             tasks={data.tasks}
+            presence={participants}
+            onCursorMove={(point) => socketRef.current?.emit(SOCKET_EVENTS.presenceCursor, point)}
             onItemsChange={handleItemsChange}
             onPromoteRequest={setPromoteTarget}
           />

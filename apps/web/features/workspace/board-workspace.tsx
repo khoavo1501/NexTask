@@ -1,6 +1,7 @@
 'use client';
 
 import type {
+  ActivityDto,
   BoardDto,
   BoardMemberDetailDto,
   ItemDto,
@@ -26,6 +27,7 @@ import {
   moveTask,
   promoteBatch,
   promoteItem,
+  undoPromote,
 } from '../../lib/api';
 import { createBoardSocket } from '../../lib/realtime';
 import { BatchPromoteDialog } from '../whiteboard/batch-promote-dialog';
@@ -38,6 +40,7 @@ import { InviteDialog } from './invite-dialog';
 import { KanbanBoard, type KanbanFilters } from './kanban-board';
 import { RenameBoardDialog } from './rename-board-dialog';
 import { TaskEditorDialog } from './task-editor-dialog';
+import { UndoPromoteDialog } from './undo-promote-dialog';
 
 interface BoardWorkspaceProps {
   boardId: string;
@@ -57,6 +60,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const [error, setError] = useState<string | null>(null);
   const [promoteTarget, setPromoteTarget] = useState<ItemDto | null>(null);
   const [batchPromoteTarget, setBatchPromoteTarget] = useState<ItemDto[] | null>(null);
+  const [undoTarget, setUndoTarget] = useState<ActivityDto | null>(null);
   const [showInvite, setShowInvite] = useState(false);
   const [showRename, setShowRename] = useState(false);
   const [showColumns, setShowColumns] = useState(false);
@@ -389,6 +393,37 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     }
   }, [boardId, data, demoteTarget, filters, loadTasks, loadWorkspace]);
 
+  const handleUndoPromote = useCallback(async () => {
+    if (!undoTarget) return;
+    try {
+      const result = await undoPromote(boardId, undoTarget._id);
+      setData((current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          items: current.items.map((item) => (item._id === result.item._id ? result.item : item)),
+          tasks: current.tasks.filter((task) => task._id !== result.task._id),
+        };
+      });
+      setUndoTarget(null);
+      setActivityRevision((value) => value + 1);
+      setWhiteboardRevision((value) => value + 1);
+      setNotice('Đã hoàn tác promote.');
+    } catch (caught) {
+      if (
+        caught instanceof ApiClientError &&
+        (caught.code === 'UNDO_NO_LONGER_SAFE' || caught.code === 'UNDO_NOT_AVAILABLE')
+      ) {
+        setUndoTarget(null);
+        setNotice(caught.message);
+        await loadWorkspace();
+        await loadTasks(filters);
+        return;
+      }
+      throw caught;
+    }
+  }, [boardId, filters, loadTasks, loadWorkspace, undoTarget]);
+
   const handleRenamed = useCallback((board: BoardDto) => {
     setData((current) => (current ? { ...current, board } : current));
   }, []);
@@ -630,7 +665,9 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
               <ActivityPanel
                 boardId={boardId}
                 members={data.members}
+                tasks={data.tasks}
                 refreshKey={activityRevision}
+                onUndo={setUndoTarget}
               />
             )}
           </div>
@@ -680,6 +717,14 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           task={demoteTarget}
           onClose={() => setDemoteTarget(null)}
           onConfirm={handleDemote}
+        />
+      ) : null}
+
+      {undoTarget ? (
+        <UndoPromoteDialog
+          activity={undoTarget}
+          onClose={() => setUndoTarget(null)}
+          onConfirm={handleUndoPromote}
         />
       ) : null}
 

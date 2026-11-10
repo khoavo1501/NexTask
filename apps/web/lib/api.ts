@@ -20,6 +20,7 @@ import {
   syncItemsRequestSchema,
   taskResponseSchema,
   tasksListResponseSchema,
+  undoPromoteResponseSchema,
   updateColumnsRequestSchema,
   updateTaskRequestSchema,
   userResponseSchema,
@@ -357,5 +358,16 @@ export async function getActivities(boardId: string, limit = 50): Promise<Activi
   const params = new URLSearchParams({ limit: String(limit) });
   return (
     await request(`/boards/${boardId}/activities?${params.toString()}`, activitiesResponseSchema)
+  ).data;
+}
+
+export async function undoPromote(
+  boardId: string,
+  activityId: string,
+): Promise<{ task: TaskDto; item: ItemDto; activity: ActivityDto }> {
+  return (
+    await request(`/boards/${boardId}/activities/${activityId}/undo`, undoPromoteResponseSchema, {
+      method: 'POST',
+    })
   ).data;
 }

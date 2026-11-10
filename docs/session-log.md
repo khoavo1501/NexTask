@@ -653,3 +653,34 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Docker rebuild; health `0.4.0`, Mongo `rs0` primary.
 - Tạo tag annotated `v0.4.0` sau docs release merge; không push.
 - Tag `v0.2.0` và `v0.3.0` giữ nguyên.
+
+## 2026-11-10 - Phase 5A spec
+
+- Tạo `release/v0.5` từ `main` tại `9fd19b6` và feature
+  `feat/phase-5a-demote-activity`.
+- Chốt tách 5A/5B; 5A gồm Demote + Activity; undo chỉ áp dụng promote và để 5B.
+- Spec: `docs/phases/05a-demote-activity.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-10 - Phase 5A plan
+
+- Spec `docs/phases/05a-demote-activity.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-10-phase-5a-demote-activity.md`.
+- Phạm vi: Demote transaction, activity TTL/index, API activity, web Demote/panel.
+- 5B để sau: batch, undo, fault injection toàn diện.
+- Bắt đầu Inline Execution; không merge `main`.
+
+## 2026-11-10 - Phase 5A verification
+
+- Backup `nextask-before-5a-2026-11-10.gz`; rehearsal/app áp `005-phase-5a`.
+- Activities validator/index/TTL; tasks validator có `demotedAt`/`demotedBy`; counts giữ nguyên.
+- Browser: dialog Demote gỡ task, badge note biến mất, activity panel cập nhật; reload giữ trạng thái.
+- Client thứ hai demote cập nhật tab đang mở; manual task không có nút Demote.
+- Dữ liệu board tạm đã xóa; health `0.4.0`.
+
+## 2026-11-10 - Phase 5A gate
+
+- Feature gate: typecheck/lint/format pass; full suite 28 file, 126 test ba lần
+  19.09/19.08/19.26 s.
+- Cập nhật spec, plan, architecture, MongoDB notes, README và git workflow cho Phase 5A.
+- Chờ merge `feat/phase-5a-demote-activity` vào `release/v0.5` bằng `--no-ff`.
+- Không bump `0.5.0`; không merge `main`; tag `v0.4.0` giữ nguyên.

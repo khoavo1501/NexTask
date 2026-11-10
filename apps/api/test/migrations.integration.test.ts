@@ -9,6 +9,7 @@ import {
   MIGRATION_002_NAME,
   MIGRATION_003_NAME,
   MIGRATION_004_NAME,
+  MIGRATION_005_NAME,
 } from '../src/db/migration-runner.js';
 import { COLLECTION_VALIDATORS } from '../src/db/collection-validators.js';
 import { assertSchemaVersion } from '../src/db/schema-version.js';
@@ -139,9 +140,10 @@ describe('migration 2A', () => {
     expect(migrations).not.toContain(MIGRATION_002_NAME);
     expect(migrations).not.toContain(MIGRATION_003_NAME);
     expect(migrations).not.toContain(MIGRATION_004_NAME);
+    expect(migrations).not.toContain(MIGRATION_005_NAME);
     expect((await ItemModel.findOne({ shapeId: 'shape:legacy' }))?.version).toBe(9);
     expect((await TaskModel.findOne({ title: 'Legacy task' }))?.version).toBe(4);
-    await expect(assertSchemaVersion(connection, MIGRATION_004_NAME)).resolves.toBeUndefined();
+    await expect(assertSchemaVersion(connection, MIGRATION_005_NAME)).resolves.toBeUndefined();
   });
 
   it('áp validator 002 cho cả 5 collection', async () => {
@@ -215,5 +217,67 @@ describe('migration 2A', () => {
       const options = (info as { options?: Record<string, unknown> } | undefined)?.options;
       expect(options?.changeStreamPreAndPostImages).toEqual({ enabled: true });
     }
+  });
+
+  it('005 tạo activities validator/index/TTL và task demote fields', async () => {
+    if (!connection.db) throw new Error('DB chưa kết nối');
+
+    const [activityInfo] = await connection.db.listCollections({ name: 'activities' }).toArray();
+    const activityOptions = (activityInfo as { options?: Record<string, unknown> } | undefined)
+      ?.options;
+    expect(activityInfo).toBeDefined();
+    expect(activityOptions?.validationLevel).toBe('strict');
+    expect(activityOptions?.validationAction).toBe('error');
+
+    const indexes = await connection.db.collection('activities').indexes();
+    expect(indexes.find((index) => index.name === 'activities_board_created')).toBeDefined();
+    expect(indexes.find((index) => index.name === 'activities_created_ttl')).toMatchObject({
+      expireAfterSeconds: 7_776_000,
+    });
+
+    const rawTask = {
+      _id: new Types.ObjectId(),
+      boardId: new Types.ObjectId(),
+      columnId: 'raw-validation',
+      order: 'a0',
+      title: 'Raw task without demote fields',
+      description: '',
+      assigneeId: null,
+      labels: [],
+      priority: 'medium',
+      dueDate: null,
+      lifecycle: 'active',
+      sourceItemId: null,
+      origin: null,
+      version: 1,
+      createdBy: new Types.ObjectId(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    await expect(connection.db.collection('tasks').insertOne(rawTask)).resolves.toBeDefined();
+    await expect(
+      connection.db.collection('tasks').updateOne(
+        { _id: rawTask._id },
+        {
+          $set: {
+            lifecycle: 'demoted',
+            demotedAt: new Date(),
+            demotedBy: new Types.ObjectId(),
+          },
+        },
+      ),
+    ).resolves.toMatchObject({ modifiedCount: 1 });
+
+    await expect(
+      connection.db.collection('activities').insertOne({
+        boardId: new Types.ObjectId(),
+        actorId: new Types.ObjectId(),
+        action: 'task.moved',
+        refs: { itemId: null, taskId: null, columnId: null },
+        snapshot: {},
+        undoableUntil: null,
+        createdAt: new Date(),
+      }),
+    ).rejects.toMatchObject({ code: 121 });
   });
 });

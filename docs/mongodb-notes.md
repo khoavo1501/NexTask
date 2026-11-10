@@ -597,3 +597,34 @@ drop sau khi đo. Query sort `{ columnId: 1, order: 1, _id: 1 }`.
   whiteboard và hiện notice; không có lỗi 500.
 - Presence list và cursor overlay hoạt động; cursor chỉ trong bộ nhớ, không ghi DB.
 - Task test đã xóa và note được khôi phục nội dung; checkpoint của board vẫn còn.
+
+## 19. Quan sát Giai đoạn 5A
+
+### Migration 005
+
+- Backup trước migration: `backups/nextask-before-5a-2026-11-10.gz`, 4.0 KB, `gzip -t` pass.
+- Rehearsal `nextask_5a_rehearsal`: restore 1 board, 2 item, 2 task; migration
+  `applied: ["005-phase-5a"]`; đã drop sau kiểm tra.
+- App DB: `applied: ["005-phase-5a"]`; counts và nội dung item/task giữ nguyên.
+- `activities` có validator strict/error; index `activities_board_created` và TTL
+  `activities_created_ttl` với `expireAfterSeconds: 7776000`.
+- Validator `tasks` thêm `demotedAt`/`demotedBy` optional; task cũ không có hai field vẫn hợp lệ.
+- Migration idempotent: collection/index đã có thì không tạo trùng.
+
+### Demote và activity
+
+- Demote cập nhật task + item + insert activity trong một transaction snapshot/majority.
+- Task demoted giữ `_id`, `sourceItemId`, `origin`; item giữ nguyên vị trí, chỉ bỏ
+  `promotedTaskId`.
+- OCC kiểm tra cả task version và item version; conflict trả `field` để client biết bên nào lệch.
+- Promote ghi activity trong cùng transaction với `undoableUntil` +10 phút; demote ghi
+  activity với `undoableUntil: null`.
+- Hai demote đồng thời: một commit, request còn lại nhận 409; activity chỉ một.
+- Activity TTL 90 ngày là log vận hành có hạn; lịch sử task demoted vẫn nằm ở `tasks`.
+
+### Browser
+
+- Dialog Demote gỡ card khỏi Kanban, badge note biến mất; reload vẫn giữ trạng thái.
+- Tab hoạt động đọc `GET /activities`, hiển thị promote rồi demote; task tạo tay không có nút Demote.
+- Client thứ hai demote khiến tab đang mở gỡ task và làm mới activity qua Change Streams hiện có.
+- Board tạm, activity và checkpoint của board tạm đã xóa; board thật không đổi.

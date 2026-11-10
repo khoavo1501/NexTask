@@ -1,4 +1,5 @@
-import type { BoardDto, ItemDto, TaskDto } from '@nextask/contracts';
+import type { ActivityDto, BoardDto, ItemDto, TaskDto } from '@nextask/contracts';
+import type { ActivityDocument } from '../modules/activities/activity.model.js';
 import type { BoardDocument } from '../modules/boards/board.model.js';
 import type { ItemDocument } from '../modules/items/item.model.js';
 import type { TaskDocument } from '../modules/tasks/task.model.js';
@@ -69,7 +70,7 @@ export function serializeTask(task: TaskDocument): TaskDto {
     labels: task.labels,
     priority: task.priority,
     dueDate: task.dueDate?.toISOString() ?? null,
-    lifecycle: 'active',
+    lifecycle: task.lifecycle,
     sourceItemId: task.sourceItemId?.toHexString() ?? null,
     origin: task.origin
       ? {
@@ -85,5 +86,24 @@ export function serializeTask(task: TaskDocument): TaskDto {
     createdBy: task.createdBy.toHexString(),
     createdAt: task.createdAt.toISOString(),
     updatedAt: task.updatedAt.toISOString(),
+    demotedAt: task.demotedAt?.toISOString() ?? null,
+    demotedBy: task.demotedBy?.toHexString() ?? null,
+  };
+}
+
+export function serializeActivity(activity: ActivityDocument): ActivityDto {
+  return {
+    _id: activity._id.toHexString(),
+    boardId: activity.boardId.toHexString(),
+    actorId: activity.actorId.toHexString(),
+    action: activity.action,
+    refs: {
+      itemId: activity.refs.itemId?.toHexString() ?? null,
+      taskId: activity.refs.taskId?.toHexString() ?? null,
+      columnId: activity.refs.columnId,
+    },
+    snapshot: activity.snapshot,
+    undoableUntil: activity.undoableUntil?.toISOString() ?? null,
+    createdAt: activity.createdAt.toISOString(),
   };
 }

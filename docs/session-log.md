@@ -595,3 +595,10 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Chốt phạm vi: Change Streams per board, resume token/checkpoint, Socket.IO auth/room,
   Kanban+badge realtime, whiteboard refetch (không live-merge tldraw), presence/cursor.
 - Spec: `docs/phases/04-realtime.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-10 - Phase 4 plan
+
+- Spec `docs/phases/04-realtime.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-10-phase-4-realtime.md`.
+- Phạm vi: Change Streams per board, checkpoint, Socket.IO auth/room, presence.
+- Bắt đầu Inline Execution; chưa merge `main`.

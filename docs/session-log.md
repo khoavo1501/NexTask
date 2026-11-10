@@ -703,3 +703,10 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   một activity/undo riêng.
 - Chốt undo từng activity promote trong 10 phút; không undo nhóm; fault injection bằng hook test.
 - Spec: `docs/phases/05b-batch-undo.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-10 - Phase 5B plan
+
+- Spec `docs/phases/05b-batch-undo.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-10-phase-5b-batch-undo.md`.
+- Phạm vi: batch promote multi-select, undo từng activity promote, fault injection hook.
+- Bắt đầu Inline Execution; không merge `main`.

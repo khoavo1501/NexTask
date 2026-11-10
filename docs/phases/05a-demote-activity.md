@@ -405,7 +405,7 @@ Thêm:
 ### 11.5 Activity API
 
 - Member và Owner đọc được activity của board mình.
-- Non-member bị 403.
+- Non-member bị 404 theo board access hiện có (không rò board tồn tại).
 - Chỉ trả activity đúng board; sort mới nhất trước; limit mặc định 50, tối đa 100.
 - Activity `undoableUntil` serialize ISO hoặc null.
 
@@ -432,6 +432,23 @@ Thêm:
 - Rehearsal `nextask_5a_rehearsal`, áp migration, kiểm tra validator/index/TTL/counts, drop.
 - Áp app DB; Docker rebuild; health vẫn `0.4.0` (không bump trong 5A).
 - Full suite ba lần; typecheck/lint/format pass.
+
+### Kết quả verification 2026-11-10
+
+- Backup `backups/nextask-before-5a-2026-11-10.gz` 4.0 KB, `gzip -t` pass.
+- Rehearsal và app DB áp `005-phase-5a`; activities validator strict/error; index
+  `activities_board_created`; TTL `activities_created_ttl` 7.776.000 giây; tasks validator
+  có `demotedAt`/`demotedBy`; counts 1 board, 2 item, 2 task, 0 activity giữ nguyên.
+- Docker migrate/api/web healthy; health `0.4.0`, Mongo `rs0` primary.
+- Browser board tạm:
+  - Promote note tạo activity `Đã promote`; activity panel đọc đúng.
+  - Demote qua dialog: Kanban còn 0 task, badge note biến mất, notice thành công,
+    activity `Đã demote` xuất hiện.
+  - Reload giữ trạng thái demoted; note vẫn còn; task tạo tay không có nút Demote.
+  - Client thứ hai demote: tab đang mở tự gỡ task và làm mới activity; không lỗi console/API.
+- Dữ liệu board tạm, activity và checkpoint của board tạm đã xóa; board thật giữ
+  1 board, 2 item, 2 task.
+- Full suite trước gate: 28 file, 126 test pass.
 
 ## 12. Tiêu chí chấp nhận
 

@@ -668,3 +668,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Phạm vi: Demote transaction, activity TTL/index, API activity, web Demote/panel.
 - 5B để sau: batch, undo, fault injection toàn diện.
 - Bắt đầu Inline Execution; không merge `main`.
+
+## 2026-11-10 - Phase 5A verification
+
+- Backup `nextask-before-5a-2026-11-10.gz`; rehearsal/app áp `005-phase-5a`.
+- Activities validator/index/TTL; tasks validator có `demotedAt`/`demotedBy`; counts giữ nguyên.
+- Browser: dialog Demote gỡ task, badge note biến mất, activity panel cập nhật; reload giữ trạng thái.
+- Client thứ hai demote cập nhật tab đang mở; manual task không có nút Demote.
+- Dữ liệu board tạm đã xóa; health `0.4.0`.

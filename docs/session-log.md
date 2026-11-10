@@ -474,6 +474,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Bump version root/API/web/contracts và `package-lock.json` lên `0.2.0`.
 - Bump `SERVICE_VERSION` trong `.env.example` và `docker-compose.yml` lên `0.2.0`.
 - Merge `release/v0.2` vào `main` bằng `--no-ff` với message
-  `release: v0.2 auth membership and data integrity`.
-- Sau merge main: chạy lại gate và kiểm tra Docker; không tạo tag v0.2.0 vì chưa được
-  yêu cầu rõ; không push.
+  `release: v0.2 auth membership and data integrity`: `53f2391`.
+- Sau merge main: typecheck/lint/format pass; full suite 13 file, 67 test, ba lần
+  8.81/8.67/8.68 s.
+- Docker rebuild: `mongo`, `api`, `web` healthy; health báo `version: 0.2.0`, migrate
+  `applied: []` (001/002 đã có).
+- Không tạo tag v0.2.0 vì chưa được yêu cầu rõ; không push.
+- Lưu ý: invitation cũ đã hết hạn và bị TTL index xóa trong lúc kiểm tra ngày
+  2026-11-10; đây là hành vi đúng của TTL, không phải mất dữ liệu ngoài ý muốn.

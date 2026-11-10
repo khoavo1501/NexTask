@@ -3,9 +3,9 @@
 ## 1. Trạng thái hiện tại
 
 - Repository cục bộ, chưa có remote.
-- Nhánh ổn định: `main` tại `6d3d11b`.
-- Nhánh phiên bản đang mở: `release/v0.2`; merge 2B `bfc1da2`, docs sau merge `5c3d9ce` và `9bd6351`.
-- Phase 0 và Phase 1 đã nằm trên `main`.
+- Nhánh ổn định: `main` tại `53f2391` (release v0.2.0).
+- Nhánh phiên bản: `release/v0.2` đã merge vào `main`; merge 2B `bfc1da2`, chuẩn bị release `7e5f65d`.
+- Phase 0, Phase 1, Phase 2A và Phase 2B đã nằm trên `main`.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
 - Phase 2B đã merge vào `release/v0.2` bằng `bfc1da2`; feature `feat/phase-2b-data-integrity` đã xóa.
@@ -205,7 +205,7 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   lần 8.99/8.65/8.70 s.
 - Merge release `bfc1da2`; quality gate trên release: typecheck/lint/format pass; full
   suite 67 test ba lần 8.87/8.64/8.65 s.
-- Feature đã xóa; `main` vẫn ở `6d3d11b`, chưa nhận v0.2.
+- Feature đã xóa; `main` đã nhận v0.2.0 qua release merge `53f2391`.
 - Người dùng đã duyệt phát hành v0.2 ngày 2026-11-10; merge main theo mục 10.
 
 ## 10. Phát hành v0.2.0
@@ -215,5 +215,7 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Release v0.2 gồm Phase 2A và 2B; merge vào `main` bằng `--no-ff` với message
   `release: v0.2 auth membership and data integrity`.
 - Sau merge main, chạy lại typecheck/lint/format, full suite ba lần và kiểm tra Docker.
+- Đã merge `release/v0.2` vào `main` tại `53f2391`; full suite trên main 67 test ba lần
+  8.81/8.67/8.68 s; Docker health báo `0.2.0`.
 - Không tạo tag `v0.2.0` nếu người dùng chưa yêu cầu rõ.
 - Không push; repository vẫn local.

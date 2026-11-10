@@ -245,3 +245,13 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Merge feature vào `release/v0.3` bằng `--no-ff` (`463a294`); release gate pass:
   typecheck/lint/format; full suite 99 test ba lần 14.52/14.40/14.32 s; feature đã xóa.
 - Không merge `release/v0.3` vào `main`; chưa bump version `0.3.0`; tag `v0.2.0` giữ nguyên.
+
+## 13. Phát hành v0.3.0
+
+- Bump `package.json`, workspace packages, `package-lock.json` và `SERVICE_VERSION`
+  lên `0.3.0` trên `release/v0.3`.
+- Release v0.3 gồm Phase 3A và 3B; merge vào `main` bằng `--no-ff` với message
+  `release: v0.3 kanban editing`.
+- Sau merge main, chạy typecheck/lint/format, full suite ba lần và kiểm tra Docker.
+- Không tạo tag `v0.3.0` nếu người dùng chưa yêu cầu rõ.
+- Không push; repository vẫn local.

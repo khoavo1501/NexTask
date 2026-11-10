@@ -570,3 +570,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - `main` vẫn `da0547a`, tag `v0.2.0` vẫn trỏ `da0547a`.
 - Docker chạy code 3B; không migration mới; app DB vẫn 001/002/003.
 - Chờ người dùng duyệt v0.3 trước khi merge `main`.
+
+## 2026-11-10 - Phát hành v0.3.0
+
+- Bump version root/API/web/contracts và `package-lock.json` lên `0.3.0`.
+- Bump `SERVICE_VERSION` trong `.env.example` và `docker-compose.yml` lên `0.3.0`.
+- Merge `release/v0.3` vào `main` bằng `--no-ff` với message
+  `release: v0.3 kanban editing`.
+- Sau merge: gate 3 lần, Docker health `0.3.0`; không tạo tag nếu chưa được yêu cầu rõ.

@@ -5,9 +5,10 @@
 - Repository cục bộ, chưa có remote.
 - Nhánh ổn định: `main` tại `da0547a` (v0.2.0, tag annotated `v0.2.0`).
 - Nhánh phiên bản: `release/v0.3`; merge 3A `0d7dd2d`, sau đó có commit docs release.
-- Nhánh phiên bản: `release/v0.3`; merge 3A `0d7dd2d`, merge 3B `463a294`.
+- Nhánh ổn định: `main` tại `d327c74` (v0.3.0); release v0.3.0 đã merge main.
+- Nhánh phiên bản: `release/v0.3`; merge 3A `0d7dd2d`, merge 3B `463a294`, release `00c92fa`.
 - Feature 3B đã merge và xóa; phase 0–3B hoàn thành.
-- Tag `v0.2.0` và `main` không đổi trong Phase 3A/3B.
+- Tag `v0.2.0` vẫn trỏ `da0547a`; chưa tạo tag v0.3.0.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
 - Phase 2B đã merge vào `release/v0.2` bằng `bfc1da2`; feature `feat/phase-2b-data-integrity` đã xóa.
@@ -251,7 +252,8 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Bump `package.json`, workspace packages, `package-lock.json` và `SERVICE_VERSION`
   lên `0.3.0` trên `release/v0.3`.
 - Release v0.3 gồm Phase 3A và 3B; merge vào `main` bằng `--no-ff` với message
-  `release: v0.3 kanban editing`.
-- Sau merge main, chạy typecheck/lint/format, full suite ba lần và kiểm tra Docker.
+  `release: v0.3 kanban editing`: `d327c74`.
+- Sau merge main: typecheck/lint/format pass; full suite 99 test ba lần
+  14.01/13.98/14.17 s; Docker health `0.3.0`.
 - Không tạo tag `v0.3.0` nếu người dùng chưa yêu cầu rõ.
 - Không push; repository vẫn local.

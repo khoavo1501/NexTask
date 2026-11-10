@@ -24,9 +24,11 @@ import {
   isOrderConflict,
   isVersionConflict,
   moveTask,
+  promoteBatch,
   promoteItem,
 } from '../../lib/api';
 import { createBoardSocket } from '../../lib/realtime';
+import { BatchPromoteDialog } from '../whiteboard/batch-promote-dialog';
 import { PromoteDialog } from '../whiteboard/promote-dialog';
 import { Whiteboard } from '../whiteboard/whiteboard';
 import { ActivityPanel } from './activity-panel';
@@ -54,6 +56,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [promoteTarget, setPromoteTarget] = useState<ItemDto | null>(null);
+  const [batchPromoteTarget, setBatchPromoteTarget] = useState<ItemDto[] | null>(null);
   const [showInvite, setShowInvite] = useState(false);
   const [showRename, setShowRename] = useState(false);
   const [showColumns, setShowColumns] = useState(false);
@@ -286,6 +289,53 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       }
     },
     [boardId, loadWorkspace, promoteTarget],
+  );
+
+  const handleBatchPromote = useCallback(
+    async (input: { columnId: string; assignToMe: boolean }) => {
+      if (!batchPromoteTarget) return;
+      try {
+        const result = await promoteBatch(boardId, {
+          columnId: input.columnId,
+          assignToMe: input.assignToMe,
+          items: batchPromoteTarget.map((item) => ({
+            itemId: item._id,
+            expectedItemVersion: item.version,
+          })),
+        });
+        setData((current) => {
+          if (!current) return current;
+          const itemMap = new Map(result.items.map((item) => [item._id, item]));
+          return {
+            ...current,
+            items: current.items.map((item) => itemMap.get(item._id) ?? item),
+            tasks: [
+              ...current.tasks.filter(
+                (task) => !result.tasks.some((incoming) => incoming._id === task._id),
+              ),
+              ...result.tasks,
+            ],
+          };
+        });
+        setBatchPromoteTarget(null);
+        setActivityRevision((value) => value + 1);
+        setWhiteboardRevision((value) => value + 1);
+        setNotice(`Đã promote ${result.tasks.length} ghi chú thành task`);
+      } catch (caught) {
+        if (
+          isVersionConflict(caught) ||
+          (caught instanceof ApiClientError && caught.code === 'BATCH_PROMOTE_CONFLICT')
+        ) {
+          setBatchPromoteTarget(null);
+          setNotice('Batch vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
+          await loadWorkspace();
+          await loadTasks(filters);
+          return;
+        }
+        throw caught;
+      }
+    },
+    [batchPromoteTarget, boardId, filters, loadTasks, loadWorkspace],
   );
 
   const handleDemote = useCallback(async () => {
@@ -533,6 +583,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
             onCursorMove={(point) => socketRef.current?.emit(SOCKET_EVENTS.presenceCursor, point)}
             onItemsChange={handleItemsChange}
             onPromoteRequest={setPromoteTarget}
+            onPromoteBatchRequest={setBatchPromoteTarget}
           />
         </section>
 
@@ -592,6 +643,15 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           columns={data.board.columns}
           onClose={() => setPromoteTarget(null)}
           onConfirm={handlePromote}
+        />
+      ) : null}
+
+      {batchPromoteTarget ? (
+        <BatchPromoteDialog
+          items={batchPromoteTarget}
+          columns={data.board.columns}
+          onClose={() => setBatchPromoteTarget(null)}
+          onConfirm={handleBatchPromote}
         />
       ) : null}
 

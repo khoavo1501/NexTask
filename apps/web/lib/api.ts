@@ -1,6 +1,8 @@
 import {
   activitiesResponseSchema,
   apiErrorSchema,
+  batchPromoteRequestSchema,
+  batchPromoteResponseSchema,
   boardMembersResponseSchema,
   boardResponseSchema,
   boardsResponseSchema,
@@ -22,6 +24,7 @@ import {
   updateTaskRequestSchema,
   userResponseSchema,
   type ActivityDto,
+  type BatchPromoteRequest,
   type BoardDto,
   type BoardMemberDetailDto,
   type CreateBoardRequest,
@@ -319,6 +322,19 @@ export async function moveTask(
     await request(`/boards/${boardId}/tasks/${taskId}/move`, taskResponseSchema, {
       method: 'POST',
       body: JSON.stringify(input),
+    })
+  ).data;
+}
+
+export async function promoteBatch(
+  boardId: string,
+  input: BatchPromoteRequest,
+): Promise<{ items: ItemDto[]; tasks: TaskDto[]; activities: ActivityDto[] }> {
+  const body = batchPromoteRequestSchema.parse(input);
+  return (
+    await request(`/boards/${boardId}/items/promote-batch`, batchPromoteResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
     })
   ).data;
 }

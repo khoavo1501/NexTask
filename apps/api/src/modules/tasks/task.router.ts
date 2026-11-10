@@ -1,13 +1,16 @@
 import {
   createTaskRequestSchema,
+  demoteTaskRequestSchema,
   moveTaskRequestSchema,
   taskListQuerySchema,
   updateTaskRequestSchema,
+  type DemoteTaskRequest,
   type TaskDto,
 } from '@nextask/contracts';
 import { Router } from 'express';
 import { AppError } from '../../lib/errors.js';
-import { serializeTask } from '../../lib/serialize.js';
+import { serializeActivity, serializeItem, serializeTask } from '../../lib/serialize.js';
+import { demoteTask } from './demote.service.js';
 import { createTask, listTasks, moveTask, updateTask } from './task.service.js';
 
 export function createTasksRouter(): Router {
@@ -94,6 +97,34 @@ export function createTasksRouter(): Router {
 
     response.json({
       data,
+      meta: { requestId: request.requestId },
+    });
+  });
+
+  router.post('/:taskId/demote', async (request, response) => {
+    if (!request.board || !request.user) {
+      throw new AppError(401, 'UNAUTHENTICATED', 'Cần đăng nhập');
+    }
+
+    const params = request.params as { taskId?: string };
+    if (!params.taskId) {
+      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+    }
+
+    const input: DemoteTaskRequest = demoteTaskRequestSchema.parse(request.body);
+    const result = await demoteTask({
+      board: request.board,
+      taskId: params.taskId,
+      actor: request.user,
+      request: input,
+    });
+
+    response.json({
+      data: {
+        task: serializeTask(result.task),
+        item: serializeItem(result.item),
+        activity: serializeActivity(result.activity),
+      },
       meta: { requestId: request.requestId },
     });
   });

@@ -214,7 +214,38 @@ export const COLLECTION_VALIDATORS: Record<string, Document> = {
         },
         version: { bsonType: 'number', minimum: 1 },
         createdBy: objectId,
+        demotedAt: nullableDate,
+        demotedBy: nullableObjectId,
         ...timestampProperties,
+      },
+    },
+  },
+  activities: {
+    $jsonSchema: {
+      bsonType: 'object',
+      required: ['boardId', 'actorId', 'action', 'refs', 'snapshot', 'undoableUntil', 'createdAt'],
+      additionalProperties: false,
+      properties: {
+        _id: objectId,
+        boardId: objectId,
+        actorId: objectId,
+        action: {
+          bsonType: 'string',
+          enum: ['item.promoted', 'item.demoted', 'item.promote_undone'],
+        },
+        refs: {
+          bsonType: 'object',
+          required: ['itemId', 'taskId', 'columnId'],
+          additionalProperties: false,
+          properties: {
+            itemId: nullableObjectId,
+            taskId: nullableObjectId,
+            columnId: { bsonType: ['string', 'null'] },
+          },
+        },
+        snapshot: { bsonType: 'object' },
+        undoableUntil: nullableDate,
+        createdAt: date,
       },
     },
   },

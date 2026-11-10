@@ -1,7 +1,6 @@
 # Giai đoạn 3A - Kanban ordering, filter và index
 
-- Trạng thái: Đã duyệt spec; implementation plan:
-  [2026-11-10-phase-3a-kanban-ordering.md](../superpowers/plans/2026-11-10-phase-3a-kanban-ordering.md)
+- Trạng thái: Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.3`
 - Ngày lập: 2026-11-10
 - Tiền đề: v0.2.0 đã phát hành tại `main` (`da0547a`), tag `v0.2.0`
 - Kiến trúc: [../architecture.md](../architecture.md)
@@ -413,3 +412,54 @@ Sau migration, chạy `explain("executionStats")` cho:
 - Migration 003 nằm trong feature; không bump version `0.3.0` giữa chừng.
 - Sau khi 3A pass gate, merge feature vào `release/v0.3` bằng `--no-ff`.
 - Chưa merge `release/v0.3` vào `main`; tag `v0.2.0` giữ nguyên.
+
+## 15. Kết quả thực hiện
+
+### Migration và dữ liệu
+
+- Backup trước migration: `backups/nextask-before-3a-2026-11-10.gz`, 3.4 KB,
+  `gzip -t` pass.
+- Rehearsal `nextask_3a_rehearsal`: `applied: ["003-phase-3a"]`; counts và version
+  không đổi; đã drop sau kiểm tra.
+- App DB: `applied: ["003-phase-3a"]`; 1 board, 2 item, 2 task, 2 user; task version
+  `4`, `4` giữ nguyên.
+- Unique index `tasks_kanban_order` và 3 filter indexes tồn tại.
+- Task tạm dùng cho browser drag đã xóa; không còn dữ liệu test trong app DB.
+
+### API và web
+
+- `POST /tasks/:taskId/move` nhận `beforeTaskId`; chèn đầu/giữa/cuối và cross-column.
+- Fractional order do server sinh; unique index chặn trùng; stale version trả 409.
+- `GET /tasks` filter `columnId`, `assigneeId`, `priority`, `labels`, `q`, `limit`;
+  `meta.hasMore`.
+- Web filter bar search/assignee/priority; drag trong cột và sang cột khác; drag bị khóa
+  khi filter active.
+- UI sort dùng so sánh chuỗi trực tiếp để khớp thứ tự binary MongoDB; sửa sau browser
+  test với key `Zz`/`a0`.
+
+### Kiểm chứng
+
+- `npm run typecheck`: pass.
+- `npm run lint`: pass.
+- `npm run format:check`: pass.
+- Full API suite 16 file, 82 test, ba lần liên tiếp:
+  - Lần 1: 11.51 s.
+  - Lần 2: 11.45 s.
+  - Lần 3: 11.47 s.
+- Docker `mongo`, `api`, `web` healthy; health `0.2.0` (chưa bump v0.3).
+- Explain 1000 task tạm:
+  - assignee: 1 key/1 doc/0 ms.
+  - priority: 250/250/2 ms.
+  - labels: 250/250/2 ms.
+  - all board: 1000/1000/9 ms.
+  - `q` regex: 1000/1000/6 ms, trả 143.
+- Browser: kéo task cuối lên đầu, reload giữ thứ tự; kéo về cuối; filter search và
+  priority đúng; drag không phát sinh request khi filter bật; POST move 200.
+
+### Ghi chú
+
+- `fractional-indexing` chỉ nhận key hợp lệ dạng `a0`; fixture migration dùng `a0` cho
+  cột `backlog`, không dùng `b0`.
+- Mongoose 9 không export `FilterQuery`; service dùng type `Filter` từ driver MongoDB.
+- Chưa có cursor pagination, text index, task edit/create hoặc column management.
+- `release/v0.3` chưa merge `main`; tag `v0.2.0` giữ nguyên.

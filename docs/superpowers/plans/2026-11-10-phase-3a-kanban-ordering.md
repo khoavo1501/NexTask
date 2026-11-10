@@ -12,6 +12,31 @@
 
 **Branch:** `feat/phase-3a-kanban-ordering` từ `release/v0.3`; release tạo từ `main` tại `da0547a` (v0.2.0). Không merge `main` trong phase này.
 
+**Trạng thái thực thi:** Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.3` bằng
+`--no-ff`; feature branch đã xóa. Commit chính:
+
+- `097d789` `docs: specify phase 3a kanban ordering`
+- `2b4789a` `docs: plan phase 3a kanban ordering`
+- `55cb4d8` `feat: add task ordering contracts`
+- `1a2d5c6` `feat: add phase 3a order indexes`
+- `8a84809` `feat: support task ordering by beforeTaskId`
+- `294db5b` `feat: add task filters and hasMore`
+- `d8d35d2` `style: format phase 3a api files`
+- `ad08ea5` `feat: add kanban filters and drag ordering`
+- `4483ee2` `fix: align kanban order sorting`
+- `d87fb0f` `docs: record phase 3a migration and explain`
+- `0484391` `style: format kanban sort fix`
+
+**Điều chỉnh thực tế:**
+
+- Fixture migration dùng order hợp lệ `a0` cho cột `backlog`; `b0` bị
+  `fractional-indexing` từ chối.
+- Mongoose 9 không export `FilterQuery`; dùng type `Filter` từ driver MongoDB.
+- Browser test phát hiện UI sort `localeCompare` khác thứ tự binary MongoDB với
+  `Zz`/`a0`; đổi sang so sánh chuỗi trực tiếp.
+- Task tạm cho drag test đã xóa khỏi app DB; dữ liệu còn 2 task, version không đổi.
+- Test DB dùng chung tự áp 003; migration test có fixture order trùng.
+
 ## Global Constraints
 
 - Node 26, TypeScript 6.0.3 strict; giữ cấu trúc monorepo hiện có.

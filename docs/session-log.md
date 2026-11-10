@@ -504,3 +504,14 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Sửa UI sort từ `localeCompare` sang so sánh chuỗi trực tiếp để khớp thứ tự binary
   MongoDB (`Zz` trước `a0`).
 - Task test tạm đã xóa; app còn 2 task, version `4`, `4`.
+
+## 2026-11-10 - Phase 3A hoàn thành
+
+- Commit chính: contracts `55cb4d8`, migration `1a2d5c6`, move API `8a84809`, filter
+  `294db5b`, web `ad08ea5`, sort fix `4483ee2`, docs evidence `d87fb0f`.
+- Feature gate: typecheck/lint/format pass; full suite 16 file, 82 test ba lần
+  11.51/11.45/11.47 s.
+- Migration 003 đã áp rehearsal và app DB; backup 3A còn; rehearsal đã drop.
+- Explain 1000 task tạm; browser reorder/filter pass; task tạm đã xóa.
+- UI sort được sửa từ `localeCompare` sang so sánh chuỗi trực tiếp để khớp binary order.
+- Chờ merge `feat/phase-3a-kanban-ordering` vào `release/v0.3`; không merge `main`.

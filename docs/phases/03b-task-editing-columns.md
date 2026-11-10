@@ -356,3 +356,14 @@ Thêm:
 - Không bump version `0.3.0`.
 - Merge feature vào `release/v0.3` bằng `--no-ff` sau gate; xóa feature.
 - Không merge `release/v0.3` vào `main`; tag `v0.2.0` giữ nguyên.
+
+## 13. Kết quả thực hiện
+
+- Task create/edit API và UI hoạt động; task mới append cuối cột, version 1.
+- Task edit không đổi cột/order; assignee/labels/priority/due date validate.
+- Owner column manager thêm/đổi tên/đổi thứ tự/lưu thành công; cột còn task bị chặn
+  `COLUMN_NOT_EMPTY`.
+- Browser filter priority thấy task đã sửa; task/column dialog hiển thị đúng.
+- Board test `Phase 3B E2E` đã xóa; dữ liệu ứng dụng còn 1 board, 2 task.
+- Không migration; app DB vẫn 001/002/003.
+- Member 403 column management được kiểm chứng bằng API integration test.

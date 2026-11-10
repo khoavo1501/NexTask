@@ -4,6 +4,7 @@ import {
   boardResponseSchema,
   boardsResponseSchema,
   createInvitationRequestSchema,
+  createTaskRequestSchema,
   invitationAcceptResponseSchema,
   invitationCreateResponseSchema,
   itemsResponseSchema,
@@ -14,11 +15,14 @@ import {
   syncItemsRequestSchema,
   taskResponseSchema,
   tasksListResponseSchema,
+  updateColumnsRequestSchema,
+  updateTaskRequestSchema,
   userResponseSchema,
   type BoardDto,
   type BoardMemberDetailDto,
   type CreateBoardRequest,
   type CreateInvitationRequest,
+  type CreateTaskRequest,
   type ItemDto,
   type LoginRequest,
   type MoveTaskRequest,
@@ -29,6 +33,8 @@ import {
   type SyncItemInput,
   type TaskDto,
   type TaskPriority,
+  type UpdateColumnsRequest,
+  type UpdateTaskRequest,
   type UserDto,
 } from '@nextask/contracts';
 import type { z } from 'zod';
@@ -56,6 +62,10 @@ export function isVersionConflict(error: unknown): error is ApiClientError {
 
 export function isOrderConflict(error: unknown): error is ApiClientError {
   return error instanceof ApiClientError && error.code === 'ORDER_CONFLICT';
+}
+
+export function isColumnNotEmpty(error: unknown): error is ApiClientError {
+  return error instanceof ApiClientError && error.code === 'COLUMN_NOT_EMPTY';
 }
 
 async function request<T>(path: string, schema: z.ZodType<T>, init?: RequestInit): Promise<T> {
@@ -234,6 +244,43 @@ export async function getTasks(
 
 export async function getBoardMembers(boardId: string): Promise<BoardMemberDetailDto[]> {
   return (await request(`/boards/${boardId}/members`, boardMembersResponseSchema)).data;
+}
+
+export async function updateColumns(
+  boardId: string,
+  input: UpdateColumnsRequest,
+): Promise<BoardDto> {
+  const body = updateColumnsRequestSchema.parse(input);
+  return (
+    await request(`/boards/${boardId}/columns`, boardResponseSchema, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function createTask(boardId: string, input: CreateTaskRequest): Promise<TaskDto> {
+  const body = createTaskRequestSchema.parse(input);
+  return (
+    await request(`/boards/${boardId}/tasks`, taskResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function updateTask(
+  boardId: string,
+  taskId: string,
+  input: UpdateTaskRequest,
+): Promise<TaskDto> {
+  const body = updateTaskRequestSchema.parse(input);
+  return (
+    await request(`/boards/${boardId}/tasks/${taskId}`, taskResponseSchema, {
+      method: 'PATCH',
+      body: JSON.stringify(body),
+    })
+  ).data;
 }
 
 export interface TaskListFilters {

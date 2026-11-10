@@ -2,6 +2,7 @@ import {
   createBoardRequestSchema,
   createInvitationRequestSchema,
   renameBoardRequestSchema,
+  updateColumnsRequestSchema,
   type BoardDto,
   type BoardMemberDetailDto,
   type InvitationCreateResponse,
@@ -13,7 +14,13 @@ import { createInvitation } from '../invitations/invitation.service.js';
 import { createItemsRouter } from '../items/item.router.js';
 import { createTasksRouter } from '../tasks/task.router.js';
 import { loadBoardAccess, requireOwner } from './board-access.js';
-import { createBoard, listBoardMembers, listBoardsForUser, renameBoard } from './board.service.js';
+import {
+  createBoard,
+  listBoardMembers,
+  listBoardsForUser,
+  renameBoard,
+  updateColumns,
+} from './board.service.js';
 
 export function createBoardsRouter(): Router {
   const router = Router();
@@ -67,6 +74,21 @@ export function createBoardsRouter(): Router {
     const input = renameBoardRequestSchema.parse(request.body);
     const board = await renameBoard(request.board, input);
     const data: BoardDto = serializeBoard(board, request.boardRole);
+    response.json({
+      data,
+      meta: { requestId: request.requestId },
+    });
+  });
+
+  router.patch('/:boardId/columns', requireOwner, async (request, response) => {
+    if (!request.board) {
+      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
+    }
+
+    const input = updateColumnsRequestSchema.parse(request.body);
+    const board = await updateColumns(request.board, input);
+    const data: BoardDto = serializeBoard(board, request.boardRole ?? 'owner');
+
     response.json({
       data,
       meta: { requestId: request.requestId },

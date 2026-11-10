@@ -524,3 +524,39 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Xóa feature bằng `git branch -d`.
 - `main` vẫn `da0547a`, tag `v0.2.0` vẫn trỏ `da0547a`.
 - Docker chạy code 3A; migration 003 đã áp app DB; task test tạm đã xóa.
+
+## 2026-11-10 - Phase 3B spec
+
+- Tạo feature `feat/phase-3b-task-editing` từ `release/v0.3`.
+- Phạm vi: tạo/sửa task, Owner quản lý cột, UI dialog; không cursor/text index,
+  không migration mới.
+- Quyết định: task create append fractional; edit không đổi cột/order; assignee phải là
+  member; board 1–12 cột, đúng một Done, không xóa cột còn task active.
+- Spec: `docs/phases/03b-task-editing-columns.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-10 - Phase 3B plan
+
+- Spec `docs/phases/03b-task-editing-columns.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-10-phase-3b-task-editing-columns.md`.
+- Phạm vi: task create/edit, Owner columns, UI dialog; không migration/cursor.
+- Bắt đầu Inline Execution; chưa merge `main`.
+
+## 2026-11-10 - Phase 3B verification
+
+- Browser tạo board tạm `Phase 3B E2E`, tạo task tay với assignee/priority/labels/due date.
+- Sửa task qua dialog: title, labels, priority; card cập nhật, filter priority `Khẩn cấp` đúng.
+- Owner mở `Cột`, thêm `QA`, đổi thứ tự; lưu thành công.
+- Xóa cột `To Do` còn task bị chặn, UI hiện `Cột còn task, không thể xóa`.
+- Board tạm và task/item của nó đã xóa; app còn 1 board, 2 task.
+- Member bị 403 quản lý cột được kiểm chứng ở API test, không chạy browser vì cần đăng nhập lại.
+
+## 2026-11-10 - Phase 3B hoàn thành
+
+- Commit chính: contracts `ed6375b`, create `cde3356`, edit `c45eeaf`, columns `ae1bd52`,
+  web dialogs `8a92808`, docs verification `b376b74`.
+- Feature gate: typecheck/lint/format pass; full suite 20 file, 99 test ba lần
+  14.42/14.35/14.62 s.
+- Browser: tạo/sửa task, filter priority, thêm/reorder cột; xóa cột còn task bị chặn
+  `COLUMN_NOT_EMPTY`; board test đã xóa.
+- Không migration; app DB vẫn 001/002/003.
+- Chờ merge `feat/phase-3b-task-editing` vào `release/v0.3`; không merge `main`.

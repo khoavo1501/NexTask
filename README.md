@@ -2,7 +2,7 @@
 
 Whiteboard và Kanban cho team Agile, gộp brainstorm và thực thi trên cùng một board.
 
-Phiên bản hiện tại: `0.2.0`; Phase 3A đang trên `release/v0.3`, chưa phát hành v0.3.
+Phiên bản hiện tại: `0.2.0`; Phase 3A/3B đang trên `release/v0.3`, chưa phát hành v0.3.
 
 ## Trạng thái hiện tại
 
@@ -11,7 +11,8 @@ Phiên bản hiện tại: `0.2.0`; Phase 3A đang trên `release/v0.3`, chưa p
 - Phase 2A: tài khoản, JWT cookie, board membership, Owner/Member, invitation link.
 - Phase 2B: `$jsonSchema` validator, expectedVersion, item sync transaction, client conflict handling.
 - Phase 3A: fractional ordering, filter/search task, unique order index, explain.
-- Chưa có realtime, Demote, task edit/create, column management hoặc cursor pagination.
+- Phase 3B: tạo/sửa task tay, Owner quản lý cột, UI dialog.
+- Chưa có realtime, Demote, cursor pagination, activity/undo.
 
 ## Yêu cầu
 
@@ -87,6 +88,16 @@ Người dùng khác có thể đăng ký tài khoản mới. Owner tạo invita
 - Filter đang bật thì tạm khóa kéo thả để tránh chèn sai tương quan với task bị ẩn.
 - Chưa có cursor pagination; thu hẹp filter nếu còn task chưa tải.
 
+## Task và cột
+
+- `POST /tasks` tạo task tay, append cuối cột; `PATCH /tasks/:taskId` sửa title,
+  description, assignee, labels, priority, due date với `expectedVersion`.
+- Assignee phải là member board; sửa task không đổi cột/order.
+- Owner dùng `PATCH /boards/:boardId/columns` để thêm/đổi tên/đổi thứ tự cột, chọn cột
+  Done; board phải có 1–12 cột và đúng một cột Done.
+- Không xóa cột còn task active; API trả `409 COLUMN_NOT_EMPTY`.
+- Task tạo tay có `sourceItemId`/`origin` null; sửa task không đồng bộ ngược item nguồn.
+
 ## Phát triển local
 
 Khởi động MongoDB replica set và migration:
@@ -145,7 +156,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A và 2B đã merge vào `release/v0.2` và `main` tại `53f2391` (tag `v0.2.0`). Phase 3A đang trên `release/v0.3`, chưa merge `main`. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A và 2B đã merge vào `release/v0.2` và `main` tại `53f2391` (tag `v0.2.0`). Phase 3A/3B đang trên `release/v0.3`, chưa merge `main`. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 
@@ -156,6 +167,7 @@ Repository Git cục bộ, chưa cấu hình remote, không tự push. Phase 2A 
 - [Phase 2A](docs/phases/02a-auth-membership.md)
 - [Phase 2B](docs/phases/02b-data-integrity.md)
 - [Phase 3A](docs/phases/03a-kanban-ordering.md)
+- [Phase 3B](docs/phases/03b-task-editing-columns.md)
 - [Ghi chú MongoDB](docs/mongodb-notes.md)
 - [Lịch sử phiên](docs/session-log.md)
 - [Quy trình Git](docs/git-workflow.md)

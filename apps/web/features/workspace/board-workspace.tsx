@@ -18,9 +18,11 @@ import {
 } from '../../lib/api';
 import { PromoteDialog } from '../whiteboard/promote-dialog';
 import { Whiteboard } from '../whiteboard/whiteboard';
+import { ColumnManagerDialog } from './column-manager-dialog';
 import { InviteDialog } from './invite-dialog';
 import { KanbanBoard, type KanbanFilters } from './kanban-board';
 import { RenameBoardDialog } from './rename-board-dialog';
+import { TaskEditorDialog } from './task-editor-dialog';
 
 interface BoardWorkspaceProps {
   boardId: string;
@@ -41,6 +43,9 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const [promoteTarget, setPromoteTarget] = useState<ItemDto | null>(null);
   const [showInvite, setShowInvite] = useState(false);
   const [showRename, setShowRename] = useState(false);
+  const [showColumns, setShowColumns] = useState(false);
+  const [editingTask, setEditingTask] = useState<TaskDto | null>(null);
+  const [creatingColumnId, setCreatingColumnId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [filters, setFilters] = useState<KanbanFilters>({
     q: '',
@@ -201,6 +206,34 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     [boardId, filters, loadTasks, loadWorkspace],
   );
 
+  const handleTaskSaved = useCallback(async () => {
+    await loadTasks(filters);
+  }, [filters, loadTasks]);
+
+  const handleTaskConflict = useCallback(async () => {
+    setEditingTask(null);
+    setCreatingColumnId(null);
+    setNotice('Task vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
+    await loadWorkspace();
+    await loadTasks(filters);
+  }, [filters, loadTasks, loadWorkspace]);
+
+  const handleColumnsSaved = useCallback(
+    async (board: BoardDto) => {
+      setData((current) => (current ? { ...current, board } : current));
+      setShowColumns(false);
+      await loadTasks(filters);
+    },
+    [filters, loadTasks],
+  );
+
+  const handleColumnsConflict = useCallback(async () => {
+    setShowColumns(false);
+    setNotice('Cột vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
+    await loadWorkspace();
+    await loadTasks(filters);
+  }, [filters, loadTasks, loadWorkspace]);
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center px-6">
@@ -267,6 +300,13 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
               </button>
               <button
                 type="button"
+                onClick={() => setShowColumns(true)}
+                className="rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs text-stone-600 hover:border-stone-500"
+              >
+                Cột
+              </button>
+              <button
+                type="button"
                 onClick={() => setShowInvite(true)}
                 className="rounded-lg bg-amber-600 px-2.5 py-1.5 text-xs font-semibold text-white hover:bg-amber-700"
               >
@@ -307,6 +347,8 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
             filters={filters}
             hasMore={hasMoreTasks}
             onFiltersChange={setFilters}
+            onEditTask={setEditingTask}
+            onCreateTask={setCreatingColumnId}
             onMoveTask={handleMoveTask}
           />
         </aside>
@@ -329,6 +371,30 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           onClose={() => setShowRename(false)}
           onRenamed={handleRenamed}
           onConflict={handleRenameConflict}
+        />
+      ) : null}
+
+      {showColumns ? (
+        <ColumnManagerDialog
+          board={data.board}
+          onClose={() => setShowColumns(false)}
+          onSaved={handleColumnsSaved}
+          onConflict={handleColumnsConflict}
+        />
+      ) : null}
+
+      {editingTask || creatingColumnId ? (
+        <TaskEditorDialog
+          board={data.board}
+          members={data.members}
+          task={editingTask}
+          initialColumnId={creatingColumnId ?? undefined}
+          onClose={() => {
+            setEditingTask(null);
+            setCreatingColumnId(null);
+          }}
+          onSaved={handleTaskSaved}
+          onConflict={handleTaskConflict}
         />
       ) : null}
     </main>

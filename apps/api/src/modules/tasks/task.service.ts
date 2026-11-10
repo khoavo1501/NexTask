@@ -1,4 +1,9 @@
-import type { MoveTaskRequest, TaskPriority } from '@nextask/contracts';
+import type {
+  CreateTaskRequest,
+  MoveTaskRequest,
+  TaskPriority,
+  UpdateTaskRequest,
+} from '@nextask/contracts';
 import { generateKeyBetween } from 'fractional-indexing';
 import { Types } from 'mongoose';
 import type { Filter } from 'mongodb';
@@ -69,6 +74,128 @@ function isDuplicateKeyError(error: unknown): boolean {
 
   const writeErrors = (error as { writeErrors?: Array<{ err?: { code?: number } }> }).writeErrors;
   return writeErrors?.[0]?.err?.code === 11_000;
+}
+
+function normalizeLabels(labels?: string[]): string[] | undefined {
+  if (labels === undefined) return undefined;
+  return [...new Set(labels.map((label) => label.trim()).filter(Boolean))];
+}
+
+function assertAssigneeMember(board: BoardDocument, assigneeId: string | null | undefined): void {
+  if (!assigneeId) return;
+  if (!board.members.some((member) => member.userId.equals(assigneeId))) {
+    throw new AppError(422, 'VALIDATION_ERROR', 'Assignee phải là thành viên board');
+  }
+}
+
+async function appendOrder(board: BoardDocument, columnId: string): Promise<string> {
+  const lastTask = await TaskModel.findOne({
+    boardId: board._id,
+    columnId,
+    lifecycle: 'active',
+  })
+    .sort({ order: -1 })
+    .exec();
+  return generateKeyBetween(lastTask?.order ?? null, null);
+}
+
+export async function createTask(
+  board: BoardDocument,
+  actorId: Types.ObjectId,
+  input: CreateTaskRequest,
+): Promise<TaskDocument> {
+  const column = board.columns.find((entry) => entry.id === input.columnId);
+  if (!column) {
+    throw new AppError(422, 'VALIDATION_ERROR', 'Cột đích không tồn tại');
+  }
+  assertAssigneeMember(board, input.assigneeId);
+
+  const labels = normalizeLabels(input.labels) ?? [];
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    const order = await appendOrder(board, column.id);
+    try {
+      return await TaskModel.create({
+        boardId: board._id,
+        columnId: column.id,
+        order,
+        title: input.title,
+        description: input.description ?? '',
+        assigneeId: input.assigneeId ?? null,
+        labels,
+        priority: input.priority ?? 'medium',
+        dueDate: input.dueDate ? new Date(input.dueDate) : null,
+        lifecycle: 'active',
+        sourceItemId: null,
+        origin: null,
+        version: 1,
+        createdBy: actorId,
+      });
+    } catch (error) {
+      if (!isDuplicateKeyError(error)) throw error;
+      if (attempt === 1) throw orderConflict(column.id);
+    }
+  }
+
+  throw orderConflict(column.id);
+}
+
+export async function updateTask(
+  board: BoardDocument,
+  taskId: string,
+  input: UpdateTaskRequest,
+): Promise<TaskDocument> {
+  if (!Types.ObjectId.isValid(taskId)) {
+    throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+  }
+
+  const task = await TaskModel.findOne({
+    _id: taskId,
+    boardId: board._id,
+    lifecycle: 'active',
+  }).exec();
+  if (!task) {
+    throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+  }
+  if (task.version !== input.expectedVersion) {
+    throw versionConflict(task.version);
+  }
+  assertAssigneeMember(board, input.assigneeId);
+
+  const updates: Record<string, unknown> = {};
+  if (input.title !== undefined) updates.title = input.title;
+  if (input.description !== undefined) updates.description = input.description;
+  if (input.assigneeId !== undefined) {
+    updates.assigneeId = input.assigneeId ? new Types.ObjectId(input.assigneeId) : null;
+  }
+  if (input.labels !== undefined) updates.labels = normalizeLabels(input.labels);
+  if (input.priority !== undefined) updates.priority = input.priority;
+  if (input.dueDate !== undefined) {
+    updates.dueDate = input.dueDate ? new Date(input.dueDate) : null;
+  }
+
+  const updated = await TaskModel.findOneAndUpdate(
+    {
+      _id: task._id,
+      boardId: board._id,
+      lifecycle: 'active',
+      version: input.expectedVersion,
+    },
+    { $set: updates, $inc: { version: 1 } },
+    { returnDocument: 'after' },
+  ).exec();
+
+  if (!updated) {
+    const current = await TaskModel.findOne({
+      _id: task._id,
+      boardId: board._id,
+      lifecycle: 'active',
+    }).exec();
+    if (!current) {
+      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy task');
+    }
+    throw versionConflict(current.version);
+  }
+  return updated;
 }
 
 async function resolveOrder(

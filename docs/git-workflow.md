@@ -5,8 +5,8 @@
 - Repository cục bộ, chưa có remote.
 - Nhánh ổn định: `main` tại `da0547a` (v0.2.0, tag annotated `v0.2.0`).
 - Nhánh phiên bản: `release/v0.3`; merge 3A `0d7dd2d`, sau đó có commit docs release.
-- Feature đang mở: `feat/phase-3b-task-editing`, tạo từ `release/v0.3`.
-- Phase 0, Phase 1, Phase 2A, Phase 2B và 3A đã hoàn thành; 3B đang ở spec.
+- Feature đang mở: `feat/phase-3b-task-editing`, tạo từ `release/v0.3`; code 3B hoàn tất, chờ merge release.
+- Phase 0, Phase 1, Phase 2A, Phase 2B và 3A đã hoàn thành; 3B hoàn thành trên feature.
 - Tag `v0.2.0` và `main` không đổi trong Phase 3A/3B.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
@@ -233,4 +233,14 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   `backups/nextask-before-3a-2026-11-10.gz`.
 - Merge feature vào `release/v0.3` bằng `--no-ff` (`0d7dd2d`); release gate pass:
   typecheck/lint/format; full suite 82 test ba lần 11.43/11.54/11.54 s; feature đã xóa.
+- Không merge `release/v0.3` vào `main`; chưa bump version `0.3.0`; tag `v0.2.0` giữ nguyên.
+
+## 12. Phase 3B
+
+- Feature: `feat/phase-3b-task-editing`, tạo từ `release/v0.3`.
+- Phạm vi: tạo/sửa task, Owner quản lý cột, UI task/column dialog; không migration,
+  không cursor/text index.
+- Feature gate: typecheck/lint/format pass; full suite 20 file, 99 test ba lần
+  14.42/14.35/14.62 s.
+- Merge feature vào `release/v0.3` bằng `--no-ff`; release gate; xóa feature.
 - Không merge `release/v0.3` vào `main`; chưa bump version `0.3.0`; tag `v0.2.0` giữ nguyên.

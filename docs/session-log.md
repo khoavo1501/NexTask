@@ -549,3 +549,14 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Xóa cột `To Do` còn task bị chặn, UI hiện `Cột còn task, không thể xóa`.
 - Board tạm và task/item của nó đã xóa; app còn 1 board, 2 task.
 - Member bị 403 quản lý cột được kiểm chứng ở API test, không chạy browser vì cần đăng nhập lại.
+
+## 2026-11-10 - Phase 3B hoàn thành
+
+- Commit chính: contracts `ed6375b`, create `cde3356`, edit `c45eeaf`, columns `ae1bd52`,
+  web dialogs `8a92808`, docs verification `b376b74`.
+- Feature gate: typecheck/lint/format pass; full suite 20 file, 99 test ba lần
+  14.42/14.35/14.62 s.
+- Browser: tạo/sửa task, filter priority, thêm/reorder cột; xóa cột còn task bị chặn
+  `COLUMN_NOT_EMPTY`; board test đã xóa.
+- Không migration; app DB vẫn 001/002/003.
+- Chờ merge `feat/phase-3b-task-editing` vào `release/v0.3`; không merge `main`.

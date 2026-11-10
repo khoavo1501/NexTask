@@ -1,7 +1,6 @@
 # Giai đoạn 3B - Task editing và quản lý cột
 
-- Trạng thái: Đã duyệt spec; implementation plan:
-  [2026-11-10-phase-3b-task-editing-columns.md](../superpowers/plans/2026-11-10-phase-3b-task-editing-columns.md)
+- Trạng thái: Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.3`
 - Ngày lập: 2026-11-10
 - Tiền đề: Phase 3A hoàn thành trên `release/v0.3`; `main` và tag `v0.2.0` không đổi
 - Kiến trúc: [../architecture.md](../architecture.md)
@@ -367,3 +366,6 @@ Thêm:
 - Board test `Phase 3B E2E` đã xóa; dữ liệu ứng dụng còn 1 board, 2 task.
 - Không migration; app DB vẫn 001/002/003.
 - Member 403 column management được kiểm chứng bằng API integration test.
+- Feature gate: typecheck/lint/format pass; full suite 20 file, 99 test ba lần
+  14.42/14.35/14.62 s.
+- `release/v0.3` chứa 3A + 3B; chưa merge `main`; tag `v0.2.0` giữ nguyên.

@@ -12,6 +12,30 @@
 
 **Branch:** `feat/phase-3b-task-editing` từ `release/v0.3`. Không merge `main` trong phase này.
 
+**Trạng thái thực thi:** Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.3` bằng
+`--no-ff`; feature branch đã xóa. Commit chính:
+
+- `0619149` `docs: specify phase 3b task editing and columns`
+- `f165947` `docs: plan phase 3b task editing and columns`
+- `8ea9f32` `docs: start phase 3b execution`
+- `ed6375b` `feat: add task editing contracts`
+- `cde3356` `feat: create kanban tasks manually`
+- `c45eeaf` `feat: edit kanban tasks`
+- `ae1bd52` `feat: manage board columns`
+- `1926b59` `style: format phase 3b api files`
+- `8a92808` `feat: add task and column dialogs`
+- `b376b74` `docs: record phase 3b verification`
+
+**Điều chỉnh thực tế:**
+
+- Bỏ `required` của `tasks.description` để task tạo tay có description rỗng hợp lệ; không
+  cần migration vì `$jsonSchema` đã cho string.
+- Column manager hiển thị lỗi `COLUMN_NOT_EMPTY` tại dialog; version conflict đóng và
+  reload.
+- Browser dùng board tạm `Phase 3B E2E`; board/task/item của nó đã xóa sau test.
+- Member UI không test bằng browser vì cần đăng nhập lại; API test 403 là nguồn chính.
+- Không cursor/text index, không migration, không bump version.
+
 ## Global Constraints
 
 - Node 26, TypeScript 6.0.3 strict; giữ cấu trúc monorepo hiện có.

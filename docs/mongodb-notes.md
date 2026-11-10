@@ -404,3 +404,111 @@ Index được tạo bởi `ensureIndexes()` khi API khởi động, không bở
 - Phase 0 dùng `nextask_phase0_test`.
 - Phase 1 dùng `nextask_phase1_test`.
 - Test integration không mock MongoDB và không đụng database ứng dụng `nextask`.
+
+## 15. Quan sát Giai đoạn 2A
+
+### Migration runner
+
+- Collection `schema_migrations` lưu `_id` là tên migration và `appliedAt`.
+- Migration `001-phase-2a` chạy một lần, idempotent.
+- API không tự tạo index; API kiểm tra migration version trước khi listen.
+- Compose service `migrate` chạy sau `mongo-init` và trước `api`.
+
+Lệnh migrate dữ liệu thật đã chạy:
+
+```bash
+docker compose run --rm --no-deps \
+  -e MONGODB_URI='mongodb://mongo:27017/nextask_phase2_rehearsal?replicaSet=rs0' \
+  migrate
+```
+
+Sau rehearsal, backup được restore vào database thật và migration chạy với log:
+
+```json
+{"applied":["001-phase-2a"],"msg":"Migrations complete"}
+```
+
+### Index mới
+
+- `users_email_normalized_unique` unique `{ emailNormalized: 1 }`.
+- `boards_member_updated` `{ "members.userId": 1, updatedAt: -1 }`.
+- `invitations_token_hash_unique` unique `{ tokenHash: 1 }`.
+- `invitations_board_created` `{ boardId: 1, createdAt: -1 }`.
+- `invitations_expiry_ttl` TTL `{ expiresAt: 1 }` với `expireAfterSeconds: 0`.
+- Các index Phase 1 được giữ và tạo lại idempotent qua migration.
+
+### Backfill dữ liệu Phase 1
+
+- Trước migration: 1 board, 2 item, 2 task, 0 user.
+- Sau migration: 1 board, 2 item, 2 task, 1 user seed.
+- Board nhận member owner `{ userId: 000000000000000000000001, role: "owner" }`.
+- Item version `31`, `13` và task version `4`, `1` không đổi.
+- Browser E2E sau đó tạo user thứ hai; board có owner + member.
+
+### Seed owner
+
+- Migration tạo user `_id = 000000000000000000000001` nếu board legacy tồn tại và user chưa có.
+- Email/password lấy từ env local, password hash argon2id.
+- Không reset password nếu user đã tồn tại.
+- Nếu có board owner nhưng thiếu seed env, migration fail.
+
+### Chưa áp dụng trong 2A
+
+- Chưa có `$jsonSchema`; đây là hạng mục 2B.
+- Chưa có expectedVersion/optimistic concurrency; version hiện chỉ tăng, chưa dùng để chặn ghi.
+- Chưa có `explain()` mới cho các query membership; sẽ bổ sung khi Phase 3 tối ưu.
+- Invitation TTL monitor không xóa ngay; test dùng expiresAt trực tiếp để kiểm tra logic.
+
+### Test database
+
+- Phase 2 dùng `nextask_phase2_test`.
+- Migration test dùng `nextask_phase2_migration_test`.
+- Database rehearsal `nextask_phase2_rehearsal` đã được xóa sau kiểm tra; backup vẫn giữ.
+
+## 16. Quan sát Giai đoạn 2B
+
+### `$jsonSchema` và `collMod`
+
+- Validator đặt cho `users`, `boards`, `items`, `tasks`, `invitations`; `schema_migrations`
+  không có validator.
+- Cấu hình: `validationLevel: "strict"`, `validationAction: "error"`,
+  `additionalProperties: false`.
+- Migration 002 dùng `createCollection` nếu collection chưa có, ngược lại dùng `collMod`.
+  `collMod` chỉ áp cho write mới, không tự kiểm tra document cũ.
+- Rehearsal kiểm tra document cũ bằng no-op aggregation update:
+  `{ $set: { updatedAt: "$updatedAt" } }`; MongoDB validate document kết quả. Cả 5
+  collection trả `ok: 1`, không `writeErrors`.
+- Raw insert thiếu field/sai enum/version 0 bị từ chối với code `121`
+  (`DocumentValidationFailure`).
+
+### Optimistic concurrency
+
+- Mỗi mutation lọc theo `version` hiện tại và `$inc: { version: 1 }`.
+- Stale request không khớp filter; server đọc version hiện tại và trả
+  `409 VERSION_CONFLICT` kèm `currentVersion` (và `shapeId` cho sync).
+- Task move cùng cột với version đúng trả nguyên document, không tăng version.
+- Board version tăng khi rename và khi accept invitation; accept lặp của member hiện có
+  không tăng.
+
+### Item sync transaction
+
+- Transaction `readConcern: snapshot`, `writeConcern: majority + j`, primary.
+- Đọc toàn bộ item liên quan, kiểm tra version trước, sau đó mới `bulkWrite`; một item
+  stale làm transaction abort, không item nào bị ghi.
+- Item mới upsert với filter `{ boardId, shapeId, version: 0 }` và `$inc version: 1`.
+- Xóa dùng `deleted[]` tường minh; item promoted bị bỏ qua; item lạ không bị đụng tới.
+- Hai client cùng tạo một `shapeId`: unique index `items_board_shape_unique` bảo vệ; lỗi
+  duplicate key `11000` được đổi thành 409 với version hiện tại.
+- Mongoose `withTransaction` tự retry write conflict; lần retry đọc snapshot mới nên
+  stale version trở thành 409.
+
+### Dữ liệu thật
+
+- Backup trước 002: `backups/nextask-before-2b-2026-10-28.gz`, 2.6 KB, `gzip -t` pass.
+- Rehearsal `nextask_2b_rehearsal`: 1 board, 2 item, 2 task, 2 user, 1 invitation; no-op
+  update hợp lệ; đã drop sau kiểm tra.
+- App DB sau 002: cùng số lượng; item version `31`, `13`; task version `4`, `1`.
+- Browser/autosave sau migration làm item version `33`, `14` (nội dung giữ nguyên) và
+  task thứ hai version `4` (đã trả về `To Do`). Board name được phục hồi, version 3.
+- Test DB `nextask_phase2_test` được drop một lần trước khi chạy 002 để áp validator mới;
+  không đụng database ứng dụng.

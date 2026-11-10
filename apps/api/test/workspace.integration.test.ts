@@ -1,14 +1,12 @@
-import { ObjectId } from 'mongodb';
 import pino from 'pino';
-import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
-import { BoardModel } from '../src/modules/boards/board.model.js';
 import { ItemModel } from '../src/modules/items/item.model.js';
+import { registerAgent } from './helpers/auth.js';
 import { cleanDb, connectTestDb } from './helpers/test-db.js';
 
-const ownerId = '000000000000000000000001';
 const logger = pino({ level: 'silent' });
+const jwtSecret = 'local-test-jwt-secret-at-least-32-bytes-long';
 let connection: Awaited<ReturnType<typeof connectTestDb>>;
 let app: ReturnType<typeof createApp>;
 
@@ -20,7 +18,9 @@ beforeAll(async () => {
     version: '0.1.0-test',
     corsOrigin: 'http://localhost:3000',
     logger,
-    demoOwnerId: ownerId,
+    jwtSecret,
+    cookieSecure: false,
+    authRateLimitMax: 100,
   });
 });
 
@@ -32,7 +32,7 @@ afterAll(async () => {
   await connection.close();
 });
 
-function note(shapeId: string, content: string) {
+function note(shapeId: string, content: string, expectedVersion = 0) {
   return {
     shapeId,
     type: 'note',
@@ -44,94 +44,91 @@ function note(shapeId: string, content: string) {
     rotation: 0,
     tldrawIndex: 'a1',
     parentFrameId: null,
+    expectedVersion,
+  };
+}
+
+async function createOwnerBoard() {
+  const owner = await registerAgent(app, 'owner@example.com', 'Owner');
+  const boardResponse = await owner.agent
+    .post('/api/v1/boards')
+    .send({ name: 'Retro 1' })
+    .expect(201);
+  return {
+    owner,
+    boardId: boardResponse.body.data._id as string,
+    board: boardResponse.body.data as {
+      _id: string;
+      ownerId: string;
+      viewerRole: string;
+      columns: Array<{ id: string }>;
+      version: number;
+    },
   };
 }
 
 describe('boards và items', () => {
-  it('tạo board với 5 cột mặc định', async () => {
-    const response = await request(app).post('/api/v1/boards').send({ name: 'Retro 1' });
+  it('tạo board với 5 cột mặc định, owner member', async () => {
+    const { owner, board } = await createOwnerBoard();
 
-    expect(response.status).toBe(201);
-    expect(response.body.data.name).toBe('Retro 1');
-    expect(response.body.data.columns.map((column: { id: string }) => column.id)).toEqual([
+    expect(board.ownerId).toBe(owner.user._id);
+    expect(board.viewerRole).toBe('owner');
+    expect(board.columns.map((column) => column.id)).toEqual([
       'backlog',
       'todo',
       'in-progress',
       'review',
       'done',
     ]);
-    expect(response.body.data.ownerId).toBe(ownerId);
-  });
-
-  it('chỉ trả board của demo owner', async () => {
-    await BoardModel.create({
-      name: 'Board người khác',
-      ownerId: new ObjectId(),
-      columns: [],
-      settings: { votingLimit: 3, minVotes: 3, stalledAfterDays: 7 },
-      version: 1,
-    });
-    await request(app).post('/api/v1/boards').send({ name: 'Board của tôi' }).expect(201);
-
-    const response = await request(app).get('/api/v1/boards').expect(200);
-
-    expect(response.body.data).toHaveLength(1);
-    expect(response.body.data[0].name).toBe('Board của tôi');
-    await request(app).get(`/api/v1/boards/${response.body.data[0]._id}`).expect(200);
+    await owner.agent.get(`/api/v1/boards/${board._id}`).expect(200);
   });
 
   it('sync note idempotent theo shapeId', async () => {
-    const board = await request(app).post('/api/v1/boards').send({ name: 'Board' });
-    const boardId = board.body.data._id as string;
+    const { owner, boardId } = await createOwnerBoard();
 
-    const first = await request(app)
+    const first = await owner.agent
       .put(`/api/v1/boards/${boardId}/items`)
       .send({ items: [note('shape:one', 'Ý tưởng')] })
       .expect(200);
     expect(first.body.data).toHaveLength(1);
 
-    const second = await request(app)
+    const second = await owner.agent
       .put(`/api/v1/boards/${boardId}/items`)
-      .send({ items: [note('shape:one', 'Ý tưởng đã sửa')] })
+      .send({
+        items: [note('shape:one', 'Ý tưởng đã sửa', first.body.data[0].version)],
+      })
       .expect(200);
 
     expect(second.body.data).toHaveLength(1);
     expect(second.body.data[0].content).toBe('Ý tưởng đã sửa');
     expect(await ItemModel.countDocuments({ boardId })).toBe(1);
-    const listed = await request(app).get(`/api/v1/boards/${boardId}/items`).expect(200);
+    const listed = await owner.agent.get(`/api/v1/boards/${boardId}/items`).expect(200);
     expect(listed.body.data).toHaveLength(1);
   });
 
-  it('sync xóa note chưa promote không còn trong payload', async () => {
-    const board = await request(app).post('/api/v1/boards').send({ name: 'Board' });
-    const boardId = board.body.data._id as string;
-    await request(app)
+  it('sync xóa note qua danh sách deleted', async () => {
+    const { owner, boardId } = await createOwnerBoard();
+    const first = await owner.agent
       .put(`/api/v1/boards/${boardId}/items`)
       .send({ items: [note('shape:one', 'Một'), note('shape:two', 'Hai')] })
       .expect(200);
+    const one = first.body.data[0] as { shapeId: string; version: number };
+    const two = first.body.data[1] as { shapeId: string; version: number };
 
-    const response = await request(app)
+    const response = await owner.agent
       .put(`/api/v1/boards/${boardId}/items`)
-      .send({ items: [note('shape:one', 'Một')] })
+      .send({
+        items: [note('shape:one', 'Một', one.version)],
+        deleted: [{ shapeId: 'shape:two', expectedVersion: two.version }],
+      })
       .expect(200);
 
     expect(response.body.data).toHaveLength(1);
     expect(await ItemModel.countDocuments({ boardId })).toBe(1);
   });
 
-  it('board của owner khác trả 404', async () => {
-    const other = await BoardModel.create({
-      name: 'Khác',
-      ownerId: new ObjectId(),
-      columns: [],
-      settings: { votingLimit: 3, minVotes: 3, stalledAfterDays: 7 },
-      version: 1,
-    });
-
-    await request(app).get(`/api/v1/boards/${other._id.toString()}`).expect(404);
-  });
-
   it('request sai schema trả 422', async () => {
-    await request(app).post('/api/v1/boards').send({ name: '' }).expect(422);
+    const owner = await registerAgent(app, 'owner@example.com', 'Owner');
+    await owner.agent.post('/api/v1/boards').send({ name: '' }).expect(422);
   });
 });

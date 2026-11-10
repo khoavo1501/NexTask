@@ -3,11 +3,17 @@ import type { BoardDocument } from '../modules/boards/board.model.js';
 import type { ItemDocument } from '../modules/items/item.model.js';
 import type { TaskDocument } from '../modules/tasks/task.model.js';
 
-export function serializeBoard(board: BoardDocument): BoardDto {
+export function serializeBoard(board: BoardDocument, viewerRole: 'owner' | 'member'): BoardDto {
   return {
     _id: board._id.toHexString(),
     name: board.name,
     ownerId: board.ownerId.toHexString(),
+    members: board.members.map((member) => ({
+      userId: member.userId.toHexString(),
+      role: member.role,
+      joinedAt: member.joinedAt.toISOString(),
+    })),
+    viewerRole,
     columns: board.columns.map((column) => ({
       id: column.id,
       name: column.name,

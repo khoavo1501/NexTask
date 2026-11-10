@@ -9,12 +9,11 @@ export function createItemsRouter(): Router {
   const router = Router({ mergeParams: true });
 
   router.get('/', async (request, response) => {
-    const boardId = (request.params as { boardId?: string }).boardId;
-    if (!boardId) {
+    if (!request.board) {
       throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
     }
 
-    const items = await listItems(boardId, request.ownerId);
+    const items = await listItems(request.board);
     response.json({
       data: items.map(serializeItem),
       meta: { requestId: request.requestId },
@@ -22,13 +21,12 @@ export function createItemsRouter(): Router {
   });
 
   router.put('/', async (request, response) => {
-    const boardId = (request.params as { boardId?: string }).boardId;
-    if (!boardId) {
-      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
+    if (!request.board || !request.user) {
+      throw new AppError(401, 'UNAUTHENTICATED', 'Cần đăng nhập');
     }
 
     const input = syncItemsRequestSchema.parse(request.body);
-    const items = await syncItems(boardId, request.ownerId, input.items);
+    const items = await syncItems(request.board, request.user._id, input);
     const data: ItemDto[] = items.map(serializeItem);
 
     response.json({
@@ -38,16 +36,20 @@ export function createItemsRouter(): Router {
   });
 
   router.post('/:itemId/promote', async (request, response) => {
-    const params = request.params as { boardId?: string; itemId?: string };
-    if (!params.boardId || !params.itemId) {
+    if (!request.board || !request.user) {
+      throw new AppError(401, 'UNAUTHENTICATED', 'Cần đăng nhập');
+    }
+
+    const params = request.params as { itemId?: string };
+    if (!params.itemId) {
       throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy item');
     }
 
     const input = promoteRequestSchema.parse(request.body);
     const result = await promoteItem({
-      boardId: params.boardId,
+      board: request.board,
       itemId: params.itemId,
-      ownerId: request.ownerId,
+      actor: request.user,
       request: input,
     });
 

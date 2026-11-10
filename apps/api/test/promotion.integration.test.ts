@@ -1,15 +1,16 @@
-import { Types } from 'mongoose';
 import pino from 'pino';
-import request from 'supertest';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { createApp } from '../src/app.js';
+import { BoardModel } from '../src/modules/boards/board.model.js';
 import { ItemModel } from '../src/modules/items/item.model.js';
 import { promoteItem } from '../src/modules/items/promotion.service.js';
 import { TaskModel } from '../src/modules/tasks/task.model.js';
+import { UserModel } from '../src/modules/users/user.model.js';
+import { registerAgent } from './helpers/auth.js';
 import { cleanDb, connectTestDb } from './helpers/test-db.js';
 
-const ownerId = '000000000000000000000001';
 const logger = pino({ level: 'silent' });
+const jwtSecret = 'local-test-jwt-secret-at-least-32-bytes-long';
 let connection: Awaited<ReturnType<typeof connectTestDb>>;
 let app: ReturnType<typeof createApp>;
 
@@ -21,7 +22,9 @@ beforeAll(async () => {
     version: '0.1.0-test',
     corsOrigin: 'http://localhost:3000',
     logger,
-    demoOwnerId: ownerId,
+    jwtSecret,
+    cookieSecure: false,
+    authRateLimitMax: 100,
   });
 });
 
@@ -34,9 +37,14 @@ afterAll(async () => {
 });
 
 async function setupNote(content = 'Ý tưởng lớn') {
-  const board = await request(app).post('/api/v1/boards').send({ name: 'Retro' });
-  const boardId = board.body.data._id as string;
-  const sync = await request(app)
+  const owner = await registerAgent(app, 'owner@example.com', 'Owner');
+  const boardResponse = await owner.agent
+    .post('/api/v1/boards')
+    .send({ name: 'Retro' })
+    .expect(201);
+  const boardId = boardResponse.body.data._id as string;
+
+  const sync = await owner.agent
     .put(`/api/v1/boards/${boardId}/items`)
     .send({
       items: [
@@ -51,54 +59,69 @@ async function setupNote(content = 'Ý tưởng lớn') {
           rotation: 0,
           tldrawIndex: 'a1',
           parentFrameId: null,
+          expectedVersion: 0,
         },
       ],
     })
     .expect(200);
 
-  return { boardId, item: sync.body.data[0] as { _id: string } };
+  const board = await BoardModel.findById(boardId).exec();
+  const actor = await UserModel.findById(owner.user._id).exec();
+  if (!board || !actor) throw new Error('Board or actor missing');
+
+  return {
+    owner,
+    boardId,
+    board,
+    actor,
+    item: sync.body.data[0] as { _id: string; version: number },
+  };
 }
 
 describe('promote', () => {
   it('tạo task, cập nhật item và origin trong transaction', async () => {
-    const { boardId, item } = await setupNote();
+    const { owner, boardId, item } = await setupNote();
 
-    const response = await request(app)
+    const response = await owner.agent
       .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-      .send({ columnId: 'todo', assignToMe: true })
+      .send({ columnId: 'todo', assignToMe: true, expectedItemVersion: item.version })
       .expect(201);
 
     expect(response.body.data.task.title).toBe('Ý tưởng lớn');
-    expect(response.body.data.task.assigneeId).toBe(ownerId);
+    expect(response.body.data.task.assigneeId).toBe(owner.user._id);
     expect(response.body.data.task.origin.position).toEqual({ x: 12, y: 34 });
     expect(response.body.data.item.promotedTaskId).toBe(response.body.data.task._id);
   });
 
   it('promote lần hai trả 409 và không tạo task trùng', async () => {
-    const { boardId, item } = await setupNote();
+    const { owner, boardId, item } = await setupNote();
 
-    await request(app)
+    const first = await owner.agent
       .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-      .send({ columnId: 'todo', assignToMe: false })
+      .send({ columnId: 'todo', assignToMe: false, expectedItemVersion: item.version })
       .expect(201);
-    await request(app)
+    await owner.agent
       .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-      .send({ columnId: 'todo', assignToMe: false })
+      .send({
+        columnId: 'todo',
+        assignToMe: false,
+        expectedItemVersion: first.body.data.item.version,
+      })
       .expect(409);
 
     expect(await TaskModel.countDocuments({ sourceItemId: item._id })).toBe(1);
   });
 
   it('hai promote đồng thời chỉ tạo một task', async () => {
-    const { boardId, item } = await setupNote('Đồng thời');
+    const { owner, boardId, item } = await setupNote('Đồng thời');
 
     const [first, second] = await Promise.all([
-      request(app)
+      owner.agent
         .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-        .send({ columnId: 'todo', assignToMe: false }),
-      request(app)
+        .send({ columnId: 'todo', assignToMe: false, expectedItemVersion: item.version }),
+      owner.agent
         .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-        .send({ columnId: 'todo', assignToMe: false }),
+        .send({ columnId: 'todo', assignToMe: false, expectedItemVersion: item.version }),
     ]);
 
     expect([first.status, second.status].sort()).toEqual([201, 409]);
@@ -106,41 +129,44 @@ describe('promote', () => {
   });
 
   it('lỗi sau insert task làm rollback toàn bộ', async () => {
-    const { boardId, item } = await setupNote('Rollback');
-    const boardObjectId = new Types.ObjectId(boardId);
+    const { board, actor, item } = await setupNote('Rollback');
 
     await expect(
       promoteItem({
-        boardId,
+        board,
         itemId: item._id,
-        ownerId: new Types.ObjectId(ownerId),
-        request: { columnId: 'todo', assignToMe: false },
+        actor,
+        request: {
+          columnId: 'todo',
+          assignToMe: false,
+          expectedItemVersion: item.version,
+        },
         afterTaskInsert: async () => {
           throw new Error('fault injection');
         },
       }),
     ).rejects.toThrow('fault injection');
 
-    expect(await TaskModel.countDocuments({ boardId: boardObjectId })).toBe(0);
+    expect(await TaskModel.countDocuments({ boardId: board._id })).toBe(0);
     const saved = await ItemModel.findById(item._id);
     expect(saved?.promotedTaskId).toBeNull();
   });
 
   it('move task sang Done cập nhật cột', async () => {
-    const { boardId, item } = await setupNote('Kéo thẻ');
-    const promoted = await request(app)
+    const { owner, boardId, item } = await setupNote('Kéo thẻ');
+    const promoted = await owner.agent
       .post(`/api/v1/boards/${boardId}/items/${item._id}/promote`)
-      .send({ columnId: 'todo', assignToMe: false })
+      .send({ columnId: 'todo', assignToMe: false, expectedItemVersion: item.version })
       .expect(201);
     const taskId = promoted.body.data.task._id as string;
 
-    const moved = await request(app)
+    const moved = await owner.agent
       .patch(`/api/v1/boards/${boardId}/tasks/${taskId}`)
-      .send({ columnId: 'done' })
+      .send({ columnId: 'done', expectedVersion: promoted.body.data.task.version })
       .expect(200);
 
     expect(moved.body.data.columnId).toBe('done');
-    const listed = await request(app).get(`/api/v1/boards/${boardId}/tasks`).expect(200);
+    const listed = await owner.agent.get(`/api/v1/boards/${boardId}/tasks`).expect(200);
     expect(listed.body.data).toHaveLength(1);
     expect(listed.body.data[0].columnId).toBe('done');
   });

@@ -2,14 +2,16 @@ import type { PromoteRequest } from '@nextask/contracts';
 import { generateKeyBetween } from 'fractional-indexing';
 import mongoose, { Types } from 'mongoose';
 import { AppError } from '../../lib/errors.js';
-import { BoardModel } from '../boards/board.model.js';
+import { versionConflict } from '../../lib/versioning.js';
+import type { BoardDocument } from '../boards/board.model.js';
 import { TaskModel, type TaskDocument } from '../tasks/task.model.js';
+import type { UserDocument } from '../users/user.model.js';
 import { ItemModel, type ItemDocument } from './item.model.js';
 
 export interface PromoteInput {
-  boardId: string;
+  board: BoardDocument;
   itemId: string;
-  ownerId: Types.ObjectId;
+  actor: UserDocument;
   request: PromoteRequest;
   afterTaskInsert?: () => Promise<void>;
 }
@@ -26,39 +28,33 @@ function assertObjectId(value: string, message: string): void {
 }
 
 export async function promoteItem(input: PromoteInput): Promise<PromoteResult> {
-  assertObjectId(input.boardId, 'Không tìm thấy board');
   assertObjectId(input.itemId, 'Không tìm thấy item');
 
   const session = await mongoose.startSession();
   try {
     const result = await session.withTransaction(
       async () => {
-        const board = await BoardModel.findOne({
-          _id: input.boardId,
-          ownerId: input.ownerId,
-        }).session(session);
-        if (!board) {
-          throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
-        }
-
-        const column = board.columns.find((entry) => entry.id === input.request.columnId);
+        const column = input.board.columns.find((entry) => entry.id === input.request.columnId);
         if (!column) {
           throw new AppError(422, 'VALIDATION_ERROR', 'Cột đích không tồn tại');
         }
 
         const item = await ItemModel.findOne({
           _id: input.itemId,
-          boardId: board._id,
+          boardId: input.board._id,
         }).session(session);
         if (!item) {
           throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy item');
+        }
+        if (item.version !== input.request.expectedItemVersion) {
+          throw versionConflict(item.version);
         }
         if (item.promotedTaskId) {
           throw new AppError(409, 'ALREADY_PROMOTED', 'Item đã được promote');
         }
 
         const lastTask = await TaskModel.findOne({
-          boardId: board._id,
+          boardId: input.board._id,
           columnId: column.id,
           lifecycle: 'active',
         })
@@ -71,12 +67,12 @@ export async function promoteItem(input: PromoteInput): Promise<PromoteResult> {
         const [task] = await TaskModel.create(
           [
             {
-              boardId: board._id,
+              boardId: input.board._id,
               columnId: column.id,
               order,
               title,
               description: item.content,
-              assigneeId: input.request.assignToMe ? input.ownerId : null,
+              assigneeId: input.request.assignToMe ? input.actor._id : null,
               labels: [],
               priority: 'medium',
               dueDate: null,
@@ -91,7 +87,7 @@ export async function promoteItem(input: PromoteInput): Promise<PromoteResult> {
                 itemCreatedAt: item.createdAt,
               },
               version: 1,
-              createdBy: input.ownerId,
+              createdBy: input.actor._id,
             },
           ],
           { session },
@@ -105,8 +101,9 @@ export async function promoteItem(input: PromoteInput): Promise<PromoteResult> {
         const updatedItem = await ItemModel.findOneAndUpdate(
           {
             _id: item._id,
-            boardId: board._id,
+            boardId: input.board._id,
             promotedTaskId: null,
+            version: input.request.expectedItemVersion,
           },
           {
             $set: { promotedTaskId: task._id },

@@ -257,6 +257,223 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 
 ### Trạng thái
 
-- Spec 2A đang chờ người dùng duyệt.
-- Chưa tạo implementation plan và chưa viết code.
-- Sau khi spec được duyệt mới chuyển sang writing-plans và thực thi.
+- Spec 2A đã được người dùng duyệt.
+- Implementation plan đã được lập trên nhánh feature.
+- Chưa viết code.
+
+---
+
+## 2026-10-28 - Phiên 5: Implementation plan 2A và branch workflow
+
+### Quyết định Git của người dùng
+
+- Mỗi phase/phần việc làm trên nhánh riêng, không commit trực tiếp vào `main`.
+- Có nhánh quản lý phiên bản và các nhánh `feat`, `fix`, `chore`, `docs`, `hotfix`.
+- Hoàn thành feature thì merge vào nhánh phiên bản; phiên bản hoàn tất mới merge vào `main`.
+
+### Nhánh đã tạo
+
+- `release/v0.2` từ `main`.
+- `feat/phase-2a-auth-membership` từ `release/v0.2`.
+- `main` giữ nguyên tại `6d3d11b`.
+- Feature hiện tại chứa plan và sẽ chứa toàn bộ triển khai 2A.
+
+### File tài liệu
+
+- `docs/superpowers/plans/2026-10-28-phase-2a-auth-membership.md`: plan chi tiết Task 0-8, TDD, migration, auth, membership, invitation, UI, Docker và merge.
+- `docs/git-workflow.md`: mô hình `main`, `release/vX.Y`, `feat/*`, `fix/*`, `chore/*`, `docs/*`, `hotfix/*`; quy tắc merge `--no-ff`, xóa feature sau merge, không push/amend/config.
+- `docs/phases/02a-auth-membership.md`: cập nhật trạng thái đã duyệt và link plan.
+- `docs/session-log.md`: mục này.
+
+### Trạng thái
+
+- Chưa viết code.
+- Chờ người dùng duyệt plan để bắt đầu thực thi trên `feat/phase-2a-auth-membership`.
+- Sau khi 2A xong: merge feature vào `release/v0.2`; chưa merge vào `main` cho tới khi 2B hoàn tất.
+
+---
+
+## 2026-10-28 - Phiên 6: Triển khai Giai đoạn 2A
+
+### Bối cảnh
+
+- Người dùng duyệt plan và yêu cầu bắt đầu 2A.
+- Làm trên `feat/phase-2a-auth-membership`; không commit vào `main`.
+
+### Commit trên feature
+
+- `370ff99` `feat: add auth primitives and configuration`
+- `8c89e88` `feat: add versioned migration and legacy owner seed`
+- `4853230` `feat: add cookie auth API and middleware`
+- `d1d94f4` `feat: add board membership and server-side roles`
+- `766e6e0` `feat: add invitation link and transactional accept`
+- `500f8dc` `feat: add web authentication and protected board list`
+- `61879bf` `feat: add invite, accept, and owner rename UI`
+- `69114a8` `docs: record phase 2a verification`
+- `c15603e` `merge: phase 2a auth and membership` vào `release/v0.2`
+
+### Đã triển khai
+
+- `users`, argon2id, JWT HS256 cookie 7 ngày.
+- Register/login/logout/me, rate limit và origin guard.
+- `members[]`, owner member, board access middleware, owner-only rename/invite.
+- Invitation token hash, TTL, email ràng buộc, accept transaction.
+- Migration runner `schema_migrations`, migration `001-phase-2a`, seed owner, backfill member, toàn bộ index.
+- Compose service `migrate`; API dừng nếu schema chưa migrate.
+- Web login/register/logout, cookie credentials, bảo vệ board list, invite/accept/rename UI.
+
+### Backup và migration dữ liệu thật
+
+- Backup: `backups/nextask-before-2a-2026-10-28.gz`, 1.8 KB, `gzip -t` pass.
+- Rehearsal trên `nextask_phase2_rehearsal`: thành công; database rehearsal đã xóa sau kiểm tra.
+- Migration thật: `applied: ["001-phase-2a"]`.
+- Trước migration: 1 board, 2 item, 2 task, 0 user.
+- Sau migration: 1 board, 2 item, 2 task, 1 seed user, owner member.
+- Item version giữ `31`, `13`; task version giữ `4`, `1`.
+- Browser E2E tạo thêm user member; hiện có 2 user, board có owner + member, invitation đã dùng.
+- Backup không bị xóa.
+
+### Kiểm chứng
+
+- `npm run typecheck`: pass.
+- `npm run lint`: pass.
+- `npm run format:check`: pass.
+- Full suite ba lần liên tiếp, mỗi lần 10 file, 46 test pass:
+  - Lần 1: 8.06 s.
+  - Lần 2: 7.77 s.
+  - Lần 3: 7.82 s.
+- Docker: `mongo`, `api`, `web` healthy; migrate exit 0.
+- Browser:
+  - Chưa đăng nhập chuyển `/login`.
+  - Seed owner đăng nhập, thấy board và dữ liệu cũ.
+  - Owner tạo invitation link.
+  - Member đăng ký, accept, vào board với role Member.
+  - Member không thấy nút Mời/Đổi tên.
+  - PATCH board bằng cookie Member trả `403 FORBIDDEN`.
+- API auth/membership/invitation tests dùng MongoDB thật.
+
+### Sự cố và điều chỉnh
+
+- Test logout ban đầu kỳ vọng `Max-Age=0`, Express dùng `Expires=epoch`; sửa test theo hành vi chuẩn của cookie xóa.
+- Migration test task fixture dùng description rỗng bị Mongoose required từ chối; dùng mô tả hợp lệ.
+- Test DB Phase 2 tách khỏi Phase 1; migration test có DB riêng để tránh drop dữ liệu test khác.
+- Không dùng mock DB.
+
+### Merge release
+
+- Merge `feat/phase-2a-auth-membership` vào `release/v0.2` bằng `--no-ff`: `c15603e`.
+- Chạy quality gate trên release lần đầu: typecheck/lint/format pass; full suite ba lần 46 test, 7.84/7.83/8.02 s.
+- Xóa feature branch bằng `git branch -d`; branch đã merge.
+- Sau merge, rà soát UI phát hiện label stale `Demo owner`; sửa trên `fix/phase-2a-release-record` (`375cc07`), docs `a098a99`, merge follow-up `9aa67ec`; xóa fix branch.
+- Chạy quality gate cuối trên release sau fix:
+  - Typecheck/lint/format pass.
+  - Full suite ba lần, mỗi lần 10 file, 46 test pass:
+    - Lần 1: 7.95 s.
+    - Lần 2: 7.86 s.
+    - Lần 3: 8.01 s.
+- `main` vẫn ở `6d3d11b`, chưa nhận 2A.
+- Docker vẫn healthy; migration đã áp dụng trên app DB.
+
+### Trạng thái cuối
+
+- 2A hoàn thành và đã merge `release/v0.2`.
+- Không còn feature/fix 2A; release đang chờ 2B.
+- Chưa có `$jsonSchema`, expectedVersion, realtime hoặc demote.
+- Chưa merge `main`; v0.2 chỉ lên main sau khi 2B hoàn tất và được duyệt.
+
+## 2026-10-28 - Phase 2B bắt đầu
+
+- Nhánh `feat/phase-2b-data-integrity` từ `release/v0.2` tại `611e893`.
+- Spec: `docs/phases/02b-data-integrity.md`.
+- Plan: `docs/superpowers/plans/2026-10-28-phase-2b-data-integrity.md`.
+- Phạm vi: `$jsonSchema`, expectedVersion cho board/task/promote/item sync, sync
+  transaction, client conflict reload/refetch.
+- Quyết định: sync item dùng `deleted[]` tường minh; board version tăng khi membership
+  thay đổi; conflict chung `409 VERSION_CONFLICT`.
+- Chưa merge `main`.
+
+## 2026-10-28 - Phase 2B hoàn thành
+
+### Commit trên feature
+
+- `83ed3b2` `docs: plan phase 2b data integrity`
+- `46728d4` `feat: add version conflict contract`
+- `84eacb3` `feat: add phase 2b json schema validators`
+- `9b7debc` `fix: type collection validator assertions`
+- `5e07952` `feat: enforce expected versions for board and task writes`
+- `e9ef947` `feat: enforce expected item version on promote`
+- `60c6f68` `feat: make item sync versioned and transactional`
+- `d296e5f` `feat: send versions and handle conflicts in web`
+- Commit tài liệu kiểm chứng 2B nằm sau danh sách code ở trên.
+
+### Đã triển khai
+
+- `$jsonSchema` strict/error cho `users`, `boards`, `items`, `tasks`, `invitations`;
+  migration `002-phase-2b` idempotent bằng `collMod`/`createCollection`.
+- API startup yêu cầu `LATEST_MIGRATION_NAME = 002-phase-2b`.
+- `409 VERSION_CONFLICT` với `currentVersion` và `shapeId` khi sync.
+- Board rename, task move, promote, item sync đều lọc theo version.
+- Item sync transaction `snapshot`/`majority`, all-or-nothing, `deleted[]` tường minh.
+- Accept invitation tăng board version.
+- Web gửi version; board/task/promote/rename reload khi conflict; whiteboard refetch và
+  retry một lần.
+- Thêm test race tạo cùng `shapeId`; test validator raw insert code 121.
+
+### Backup và migration dữ liệu thật
+
+- Backup: `backups/nextask-before-2b-2026-10-28.gz`, 2.6 KB, `gzip -t` pass.
+- Rehearsal `nextask_2b_rehearsal`: restore 2 user, 1 board, 2 item, 2 task, 1 invitation;
+  migration `applied: ["002-phase-2b"]`; no-op update hợp lệ cả 5 collection; đã drop.
+- Migration thật: `applied: ["002-phase-2b"]`.
+- Trước/sau migration: counts không đổi; item version `31`, `13`; task version `4`, `1`;
+  `_id`, nội dung, `createdAt`, `updatedAt` khớp giữa bản gốc và rehearsal.
+- Browser/autosave sau migration làm item version `33`, `14` (nội dung không đổi) và
+  task thứ hai version `4` (đã trả về `To Do`); board name được phục hồi, version 3.
+
+### Kiểm chứng
+
+- `npm run typecheck`: pass.
+- `npm run lint`: pass.
+- `npm run format:check`: pass.
+- Full suite 13 file, 67 test, ba lần liên tiếp:
+  - Lần 1: 8.99 s.
+  - Lần 2: 8.65 s.
+  - Lần 3: 8.70 s.
+- Docker: `mongo`, `api`, `web` healthy; migrate exit 0; health `ok`, `rs0`, primary.
+- Browser:
+  - Board cũ còn 2 note, 2 task; quyền Owner hiển thị đúng.
+  - Rename conflict: `PATCH 200` (client B), `PATCH 409` (client A), UI reload tên B.
+  - Task move conflict: `PATCH 200`, `PATCH 409`, UI reload cột B.
+  - Whiteboard save conflict: `PUT 409`, `GET items 200`, `PUT 200`, notice đồng bộ,
+    không có lỗi 500.
+  - Move thành công qua UI sang `Review`; sau test trả task về `To Do` bằng version hiện
+    tại.
+- In-app browser chỉ mở một tab; client thứ hai dùng fetch cùng cookie; drag dùng
+  synthetic `DragEvent` + `DataTransfer`.
+
+### Còn chờ
+
+- Merge feature vào `release/v0.2` bằng `--no-ff`, chạy lại gate trên release, xóa feature.
+- Không merge `release/v0.2` vào `main`; chờ người dùng duyệt phát hành v0.2.
+
+### Merge release
+
+- Merge `feat/phase-2b-data-integrity` vào `release/v0.2` bằng `--no-ff`: `bfc1da2`.
+- Quality gate trên release: typecheck/lint/format pass; full suite 13 file, 67 test, ba
+  lần 8.87/8.64/8.65 s.
+- Xóa feature branch bằng `git branch -d`; branch đã merge.
+- `main` vẫn ở `6d3d11b`, chưa nhận 2A/2B.
+- Backups `nextask-before-2a-2026-10-28.gz` và `nextask-before-2b-2026-10-28.gz` vẫn giữ;
+  database rehearsal đã drop.
+- Trạng thái cuối: 2B hoàn thành trên `release/v0.2`; chờ người dùng duyệt phát hành v0.2
+  trước khi merge vào `main`.
+
+## 2026-11-10 - Phát hành v0.2.0
+
+- Người dùng duyệt phát hành v0.2 sau khi 2A và 2B hoàn tất trên `release/v0.2`.
+- Bump version root/API/web/contracts và `package-lock.json` lên `0.2.0`.
+- Bump `SERVICE_VERSION` trong `.env.example` và `docker-compose.yml` lên `0.2.0`.
+- Merge `release/v0.2` vào `main` bằng `--no-ff` với message
+  `release: v0.2 auth membership and data integrity`.
+- Sau merge main: chạy lại gate và kiểm tra Docker; không tạo tag v0.2.0 vì chưa được
+  yêu cầu rõ; không push.

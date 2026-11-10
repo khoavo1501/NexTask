@@ -15,10 +15,18 @@ export const boardSettingsSchema = z.object({
   stalledAfterDays: z.number().int().positive(),
 });
 
+export const boardMemberSchema = z.object({
+  userId: objectIdSchema,
+  role: z.enum(['owner', 'member']),
+  joinedAt: isoDateSchema,
+});
+
 export const boardSchema = z.object({
   _id: objectIdSchema,
   name: z.string().min(1),
   ownerId: objectIdSchema,
+  members: z.array(boardMemberSchema),
+  viewerRole: z.enum(['owner', 'member']),
   columns: z.array(boardColumnSchema),
   settings: boardSettingsSchema,
   version: z.number().int().positive(),
@@ -28,6 +36,16 @@ export const boardSchema = z.object({
 
 export const createBoardRequestSchema = z.object({
   name: z.string().trim().min(1).max(80),
+});
+
+export const renameBoardRequestSchema = z.object({
+  name: z.string().trim().min(1).max(80),
+  expectedVersion: z.number().int().positive(),
+});
+
+export const boardMemberDetailSchema = boardMemberSchema.extend({
+  name: z.string(),
+  email: z.string().email(),
 });
 
 export const boardResponseSchema = z.object({
@@ -40,5 +58,13 @@ export const boardsResponseSchema = z.object({
   meta: envelopeMetaSchema,
 });
 
+export const boardMembersResponseSchema = z.object({
+  data: z.array(boardMemberDetailSchema),
+  meta: envelopeMetaSchema,
+});
+
 export type BoardDto = z.infer<typeof boardSchema>;
+export type BoardMemberDto = z.infer<typeof boardMemberSchema>;
+export type BoardMemberDetailDto = z.infer<typeof boardMemberDetailSchema>;
 export type CreateBoardRequest = z.infer<typeof createBoardRequestSchema>;
+export type RenameBoardRequest = z.infer<typeof renameBoardRequestSchema>;

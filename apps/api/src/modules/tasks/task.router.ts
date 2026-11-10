@@ -1,4 +1,4 @@
-import { moveTaskRequestSchema, type TaskDto } from '@nextask/contracts';
+import { moveTaskRequestSchema, taskListQuerySchema, type TaskDto } from '@nextask/contracts';
 import { Router } from 'express';
 import { AppError } from '../../lib/errors.js';
 import { serializeTask } from '../../lib/serialize.js';
@@ -12,15 +12,32 @@ export function createTasksRouter(): Router {
       throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
     }
 
-    const tasks = await listTasks(request.board);
-    const data: TaskDto[] = tasks.map(serializeTask);
+    const query = taskListQuerySchema.parse(request.query);
+    const labels = (query.labels ?? '')
+      .split(',')
+      .map((label) => label.trim())
+      .filter((label) => label.length > 0);
+    if (labels.length > 10 || labels.some((label) => label.length > 50)) {
+      throw new AppError(422, 'VALIDATION_ERROR', 'Bộ lọc label không hợp lệ');
+    }
+
+    const result = await listTasks(request.board, {
+      columnId: query.columnId,
+      assigneeId: query.assigneeId,
+      priority: query.priority,
+      labels,
+      q: query.q,
+      limit: query.limit,
+    });
+    const data: TaskDto[] = result.tasks.map(serializeTask);
+
     response.json({
       data,
-      meta: { requestId: request.requestId },
+      meta: { requestId: request.requestId, hasMore: result.hasMore },
     });
   });
 
-  router.patch('/:taskId', async (request, response) => {
+  router.post('/:taskId/move', async (request, response) => {
     if (!request.board) {
       throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
     }

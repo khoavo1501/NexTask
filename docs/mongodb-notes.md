@@ -512,3 +512,49 @@ Sau rehearsal, backup được restore vào database thật và migration chạy
   task thứ hai version `4` (đã trả về `To Do`). Board name được phục hồi, version 3.
 - Test DB `nextask_phase2_test` được drop một lần trước khi chạy 002 để áp validator mới;
   không đụng database ứng dụng.
+
+## 17. Quan sát Giai đoạn 3A
+
+### Migration 003
+
+- Backup trước migration: `backups/nextask-before-3a-2026-11-10.gz`, 3.4 KB, `gzip -t` pass.
+- Rehearsal `nextask_3a_rehearsal`: restore 1 board, 2 item, 2 task, 2 user; migration
+  `applied: ["003-phase-3a"]`; đã drop sau kiểm tra.
+- App DB: `applied: ["003-phase-3a"]`; counts và task version `4`, `4` giữ nguyên.
+- Index sau migration:
+  - `tasks_kanban_order`: unique, partial `{ lifecycle: "active" }`, key
+    `{ boardId: 1, columnId: 1, order: 1 }`.
+  - `tasks_board_assignee`: partial active, key `{ boardId, lifecycle, assigneeId, columnId, order }`.
+  - `tasks_board_priority`: partial active, key `{ boardId, lifecycle, priority, columnId, order }`.
+  - `tasks_board_labels`: partial active, multikey `{ boardId, lifecycle, labels, columnId, order }`.
+- Backfill order trùng chạy trước khi tạo unique index; task bị đổi order tăng version 1.
+- Test migration dùng fixture hai task trùng `(boardId, columnId, order)`; sau migration
+  không còn cặp trùng.
+
+### Explain
+
+Đo trên database tạm `nextask_explain` với 1000 task và bộ index giống app; database đã
+drop sau khi đo. Query sort `{ columnId: 1, order: 1, _id: 1 }`.
+
+| Query | Index dùng | Keys | Docs | ms |
+| --- | --- | --- | --- | --- |
+| Toàn bộ task active của board | `tasks_board_assignee` | 1000 | 1000 | 9 |
+| `assigneeId` cụ thể | `tasks_board_assignee` | 1 | 1 | 0 |
+| `priority: "high"` | `tasks_board_priority` | 250 | 250 | 2 |
+| `labels: "bug"` | `tasks_board_labels` | 250 | 250 | 2 |
+| `q` regex `C\+\+` | `tasks_board_assignee` | 1000 | 1000 | 6 |
+
+- Query `q` hiện quét theo index board rồi lọc regex; 1000 task trả 143 kết quả trong
+  6 ms. Chưa thêm text index trong 3A; sẽ đo lại khi dữ liệu lớn hơn.
+- Query toàn bộ board dùng index assignee vì planner chọn index có prefix board phù hợp;
+  không cần ép index.
+
+### Browser
+
+- Kéo task cuối lên đầu cột tạo order `Zz` trước `a0`; reload giữ thứ tự.
+- Kéo task về cuối cột (drop vùng trống) thành công; UI cập nhật ngay.
+- Filter `q=reorder` và `priority=high` trả đúng số card; hint "Xóa bộ lọc để kéo thả."
+  hiển thị; thử drag khi filter bật không phát sinh POST move.
+- Phát hiện UI sort dùng `localeCompare` không khớp thứ tự binary của MongoDB với key
+  `Zz`/`a0`; đã đổi sang so sánh chuỗi trực tiếp và rebuild web.
+- Task test tạm đã xóa; dữ liệu ứng dụng trở lại 2 task.

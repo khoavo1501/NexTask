@@ -110,15 +110,15 @@ describe('task move OCC', () => {
     const { owner, boardId, task } = await setupPromotedTask();
 
     const moved = await owner.agent
-      .patch(`/api/v1/boards/${boardId}/tasks/${task._id}`)
-      .send({ columnId: 'done', expectedVersion: task.version })
+      .post(`/api/v1/boards/${boardId}/tasks/${task._id}/move`)
+      .send({ columnId: 'done', beforeTaskId: null, expectedVersion: task.version })
       .expect(200);
     expect(moved.body.data.columnId).toBe('done');
     expect(moved.body.data.version).toBe(task.version + 1);
 
     const stale = await owner.agent
-      .patch(`/api/v1/boards/${boardId}/tasks/${task._id}`)
-      .send({ columnId: 'review', expectedVersion: task.version })
+      .post(`/api/v1/boards/${boardId}/tasks/${task._id}/move`)
+      .send({ columnId: 'review', beforeTaskId: null, expectedVersion: task.version })
       .expect(409);
     expect(stale.body.error).toMatchObject({
       code: 'VERSION_CONFLICT',
@@ -134,11 +134,11 @@ describe('task move OCC', () => {
 
     const [first, second] = await Promise.all([
       owner.agent
-        .patch(`/api/v1/boards/${boardId}/tasks/${task._id}`)
-        .send({ columnId: 'backlog', expectedVersion: task.version }),
+        .post(`/api/v1/boards/${boardId}/tasks/${task._id}/move`)
+        .send({ columnId: 'backlog', beforeTaskId: null, expectedVersion: task.version }),
       owner.agent
-        .patch(`/api/v1/boards/${boardId}/tasks/${task._id}`)
-        .send({ columnId: 'done', expectedVersion: task.version }),
+        .post(`/api/v1/boards/${boardId}/tasks/${task._id}/move`)
+        .send({ columnId: 'done', beforeTaskId: null, expectedVersion: task.version }),
     ]);
 
     expect([first.status, second.status].sort()).toEqual([200, 409]);
@@ -150,8 +150,8 @@ describe('task move OCC', () => {
     const { owner, boardId, task } = await setupPromotedTask();
 
     const moved = await owner.agent
-      .patch(`/api/v1/boards/${boardId}/tasks/${task._id}`)
-      .send({ columnId: 'todo', expectedVersion: task.version })
+      .post(`/api/v1/boards/${boardId}/tasks/${task._id}/move`)
+      .send({ columnId: 'todo', beforeTaskId: null, expectedVersion: task.version })
       .expect(200);
 
     expect(moved.body.data.columnId).toBe('todo');

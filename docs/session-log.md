@@ -482,3 +482,36 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Không tạo tag v0.2.0 vì chưa được yêu cầu rõ; không push.
 - Lưu ý: invitation cũ đã hết hạn và bị TTL index xóa trong lúc kiểm tra ngày
   2026-11-10; đây là hành vi đúng của TTL, không phải mất dữ liệu ngoài ý muốn.
+
+## 2026-11-10 - Phase 3A spec
+
+- Tạo `release/v0.3` từ `main` tại `da0547a` và feature
+  `feat/phase-3a-kanban-ordering`.
+- Chốt chia Phase 3 thành 3A/3B; 3A gồm fractional ordering, filter/search, limit 100,
+  index + explain, UI kéo thả/filter.
+- 3B dự kiến: sửa/tạo task, quản lý cột, cursor pagination.
+- Spec: `docs/phases/03a-kanban-ordering.md`; đang chờ duyệt trước khi viết plan/code.
+
+## 2026-11-10 - Phase 3A verification
+
+- Backup `backups/nextask-before-3a-2026-11-10.gz`; rehearsal `nextask_3a_rehearsal`
+  áp `003-phase-3a`, dữ liệu/version giữ nguyên; đã drop.
+- App DB áp `003-phase-3a`; unique order index và 3 filter indexes tồn tại.
+- Explain trên 1000 task tạm: assignee 1 key/1 doc; priority 250/250; labels 250/250;
+  toàn board 1000/1000; `q` 1000/1000 trả 143 trong 6 ms.
+- Browser: reorder đầu/cuối cột, reload giữ thứ tự; filter search/priority đúng; drag bị
+  khóa khi filter bật; POST move 200.
+- Sửa UI sort từ `localeCompare` sang so sánh chuỗi trực tiếp để khớp thứ tự binary
+  MongoDB (`Zz` trước `a0`).
+- Task test tạm đã xóa; app còn 2 task, version `4`, `4`.
+
+## 2026-11-10 - Phase 3A hoàn thành
+
+- Commit chính: contracts `55cb4d8`, migration `1a2d5c6`, move API `8a84809`, filter
+  `294db5b`, web `ad08ea5`, sort fix `4483ee2`, docs evidence `d87fb0f`.
+- Feature gate: typecheck/lint/format pass; full suite 16 file, 82 test ba lần
+  11.51/11.45/11.47 s.
+- Migration 003 đã áp rehearsal và app DB; backup 3A còn; rehearsal đã drop.
+- Explain 1000 task tạm; browser reorder/filter pass; task tạm đã xóa.
+- UI sort được sửa từ `localeCompare` sang so sánh chuỗi trực tiếp để khớp binary order.
+- Chờ merge `feat/phase-3a-kanban-ordering` vào `release/v0.3`; không merge `main`.

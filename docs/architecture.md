@@ -841,7 +841,7 @@ Seed tạo một board Retro có frame Start/Stop/Continue, nhiều note nhiều
 
 Mỗi giai đoạn có một file trong `docs/phases/` với mục tiêu, kiến thức MongoDB, danh sách file, cách chạy, câu hỏi kiểm tra và rủi ro. Chỉ chuyển giai đoạn sau khi người dùng duyệt cổng hiện tại.
 
-Trạng thái ngày 2026-10-28: Giai đoạn 0, 1, 2A và 2B đã hoàn thành. Phase 1 chỉ hỗ trợ shape note, chưa có realtime; xem biên bản trong `docs/phases/01-vertical-slice.md`. Phase 2A đã có auth, membership, role, invitation, migration và seed owner; xem `docs/phases/02a-auth-membership.md`. Phase 2B đã có `$jsonSchema` validator, expectedVersion, item sync transaction và client conflict handling; xem `docs/phases/02b-data-integrity.md`.
+Trạng thái ngày 2026-11-10: Giai đoạn 0, 1, 2A, 2B và 3A đã hoàn thành. Phase 1 chỉ hỗ trợ shape note, chưa có realtime; xem biên bản trong `docs/phases/01-vertical-slice.md`. Phase 2A đã có auth, membership, role, invitation, migration và seed owner; xem `docs/phases/02a-auth-membership.md`. Phase 2B đã có `$jsonSchema` validator, expectedVersion, item sync transaction và client conflict handling; xem `docs/phases/02b-data-integrity.md`. Phase 3A đã có `POST /tasks/:id/move` với `beforeTaskId`, fractional order, filter task list, unique order index và explain; xem `docs/phases/03a-kanban-ordering.md`. `PATCH /tasks/:taskId` và cursor pagination thuộc 3B.
 
 ## 17. Rủi ro và giả định
 

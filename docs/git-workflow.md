@@ -3,9 +3,10 @@
 ## 1. Trạng thái hiện tại
 
 - Repository cục bộ, chưa có remote.
-- Nhánh ổn định: `main` tại `53f2391` (release v0.2.0).
-- Nhánh phiên bản: `release/v0.2` đã merge vào `main`; merge 2B `bfc1da2`, chuẩn bị release `7e5f65d`.
-- Phase 0, Phase 1, Phase 2A và Phase 2B đã nằm trên `main`.
+- Nhánh ổn định: `main` tại `da0547a` (v0.2.0, tag annotated `v0.2.0`).
+- Nhánh phiên bản: `release/v0.3` đang mở; feature `feat/phase-3a-kanban-ordering`.
+- Phase 0, Phase 1, Phase 2A, Phase 2B và 3A đã hoàn thành; 3A chưa merge release.
+- Tag `v0.2.0` và `main` không đổi trong Phase 3A.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
 - Phase 2B đã merge vào `release/v0.2` bằng `bfc1da2`; feature `feat/phase-2b-data-integrity` đã xóa.
@@ -219,3 +220,15 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   8.81/8.67/8.68 s; Docker health báo `0.2.0`.
 - Không tạo tag `v0.2.0` nếu người dùng chưa yêu cầu rõ.
 - Không push; repository vẫn local.
+
+## 11. Phase 3A
+
+- Feature: `feat/phase-3a-kanban-ordering`, tạo từ `release/v0.3`.
+- Phạm vi: fractional ordering, filter/search, migration 003, unique/filter indexes,
+  drag/filter UI, explain.
+- Feature gate: typecheck/lint/format pass; full suite 16 file, 82 test ba lần
+  11.51/11.45/11.47 s.
+- Migration 003 đã áp rehearsal và app DB; backup
+  `backups/nextask-before-3a-2026-11-10.gz`.
+- Merge feature vào `release/v0.3` bằng `--no-ff`; chạy lại gate trên release; xóa feature.
+- Không merge `release/v0.3` vào `main`; chưa bump version `0.3.0`; tag `v0.2.0` giữ nguyên.

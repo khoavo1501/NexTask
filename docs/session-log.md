@@ -735,3 +735,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Xóa feature bằng `git branch -d`.
 - `main` vẫn `9fd19b6`; tag `v0.2.0`, `v0.3.0`, `v0.4.0` giữ nguyên.
 - `release/v0.5` chứa Phase 5A và 5B; chưa bump `0.5.0`, chưa merge `main`.
+
+## 2026-11-10 - Phát hành v0.5.0
+
+- Bump version root/API/web/contracts và `package-lock.json` lên `0.5.0`.
+- Bump `SERVICE_VERSION` trong `.env.example` và `docker-compose.yml` lên `0.5.0`.
+- Merge `release/v0.5` vào `main` bằng `--no-ff` với message
+  `release: v0.5 batch and undo`.
+- Sau merge: gate 3 lần, Docker health `0.5.0`; tạo tag annotated `v0.5.0` sau docs release merge.
+- Không push.

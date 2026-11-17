@@ -4,8 +4,9 @@
 
 - Repository cục bộ, chưa có remote.
 - Nhánh ổn định: `main` tại `9fd19b6`; đã phát hành version `0.4.0`.
-- Nhánh phiên bản: `release/v0.5` tại `f2c194d`; đã merge Phase 5A và 5B.
-- Phase 0–5B hoàn thành; chưa phát hành v0.5.
+- Nhánh phiên bản: `release/v0.5` tại `cd3f50b`; đã merge Phase 5A và 5B, chuẩn bị
+  phát hành `0.5.0`.
+- Phase 0–5B hoàn thành; `release/v0.5` chờ merge `main`.
 - Feature `feat/phase-5b-batch-undo` và các feature cũ đã merge/xóa.
 - Tag annotated `v0.4.0` và các tag cũ giữ nguyên.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
@@ -310,3 +311,13 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   typecheck/lint/format; full suite 31 file, 144 test ba lần 25.23/22.74/22.92 s.
 - Feature đã xóa; `release/v0.5` chứa Phase 5A và 5B.
 - Không bump `0.5.0`; không merge `main`; tag `v0.4.0` giữ nguyên; không push.
+
+## 18. Phát hành v0.5.0
+
+- Bump `package.json`, workspace packages, `package-lock.json` và `SERVICE_VERSION`
+  lên `0.5.0` trên `release/v0.5`.
+- Release v0.5 gồm Phase 5A và 5B; merge vào `main` bằng `--no-ff` với message
+  `release: v0.5 batch and undo`.
+- Sau merge main: typecheck/lint/format, full suite ba lần và Docker health `0.5.0`.
+- Tạo tag annotated `v0.5.0` sau docs release merge.
+- Không push.

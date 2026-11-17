@@ -2,7 +2,15 @@ import { Types } from 'mongoose';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { connectTestDb } from './helpers/test-db.js';
 
-const collections = ['users', 'boards', 'items', 'tasks', 'invitations', 'activities'] as const;
+const collections = [
+  'users',
+  'boards',
+  'items',
+  'tasks',
+  'invitations',
+  'activities',
+  'voter_budgets',
+] as const;
 let connection: Awaited<ReturnType<typeof connectTestDb>>;
 
 beforeAll(async () => {
@@ -120,6 +128,20 @@ describe('collection validators', () => {
           undoableUntil: null,
           createdAt: new Date(),
         }),
+    ).rejects.toMatchObject({ code: 121 });
+  });
+
+  it('voter_budgets used âm bị từ chối', async () => {
+    await expect(
+      db().collection('voter_budgets').insertOne({
+        boardId: new Types.ObjectId(),
+        userId: new Types.ObjectId(),
+        used: -1,
+        limit: 3,
+        version: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }),
     ).rejects.toMatchObject({ code: 121 });
   });
 

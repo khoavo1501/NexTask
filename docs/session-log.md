@@ -802,3 +802,13 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Merge `release/v0.6` vào `main` bằng `--no-ff` với message `release: v0.6 voting and reports`.
 - Sau merge: gate 3 lần, Docker health `0.6.0`; tạo tag annotated `v0.6.0` sau docs release merge.
 - Không push.
+
+### Merge main v0.6.0
+
+- Merge `release/v0.6` vào `main` bằng `--no-ff`: `9b6e8ed`
+  (`release: v0.6 voting and reports`).
+- Main gate: typecheck/lint/format pass; full suite 37 file, 162 test ba lần
+  29.43/28.34/28.39 s.
+- Docker rebuild; health `0.6.0`, Mongo `rs0` primary.
+- Tạo tag annotated `v0.6.0` sau docs release merge; không push.
+- Tag `v0.2.0`–`v0.5.0` giữ nguyên.

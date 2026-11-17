@@ -44,6 +44,7 @@ import { InviteDialog } from './invite-dialog';
 import { KanbanBoard, type KanbanFilters } from './kanban-board';
 import { RenameBoardDialog } from './rename-board-dialog';
 import { ReportPanel } from './report-panel';
+import { SettingsDialog } from './settings-dialog';
 import { TaskEditorDialog } from './task-editor-dialog';
 import { UndoPromoteDialog } from './undo-promote-dialog';
 
@@ -69,6 +70,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const [showInvite, setShowInvite] = useState(false);
   const [showRename, setShowRename] = useState(false);
   const [showColumns, setShowColumns] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskDto | null>(null);
   const [demoteTarget, setDemoteTarget] = useState<TaskDto | null>(null);
   const [creatingColumnId, setCreatingColumnId] = useState<string | null>(null);
@@ -546,6 +548,18 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     await loadTasks(filters);
   }, [filters, loadTasks, loadWorkspace]);
 
+  const handleSettingsSaved = useCallback((board: BoardDto) => {
+    setData((current) => (current ? { ...current, board } : current));
+    setShowSettings(false);
+    setNotice('Đã lưu cài đặt board');
+  }, []);
+
+  const handleSettingsConflict = useCallback(async () => {
+    setShowSettings(false);
+    setNotice('Board vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
+    await loadWorkspace();
+  }, [loadWorkspace]);
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center px-6">
@@ -633,6 +647,13 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
                 className="rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs text-stone-600 hover:border-stone-500"
               >
                 Cột
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSettings(true)}
+                className="rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs text-stone-600 hover:border-stone-500"
+              >
+                Cài đặt
               </button>
               <button
                 type="button"
@@ -767,6 +788,15 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           onClose={() => setShowRename(false)}
           onRenamed={handleRenamed}
           onConflict={handleRenameConflict}
+        />
+      ) : null}
+
+      {showSettings ? (
+        <SettingsDialog
+          board={data.board}
+          onClose={() => setShowSettings(false)}
+          onSaved={handleSettingsSaved}
+          onConflict={handleSettingsConflict}
         />
       ) : null}
 

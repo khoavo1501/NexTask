@@ -868,3 +868,16 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Docker rebuild; health `0.7.0`, Mongo `rs0` primary.
 - Tạo tag annotated `v0.7` sau docs release merge; không push.
 - Tag `v0.2.0`–`v0.6.0` giữ nguyên.
+
+## 2026-11-17 - Phase 8A settings và Playwright
+
+- Nhánh `feat/phase-8a-settings-e2e` từ `release/v0.8`; note fix đã merge trước đó tại
+  `ac56bc8`.
+- Thêm `PATCH /boards/:boardId/settings` Owner-only, transaction board version +
+  `voter_budgets.limit`; contracts, service, route, web API, dialog Cài đặt.
+- Thêm Playwright smoke `e2e/mvp-smoke.spec.ts` và script `test:e2e`; chạy với stack
+  Docker + demo seed.
+- Setting test: owner cập nhật version/budget; Member 403; stale 409; invalid 422.
+- Feature gate: typecheck/lint/format pass; build:web pass; full suite 39 file, 166 test
+  ba lần 31.27/32.46/30.91 s; Playwright pass.
+- Chờ merge feature vào `release/v0.8`; không merge `main`, không bump `0.8.0`.

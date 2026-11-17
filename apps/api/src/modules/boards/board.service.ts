@@ -2,14 +2,16 @@ import type {
   BoardMemberDetailDto,
   CreateBoardRequest,
   RenameBoardRequest,
+  UpdateBoardSettingsRequest,
   UpdateColumnsRequest,
 } from '@nextask/contracts';
 import { randomUUID } from 'node:crypto';
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import { AppError } from '../../lib/errors.js';
 import { columnNotEmpty, versionConflict } from '../../lib/versioning.js';
 import { TaskModel } from '../tasks/task.model.js';
 import { UserModel } from '../users/user.model.js';
+import { VoterBudgetModel } from '../votes/voter-budget.model.js';
 import { ensureVoterBudget } from '../votes/voter-budget.service.js';
 import { BoardModel, DEFAULT_COLUMNS, type BoardDocument } from './board.model.js';
 
@@ -83,6 +85,65 @@ export async function renameBoard(
     throw versionConflict(current.version);
   }
   return updated;
+}
+
+export async function updateBoardSettings(
+  board: BoardDocument,
+  input: UpdateBoardSettingsRequest,
+): Promise<BoardDocument> {
+  const session = await mongoose.startSession();
+  try {
+    const result = await session.withTransaction(
+      async () => {
+        const updated = await BoardModel.findOneAndUpdate(
+          { _id: board._id, version: input.expectedVersion },
+          {
+            $set: {
+              settings: {
+                votingLimit: input.votingLimit,
+                minVotes: input.minVotes,
+                stalledAfterDays: input.stalledAfterDays,
+              },
+            },
+            $inc: { version: 1 },
+          },
+          { returnDocument: 'after', session },
+        ).exec();
+        if (!updated) {
+          const current = await BoardModel.findById(board._id)
+            .select({ version: 1 })
+            .session(session)
+            .exec();
+          if (!current) {
+            throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
+          }
+          throw versionConflict(current.version);
+        }
+
+        await VoterBudgetModel.updateMany(
+          { boardId: board._id },
+          { $set: { limit: input.votingLimit }, $inc: { version: 1 } },
+          { session },
+        );
+        return updated;
+      },
+      {
+        readConcern: { level: 'snapshot' },
+        writeConcern: { w: 'majority', j: true },
+        readPreference: 'primary',
+      },
+    );
+    if (!result) {
+      throw new AppError(
+        503,
+        'TRANSACTION_OUTCOME_UNKNOWN',
+        'Không xác định được kết quả transaction',
+      );
+    }
+    return result;
+  } finally {
+    await session.endSession();
+  }
 }
 
 export async function updateColumns(

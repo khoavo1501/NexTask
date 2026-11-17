@@ -29,10 +29,12 @@
     "lint": "eslint .",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,yml,yaml,css}\"",
     "test": "npm run build:contracts && npm run test --workspace @nextask/api",
+    "test:e2e": "playwright test",
     "verify": "npm run typecheck && npm run lint && npm run test"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",
+    "@playwright/test": "1.65.1",
     "concurrently": "10.0.6",
     "eslint": "10.13.0",
     "prettier": "3.9.10",

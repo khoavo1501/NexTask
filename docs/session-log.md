@@ -859,3 +859,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Merge `release/v0.7` vào `main` bằng `--no-ff` với message `release: v0.7 ops and seed`.
 - Sau merge: gate 3 lần, Docker health `0.7.0`; tạo tag annotated `v0.7` sau docs release merge.
 - Không push.
+
+### Merge main v0.7.0
+
+- Merge `release/v0.7` vào `main` bằng `--no-ff`: `f1fd124` (`release: v0.7 ops and seed`).
+- Main gate: typecheck/lint/format pass; full suite 38 file, 164 test ba lần
+  30.09/35.36/30.05 s.
+- Docker rebuild; health `0.7.0`, Mongo `rs0` primary.
+- Tạo tag annotated `v0.7` sau docs release merge; không push.
+- Tag `v0.2.0`–`v0.6.0` giữ nguyên.

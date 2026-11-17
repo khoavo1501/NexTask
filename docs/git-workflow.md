@@ -361,7 +361,8 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Bump `package.json`, workspace packages, `package-lock.json` và `SERVICE_VERSION`
   lên `0.7.0` trên `release/v0.7`.
 - Release v0.7 gồm Phase 7; merge vào `main` bằng `--no-ff` với message
-  `release: v0.7 ops and seed`.
-- Sau merge main: typecheck/lint/format, full suite ba lần và Docker health `0.7.0`.
+  `release: v0.7 ops and seed`: `f1fd124`.
+- Sau merge main: typecheck/lint/format pass; full suite 38 file, 164 test ba lần
+  30.09/35.36/30.05 s; Docker health `0.7.0`.
 - Tạo tag annotated `v0.7` theo yêu cầu sau docs release merge.
 - Không push.

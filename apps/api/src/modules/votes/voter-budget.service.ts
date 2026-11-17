@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import type { Types } from 'mongoose';
 import { ItemModel } from '../items/item.model.js';
 import { VoterBudgetModel, type VoterBudgetDocument } from './voter-budget.model.js';
 

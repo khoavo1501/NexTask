@@ -820,3 +820,10 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Chốt seed board demo idempotent trong app DB; restore drill chỉ vào DB tạm rồi drop.
 - Phạm vi: profiler scripts, backup/restore drill, seed demo, README/test hoàn thiện.
 - Spec: `docs/phases/07-ops-seed.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-17 - Phase 7 plan
+
+- Spec `docs/phases/07-ops-seed.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-17-phase-7-ops-seed.md`.
+- Phạm vi: seed demo idempotent, profiler, backup/restore drill, README/test.
+- Bắt đầu Inline Execution; không merge `main`.

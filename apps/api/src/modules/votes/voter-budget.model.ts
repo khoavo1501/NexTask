@@ -20,7 +20,7 @@ const voterBudgetSchema = new Schema<VoterBudget>(
     limit: { type: Number, required: true, min: 0 },
     version: { type: Number, required: true, default: 1 },
   },
-  { timestamps: true, versionKey: false },
+  { timestamps: true, versionKey: false, collection: 'voter_budgets' },
 );
 
 export const VoterBudgetModel: Model<VoterBudget> =

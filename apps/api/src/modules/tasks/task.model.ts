@@ -22,6 +22,8 @@ export interface Task {
   lifecycle: 'active' | 'demoted';
   sourceItemId: mongoose.Types.ObjectId | null;
   origin: TaskOrigin | null;
+  demotedAt: Date | null;
+  demotedBy: mongoose.Types.ObjectId | null;
   version: number;
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
@@ -69,6 +71,8 @@ const taskSchema = new Schema<Task>(
     },
     sourceItemId: { type: Schema.Types.ObjectId, default: null },
     origin: { type: originSchema, default: null },
+    demotedAt: { type: Date, default: null },
+    demotedBy: { type: Schema.Types.ObjectId, default: null },
     version: { type: Number, required: true, default: 1 },
     createdBy: { type: Schema.Types.ObjectId, required: true },
   },

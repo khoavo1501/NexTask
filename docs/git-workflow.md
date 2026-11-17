@@ -3,11 +3,12 @@
 ## 1. Trạng thái hiện tại
 
 - Repository cục bộ, chưa có remote.
-- Nhánh ổn định: `main` tại `18588e6`; đã phát hành version `0.4.0`.
-- Nhánh phiên bản: `release/v0.4` tại `7276612`; đã merge Phase 4 và bump `0.4.0`.
-- Phase 0–4 hoàn thành; Phase 4 đã merge `main` và phát hành `0.4.0`.
-- Feature `feat/phase-4-realtime` đã merge và xóa.
-- Tag annotated `v0.4.0` tạo sau docs release merge; tag `v0.2.0`/`v0.3.0` giữ nguyên.
+- Nhánh ổn định: `main` tại `9fd19b6`; đã phát hành version `0.4.0`.
+- Nhánh phiên bản: `release/v0.5` tại `cd3f50b`; đã merge Phase 5A và 5B, chuẩn bị
+  phát hành `0.5.0`.
+- Phase 0–5B hoàn thành; `release/v0.5` chờ merge `main`.
+- Feature `feat/phase-5b-batch-undo` và các feature cũ đã merge/xóa.
+- Tag annotated `v0.4.0` và các tag cũ giữ nguyên.
 - Phase 2A đã merge vào `release/v0.2` bằng `c15603e`; follow-up label fix merge `9aa67ec`; docs release `611e893`.
 - Hai nhánh `feat/phase-2a-auth-membership` và `fix/phase-2a-release-record` đã merge và xóa.
 - Phase 2B đã merge vào `release/v0.2` bằng `bfc1da2`; feature `feat/phase-2b-data-integrity` đã xóa.
@@ -284,4 +285,39 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Sau merge main: typecheck/lint/format pass; full suite 24 file, 106 test ba lần
   16.08/16.42/16.41 s; Docker health `0.4.0`, Mongo `rs0` primary.
 - Tạo tag annotated `v0.4.0` theo yêu cầu, sau khi main và docs release ổn định.
+- Không push.
+
+## 16. Phase 5A
+
+- Feature: `feat/phase-5a-demote-activity`, tạo từ `release/v0.5`.
+- Phạm vi: Demote transaction, activity promote/demote + TTL 90 ngày, API activity,
+  dialog Demote và tab hoạt động; 5B để batch/undo/fault injection.
+- Migration 005 áp rehearsal/app; backup `backups/nextask-before-5a-2026-11-10.gz`.
+- Feature gate: typecheck/lint/format pass; full suite 28 file, 126 test ba lần
+  19.09/19.08/19.26 s.
+- Merge feature vào `release/v0.5` bằng `--no-ff` (`0a34cce`); release gate pass:
+  typecheck/lint/format; full suite 28 file, 126 test ba lần 19.47/20.76/19.37 s.
+- Feature đã xóa; `release/v0.5` chứa Phase 5A.
+- Không bump `0.5.0`; không merge `main`; tag `v0.4.0` giữ nguyên; không push.
+
+## 17. Phase 5B
+
+- Feature: `feat/phase-5b-batch-undo`, tạo từ `release/v0.5`.
+- Phạm vi: batch promote multi-select (tối đa 100), undo từng activity promote trong
+  10 phút, fault injection hook; không migration 006.
+- Feature gate: typecheck/lint/format pass; full suite 31 file, 144 test ba lần
+  22.72/22.88/22.77 s.
+- Merge feature vào `release/v0.5` bằng `--no-ff` (`f2c194d`); release gate pass:
+  typecheck/lint/format; full suite 31 file, 144 test ba lần 25.23/22.74/22.92 s.
+- Feature đã xóa; `release/v0.5` chứa Phase 5A và 5B.
+- Không bump `0.5.0`; không merge `main`; tag `v0.4.0` giữ nguyên; không push.
+
+## 18. Phát hành v0.5.0
+
+- Bump `package.json`, workspace packages, `package-lock.json` và `SERVICE_VERSION`
+  lên `0.5.0` trên `release/v0.5`.
+- Release v0.5 gồm Phase 5A và 5B; merge vào `main` bằng `--no-ff` với message
+  `release: v0.5 batch and undo`.
+- Sau merge main: typecheck/lint/format, full suite ba lần và Docker health `0.5.0`.
+- Tạo tag annotated `v0.5.0` sau docs release merge.
 - Không push.

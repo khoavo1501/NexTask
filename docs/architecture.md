@@ -444,6 +444,11 @@ Sau khi commit, Change Streams mới phát sự kiện. Đây là nguồn realti
 - Giới hạn 100 để tránh vượt giới hạn thời gian 60 giây và kích thước oplog 16 MB của transaction. Payload request cũng bị giới hạn bởi body parser.
 - Client có thể retry; unique index bảo đảm không nhân đôi.
 
+Triển khai Phase 5B: `POST /boards/:boardId/items/promote-batch` nhận danh sách item từ
+multi-select note (tối đa 100), chạy một transaction, sinh order tuần tự và ghi activity
+riêng từng item. Lỗi bất kỳ trả `BATCH_PROMOTE_CONFLICT` kèm danh sách item lỗi; không
+ghi một phần. Frame chưa được hỗ trợ trong v1.
+
 ### 6.5 Demote
 
 Demote không tạo bản sao note và không xóa task:
@@ -455,6 +460,10 @@ Demote không tạo bản sao note và không xóa task:
 
 Promote lại sau demote tạo task mới, giữ task demoted cũ. Điều này bảo toàn lịch sử và không tái sử dụng ID task theo cách khó hiểu.
 
+Triển khai Phase 5A: `POST /boards/:boardId/tasks/:taskId/demote` nhận `expectedTaskVersion`
+và `expectedItemVersion`; transaction cập nhật hai document và insert activity
+`item.demoted`; web có dialog xác nhận và tab hoạt động. Batch promote và undo vẫn ở 5B.
+
 ### 6.6 Undo promote
 
 - Chỉ áp dụng cho activity `item.promoted`.
@@ -462,6 +471,11 @@ Promote lại sau demote tạo task mới, giữ task demoted cũ. Điều này 
 - Chỉ undo nếu task chưa bị sửa hoặc di chuyển: `task.version` phải bằng version lúc promote trả về. Nếu đã thay đổi, trả 409 `UNDO_NO_LONGER_SAFE`.
 - Undo dùng cùng transaction như demote, ghi activity `item.promote_undone`.
 - Đây là undo ngắn hạn, không phải tính năng hoàn tác tổng quát.
+
+Triển khai Phase 5B: `POST /boards/:boardId/activities/:activityId/undo` kiểm tra
+activity promote, hạn 10 phút, task version/lifecycle và item link; transaction demote
+task/item và ghi activity `item.promote_undone`. Activity gốc vẫn còn; batch tạo activity
+riêng từng note nên undo từng note.
 
 ## 7. Optimistic concurrency
 
@@ -858,7 +872,7 @@ Seed tạo một board Retro có frame Start/Stop/Continue, nhiều note nhiều
 
 Mỗi giai đoạn có một file trong `docs/phases/` với mục tiêu, kiến thức MongoDB, danh sách file, cách chạy, câu hỏi kiểm tra và rủi ro. Chỉ chuyển giai đoạn sau khi người dùng duyệt cổng hiện tại.
 
-Trạng thái ngày 2026-11-10: Giai đoạn 0, 1, 2A, 2B, 3A, 3B và 4 đã hoàn thành. Phase 1 chỉ hỗ trợ shape note, chưa có realtime; xem biên bản trong `docs/phases/01-vertical-slice.md`. Phase 2A đã có auth, membership, role, invitation, migration và seed owner; xem `docs/phases/02a-auth-membership.md`. Phase 2B đã có `$jsonSchema` validator, expectedVersion, item sync transaction và client conflict handling; xem `docs/phases/02b-data-integrity.md`. Phase 3A đã có `POST /tasks/:id/move` với `beforeTaskId`, fractional order, filter task list, unique order index và explain; xem `docs/phases/03a-kanban-ordering.md`. Phase 3B đã có `POST /tasks`, `PATCH /tasks/:taskId` và `PATCH /boards/:boardId/columns`; xem `docs/phases/03b-task-editing-columns.md`. Phase 4 đã có Change Streams per board, checkpoint/resume, Socket.IO auth/room, Kanban/badge realtime, whiteboard refetch và presence; xem `docs/phases/04-realtime.md`. Phase 4 đã phát hành `0.4.0` và merge `main` tại `18588e6`. Cursor pagination và text index vẫn để phase sau.
+Trạng thái ngày 2026-11-10: Giai đoạn 0, 1, 2A, 2B, 3A, 3B và 4 đã hoàn thành. Phase 1 chỉ hỗ trợ shape note, chưa có realtime; xem biên bản trong `docs/phases/01-vertical-slice.md`. Phase 2A đã có auth, membership, role, invitation, migration và seed owner; xem `docs/phases/02a-auth-membership.md`. Phase 2B đã có `$jsonSchema` validator, expectedVersion, item sync transaction và client conflict handling; xem `docs/phases/02b-data-integrity.md`. Phase 3A đã có `POST /tasks/:id/move` với `beforeTaskId`, fractional order, filter task list, unique order index và explain; xem `docs/phases/03a-kanban-ordering.md`. Phase 3B đã có `POST /tasks`, `PATCH /tasks/:taskId` và `PATCH /boards/:boardId/columns`; xem `docs/phases/03b-task-editing-columns.md`. Phase 4 đã có Change Streams per board, checkpoint/resume, Socket.IO auth/room, Kanban/badge realtime, whiteboard refetch và presence; xem `docs/phases/04-realtime.md`. Phase 4 đã phát hành `0.4.0` và merge `main` tại `18588e6`. Phase 5A đã có demote transaction, activity promote/demote, API activity và UI dialog/panel; xem `docs/phases/05a-demote-activity.md`. Phase 5A/5B đã merge `release/v0.5` tại `f2c194d`; 5B có batch promote multi-select và undo promote 10 phút, chưa merge `main`; tag `v0.4.0` giữ nguyên. Cursor pagination và text index vẫn để phase sau.
 
 ## 17. Rủi ro và giả định
 

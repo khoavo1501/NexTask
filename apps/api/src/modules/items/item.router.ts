@@ -1,8 +1,14 @@
-import { promoteRequestSchema, syncItemsRequestSchema, type ItemDto } from '@nextask/contracts';
+import {
+  batchPromoteRequestSchema,
+  promoteRequestSchema,
+  syncItemsRequestSchema,
+  type ItemDto,
+} from '@nextask/contracts';
 import { Router } from 'express';
 import { AppError } from '../../lib/errors.js';
-import { serializeItem, serializeTask } from '../../lib/serialize.js';
+import { serializeActivity, serializeItem, serializeTask } from '../../lib/serialize.js';
 import { listItems, syncItems } from './item.service.js';
+import { promoteBatch } from './promotion-batch.service.js';
 import { promoteItem } from './promotion.service.js';
 
 export function createItemsRouter(): Router {
@@ -31,6 +37,28 @@ export function createItemsRouter(): Router {
 
     response.json({
       data,
+      meta: { requestId: request.requestId },
+    });
+  });
+
+  router.post('/promote-batch', async (request, response) => {
+    if (!request.board || !request.user) {
+      throw new AppError(401, 'UNAUTHENTICATED', 'Cần đăng nhập');
+    }
+
+    const input = batchPromoteRequestSchema.parse(request.body);
+    const result = await promoteBatch({
+      board: request.board,
+      actor: request.user,
+      request: input,
+    });
+
+    response.status(201).json({
+      data: {
+        items: result.items.map(serializeItem),
+        tasks: result.tasks.map(serializeTask),
+        activities: result.activities.map(serializeActivity),
+      },
       meta: { requestId: request.requestId },
     });
   });

@@ -12,6 +12,7 @@ export interface WhiteboardProps {
   onCursorMove?: (point: { x: number; y: number }) => void;
   onItemsChange: (items: ItemDto[]) => void;
   onPromoteRequest: (item: ItemDto) => void;
+  onPromoteBatchRequest: (items: ItemDto[]) => void;
 }
 
 const WhiteboardCanvas = dynamic<WhiteboardProps>(

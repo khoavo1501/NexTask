@@ -46,6 +46,7 @@ export function WhiteboardCanvas({
   onCursorMove,
   onItemsChange,
   onPromoteRequest,
+  onPromoteBatchRequest,
 }: WhiteboardProps) {
   const initialItemsRef = useRef(initialItems);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -64,6 +65,7 @@ export function WhiteboardCanvas({
   const saveChainRef = useRef<Promise<ItemDto[]>>(Promise.resolve([]));
   const [editor, setEditor] = useState<Editor | null>(null);
   const [selectedShapeId, setSelectedShapeId] = useState<string | null>(null);
+  const [selectedShapeIds, setSelectedShapeIds] = useState<string[]>([]);
   const [currentTool, setCurrentTool] = useState('select');
   const [activeColor, setActiveColor] = useState<NoteColor>('yellow');
   const [saveState, setSaveState] = useState<SaveState>('idle');
@@ -275,10 +277,11 @@ export function WhiteboardCanvas({
 
     let lastViewportUpdate = 0;
     const updateSelection = () => {
-      const noteId = editor
+      const noteIds = editor
         .getSelectedShapeIds()
-        .find((shapeId) => editor.getShape(shapeId)?.type === 'note');
-      setSelectedShapeId(noteId ?? null);
+        .filter((shapeId) => editor.getShape(shapeId)?.type === 'note');
+      setSelectedShapeIds(noteIds);
+      setSelectedShapeId(noteIds.length === 1 ? (noteIds[0] ?? null) : null);
       setCurrentTool(editor.getCurrentToolId());
     };
 
@@ -353,6 +356,28 @@ export function WhiteboardCanvas({
     }
     if (item.promotedTaskId) return;
     onPromoteRequest(item);
+  }
+
+  async function handleBatchPromoteClick() {
+    setError(null);
+    if (selectedShapeIds.length < 2) return;
+    if (selectedShapeIds.length > 100) {
+      setError('Chỉ chọn tối đa 100 note mỗi lần.');
+      return;
+    }
+    const saved = await syncNow();
+    const selected = selectedShapeIds
+      .map((shapeId) => saved.find((item) => item.shapeId === shapeId))
+      .filter((item): item is ItemDto => Boolean(item));
+    if (selected.length !== selectedShapeIds.length) {
+      setError('Chưa đồng bộ được đủ note để promote.');
+      return;
+    }
+    if (selected.some((item) => item.promotedTaskId)) {
+      setError('Có note đã được promote; bỏ chọn note đó rồi thử lại.');
+      return;
+    }
+    onPromoteBatchRequest(selected);
   }
 
   const promotedBadges = items.flatMap((item) => {
@@ -538,7 +563,23 @@ export function WhiteboardCanvas({
       ) : null}
 
       <div className="absolute bottom-3 left-3 z-30 w-full max-w-xs">
-        {selectedShapeId ? (
+        {selectedShapeIds.length > 1 ? (
+          <div className="rounded-xl border border-stone-200 bg-white/95 p-3 shadow-md backdrop-blur">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
+              Đã chọn {selectedShapeIds.length} note
+            </p>
+            <p className="mt-1 text-sm text-stone-900">
+              Promote tất cả thành task trong một batch.
+            </p>
+            <button
+              type="button"
+              onClick={() => void handleBatchPromoteClick()}
+              className="mt-3 w-full rounded-lg bg-amber-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-amber-700"
+            >
+              Promote selected ({selectedShapeIds.length})
+            </button>
+          </div>
+        ) : selectedShapeId ? (
           <div className="rounded-xl border border-stone-200 bg-white/95 p-3 shadow-md backdrop-blur">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-stone-500">
               Ghi chú đang chọn

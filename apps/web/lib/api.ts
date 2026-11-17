@@ -1,10 +1,15 @@
 import {
+  activitiesResponseSchema,
   apiErrorSchema,
+  batchPromoteRequestSchema,
+  batchPromoteResponseSchema,
   boardMembersResponseSchema,
   boardResponseSchema,
   boardsResponseSchema,
   createInvitationRequestSchema,
   createTaskRequestSchema,
+  demoteTaskRequestSchema,
+  demoteTaskResponseSchema,
   invitationAcceptResponseSchema,
   invitationCreateResponseSchema,
   itemsResponseSchema,
@@ -15,14 +20,18 @@ import {
   syncItemsRequestSchema,
   taskResponseSchema,
   tasksListResponseSchema,
+  undoPromoteResponseSchema,
   updateColumnsRequestSchema,
   updateTaskRequestSchema,
   userResponseSchema,
+  type ActivityDto,
+  type BatchPromoteRequest,
   type BoardDto,
   type BoardMemberDetailDto,
   type CreateBoardRequest,
   type CreateInvitationRequest,
   type CreateTaskRequest,
+  type DemoteTaskRequest,
   type ItemDto,
   type LoginRequest,
   type MoveTaskRequest,
@@ -314,6 +323,51 @@ export async function moveTask(
     await request(`/boards/${boardId}/tasks/${taskId}/move`, taskResponseSchema, {
       method: 'POST',
       body: JSON.stringify(input),
+    })
+  ).data;
+}
+
+export async function promoteBatch(
+  boardId: string,
+  input: BatchPromoteRequest,
+): Promise<{ items: ItemDto[]; tasks: TaskDto[]; activities: ActivityDto[] }> {
+  const body = batchPromoteRequestSchema.parse(input);
+  return (
+    await request(`/boards/${boardId}/items/promote-batch`, batchPromoteResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function demoteTask(
+  boardId: string,
+  taskId: string,
+  input: DemoteTaskRequest,
+): Promise<{ task: TaskDto; item: ItemDto; activity: ActivityDto }> {
+  const body = demoteTaskRequestSchema.parse(input);
+  return (
+    await request(`/boards/${boardId}/tasks/${taskId}/demote`, demoteTaskResponseSchema, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    })
+  ).data;
+}
+
+export async function getActivities(boardId: string, limit = 50): Promise<ActivityDto[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  return (
+    await request(`/boards/${boardId}/activities?${params.toString()}`, activitiesResponseSchema)
+  ).data;
+}
+
+export async function undoPromote(
+  boardId: string,
+  activityId: string,
+): Promise<{ task: TaskDto; item: ItemDto; activity: ActivityDto }> {
+  return (
+    await request(`/boards/${boardId}/activities/${activityId}/undo`, undoPromoteResponseSchema, {
+      method: 'POST',
     })
   ).data;
 }

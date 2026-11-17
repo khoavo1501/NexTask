@@ -597,3 +597,62 @@ drop sau khi đo. Query sort `{ columnId: 1, order: 1, _id: 1 }`.
   whiteboard và hiện notice; không có lỗi 500.
 - Presence list và cursor overlay hoạt động; cursor chỉ trong bộ nhớ, không ghi DB.
 - Task test đã xóa và note được khôi phục nội dung; checkpoint của board vẫn còn.
+
+## 19. Quan sát Giai đoạn 5A
+
+### Migration 005
+
+- Backup trước migration: `backups/nextask-before-5a-2026-11-10.gz`, 4.0 KB, `gzip -t` pass.
+- Rehearsal `nextask_5a_rehearsal`: restore 1 board, 2 item, 2 task; migration
+  `applied: ["005-phase-5a"]`; đã drop sau kiểm tra.
+- App DB: `applied: ["005-phase-5a"]`; counts và nội dung item/task giữ nguyên.
+- `activities` có validator strict/error; index `activities_board_created` và TTL
+  `activities_created_ttl` với `expireAfterSeconds: 7776000`.
+- Validator `tasks` thêm `demotedAt`/`demotedBy` optional; task cũ không có hai field vẫn hợp lệ.
+- Migration idempotent: collection/index đã có thì không tạo trùng.
+
+### Demote và activity
+
+- Demote cập nhật task + item + insert activity trong một transaction snapshot/majority.
+- Task demoted giữ `_id`, `sourceItemId`, `origin`; item giữ nguyên vị trí, chỉ bỏ
+  `promotedTaskId`.
+- OCC kiểm tra cả task version và item version; conflict trả `field` để client biết bên nào lệch.
+- Promote ghi activity trong cùng transaction với `undoableUntil` +10 phút; demote ghi
+  activity với `undoableUntil: null`.
+- Hai demote đồng thời: một commit, request còn lại nhận 409; activity chỉ một.
+- Activity TTL 90 ngày là log vận hành có hạn; lịch sử task demoted vẫn nằm ở `tasks`.
+
+### Browser
+
+- Dialog Demote gỡ card khỏi Kanban, badge note biến mất; reload vẫn giữ trạng thái.
+- Tab hoạt động đọc `GET /activities`, hiển thị promote rồi demote; task tạo tay không có nút Demote.
+- Client thứ hai demote khiến tab đang mở gỡ task và làm mới activity qua Change Streams hiện có.
+- Board tạm, activity và checkpoint của board tạm đã xóa; board thật không đổi.
+
+## 20. Quan sát Giai đoạn 5B
+
+### Batch promote
+
+- Một transaction snapshot/majority/primary cho tối đa 100 item; order sinh tuần tự bằng
+  `generateKeyBetween`, không dùng lại key.
+- Mỗi item có task, item update và activity `item.promoted` riêng; `undoableUntil` +10 phút.
+- Một item lỗi (version/đã promote/không phải note) làm abort toàn bộ; trả
+  `BATCH_PROMOTE_CONFLICT` kèm danh sách lỗi.
+- Duplicate key từ unique active-task index được map thành batch conflict, không tạo nửa batch.
+- Fault injection trước task insert, trước item update và trước activity đều rollback sạch.
+
+### Undo promote
+
+- Chỉ activity `item.promoted`; kiểm tra `undoableUntil`, task lifecycle/version trong
+  snapshot và item link trước transaction.
+- Transaction demote task, clear `promotedTaskId`, tăng version cả hai và ghi
+  `item.promote_undone`; activity gốc vẫn còn.
+- Move/edit task làm version lệch → `UNDO_NO_LONGER_SAFE`.
+- Hai undo đồng thời: một commit, một 409; không tạo hai activity undo.
+- Undo một item batch không ảnh hưởng task khác.
+
+### Browser
+
+- Multi-select 3 note, batch tạo 3 task/activity; undo một activity còn 2 task, badge cập nhật.
+- Reload giữ trạng thái; move task rồi undo cũ trả `UNDO_NO_LONGER_SAFE`.
+- Board tạm, activity và checkpoint của board tạm đã xóa.

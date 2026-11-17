@@ -12,6 +12,24 @@
 
 **Branch:** `feat/phase-7-ops-seed` từ `release/v0.7`; release tạo từ `main` tại `2c79479` (v0.6.0). Không merge `main`, không bump `0.7.0`, tag `v0.6.0` giữ nguyên.
 
+**Trạng thái thực thi:** Hoàn thành code/verification và feature gate; chờ merge vào
+`release/v0.7`. Commit chính:
+
+- `fa7965a` `docs: specify phase 7 ops and seed`
+- `44d8dbf` `docs: plan phase 7 ops and seed`
+- `73de128` `feat: add idempotent demo seed`
+- `c5c2f7c` `feat: add database profiler scripts`
+- `f8d032a` `feat: add backup and restore drill scripts`
+- `e9b2fd3` `docs: record phase 7 verification`
+- `9791e2f` `chore: format demo seed`
+
+Feature gate: typecheck/lint/format pass; full suite 38 file, 164 test ba lần
+30.08/30.42/30.12 s.
+
+**Điều chỉnh thực tế:** seed shapeId phải có prefix `shape:` để tldraw dựng lại; profiler
+report dùng slow probe có kiểm soát để có evidence trên ngưỡng 100ms.
+
+
 ## Global Constraints
 
 - Không migration/schema change; app DB giữ 001–006.

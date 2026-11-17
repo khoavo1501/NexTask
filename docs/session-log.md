@@ -834,3 +834,10 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Browser demo: badge/task/report đúng; sửa shapeId seed thiếu prefix `shape:`.
 - Profiler on/report/off: slow probe 190ms COLLSCAN; đã tắt profiler.
 - Backup Phase 7 4.5KB; restore drill counts khớp và DB tạm đã drop.
+
+## 2026-11-17 - Phase 7 gate
+
+- Feature gate: typecheck/lint/format pass; full suite 38 file, 164 test ba lần
+  30.08/30.42/30.12 s.
+- Cập nhật spec/plan/architecture/README/MongoDB notes/git workflow.
+- Chờ merge feature vào `release/v0.7`; không bump `0.7.0`; không merge `main`.

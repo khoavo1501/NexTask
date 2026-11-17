@@ -744,3 +744,13 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   `release: v0.5 batch and undo`.
 - Sau merge: gate 3 lần, Docker health `0.5.0`; tạo tag annotated `v0.5.0` sau docs release merge.
 - Không push.
+
+### Merge main v0.5.0
+
+- Merge `release/v0.5` vào `main` bằng `--no-ff`: `ff9734d`
+  (`release: v0.5 batch and undo`).
+- Main gate: typecheck/lint/format pass; full suite 31 file, 144 test ba lần
+  21.39/21.84/21.55 s.
+- Docker rebuild; health `0.5.0`, Mongo `rs0` primary.
+- Tạo tag annotated `v0.5.0` sau docs release merge; không push.
+- Tag `v0.2.0`, `v0.3.0`, `v0.4.0` giữ nguyên.

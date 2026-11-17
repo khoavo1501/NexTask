@@ -12,8 +12,8 @@
 
 **Branch:** `feat/phase-5b-batch-undo` từ `release/v0.5` (5A tại `0a34cce`). Không merge `main`, không bump `0.5.0`, tag `v0.4.0` giữ nguyên.
 
-**Trạng thái thực thi:** Hoàn thành ngày 2026-11-10; đã merge vào `release/v0.5` bằng
-`--no-ff` (`f2c194d`); feature branch đã xóa. Commit chính:
+**Trạng thái thực thi:** Hoàn thành; đã merge vào `release/v0.5` (`f2c194d`) và phát hành
+`0.5.0` trên `main` tại `ff9734d`; feature branch đã xóa. Commit chính:
 
 - `234aab9` `docs: specify phase 5b batch and undo`
 - `9a6c2c6` `docs: plan phase 5b batch and undo`

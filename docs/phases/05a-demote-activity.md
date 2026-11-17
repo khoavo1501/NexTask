@@ -1,7 +1,7 @@
 # Giai đoạn 5A - Demote và Activity
 
-- Trạng thái: Hoàn thành; merge vào `release/v0.5` bằng `--no-ff` tại `0a34cce`;
-  release gate pass. Chưa merge `main`, chưa bump `0.5.0`, chưa tạo tag v0.5.
+- Trạng thái: Hoàn thành; merge `release/v0.5` tại `0a34cce`; phát hành `0.5.0`
+  trên `main` tại `ff9734d`; tag annotated `v0.5.0` sau docs release merge.
 - Ngày lập: 2026-11-10
 - Tiền đề: v0.4.0 đã phát hành; `main` tại `9fd19b6`, tag annotated `v0.4.0`
 - Kiến trúc: [../architecture.md](../architecture.md), mục 6.5, 4.6 và 11

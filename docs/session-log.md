@@ -827,3 +827,10 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Plan `docs/superpowers/plans/2026-11-17-phase-7-ops-seed.md`.
 - Phạm vi: seed demo idempotent, profiler, backup/restore drill, README/test.
 - Bắt đầu Inline Execution; không merge `main`.
+
+## 2026-11-17 - Phase 7 verification
+
+- Seed app DB: board demo 9 item, 5 task, 4 activity, 3 budget; chạy lại idempotent.
+- Browser demo: badge/task/report đúng; sửa shapeId seed thiếu prefix `shape:`.
+- Profiler on/report/off: slow probe 190ms COLLSCAN; đã tắt profiler.
+- Backup Phase 7 4.5KB; restore drill counts khớp và DB tạm đã drop.

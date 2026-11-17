@@ -683,3 +683,27 @@ drop sau khi đo. Query sort `{ columnId: 1, order: 1, _id: 1 }`.
 - Unpromoted lọc promotedTaskId null và lookup active task; stalled lọc lifecycle active,
   sourceItemId, cột Done và tuổi task.
 - Explain `executionStats` chạy trên DB tạm `nextask_explain_v6` với 1000 item/task; DB drop.
+
+## 22. Quan sát Giai đoạn 7
+
+### Seed demo
+
+- `npm run db:seed` tạo/reset board `NexTask Demo Retro`; lần 1 và lần 2 đều 9 item,
+  5 task, 4 activity, 3 budget; board `_id` ổn định; board thật không đổi.
+- Shape ID seed dùng prefix `shape:` để tldraw dựng lại được; lỗi thiếu prefix đã phát hiện
+  trong browser và sửa trước khi commit cuối.
+- Seed tạo demo member local, vote Stop-2 (3 phiếu), task cũ Start-2 để report có hai nhóm.
+
+### Profiler
+
+- Bật level 1/slowms 100; tạo slow probe `$function` 150ms; report ghi nhận
+  `op: command`, `ns: nextask.items`, `millis: 190`, `planSummary: COLLSCAN`,
+  `keysExamined: 0`, `docsExamined: 1`.
+- Tắt profiler sau đo; `getProfilingStatus()` level 0.
+
+### Backup/restore drill
+
+- Backup `backups/nextask-phase7-20261117-180043.gz`, 4.5 KB, `gzip -t` pass.
+- Restore drill vào `nextask_restore_drill`; counts users/boards/items/tasks/activities/
+  voter_budgets/schema_migrations khớp app DB; sample board đọc được; `failed: false`.
+- Drill drop database tạm; app DB counts không đổi.

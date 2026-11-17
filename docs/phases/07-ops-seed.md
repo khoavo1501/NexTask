@@ -271,6 +271,16 @@ Cập nhật `docs/mongodb-notes.md`:
 - Kết quả profiler (top slow query), backup/restore counts, seed idempotency quan sát.
 - Ghi rõ `system.profile` là capped collection, profiler overhead.
 
+### Kết quả verification 2026-11-17
+
+- Seed app DB: 9 note, 5 task, 4 activity, 3 budget; chạy lần hai không đổi counts/boardId;
+  board thật không bị ảnh hưởng.
+- Browser: board demo dựng whiteboard (4 badge), Kanban 5 task, report có Stop-2 3 phiếu
+  và task bị kẹt Start-2. Shape ID seed thiếu `shape:` đã được sửa.
+- Profiler: level 1/slowms 100; slow probe 190ms/COLLSCAN được ghi nhận; profiler đã tắt.
+- Backup `nextask-phase7-20261117-180043.gz` 4.5 KB; restore drill khớp counts và drop DB tạm.
+- Full suite dự kiến 38 file, 164 test (xác nhận ở Task 5).
+
 ## 9. Tiêu chí chấp nhận
 
 1. Seed demo idempotent; board demo đủ note/task/vote/activity/report; board thật không đổi.

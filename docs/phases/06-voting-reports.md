@@ -32,7 +32,8 @@
    nhận `VERSION_CONFLICT` khi đang sửa note; budget có `version` riêng.
 6. Không ghi activity cho từng vote để tránh nhiễu feed.
 7. Kết quả và báo cáo dùng aggregation; không thêm `voteCount` vào item.
-8. Báo cáo trả cả `unpromotedIdeas` và `stalledTasks` trong một response `$facet`.
+8. Báo cáo trả cả `unpromotedIdeas` và `stalledTasks`; service dùng hai aggregation
+   song song (`items`, `tasks`) rồi gộp response, không dùng `$facet` trên hai collection.
 9. UI vote dùng panel note đang chọn; báo cáo ở tab mới trong khu vực Kanban.
 10. Không thêm event realtime mới; item event hiện có kích hoạt refetch/report refresh.
 11. Migration 006 tạo `voter_budgets`, backfill budget cho board/member hiện có.
@@ -371,6 +372,19 @@ shape index; chạy `aggregate(pipeline).explain("executionStats")` cho report v
 - Docker rebuild; health vẫn `0.5.0` (không bump trong phase).
 - Full suite ba lần; typecheck/lint/format pass.
 - Explain ghi vào MongoDB notes; drop DB tạm.
+
+### Kết quả verification 2026-11-17
+
+- Backup `backups/nextask-before-6-2026-11-17.gz` 4.2 KB; rehearsal/app áp `006-phase-6`.
+- `voter_budgets` validator/index; backfill 2 budget cho board thật; report indexes
+  `items_board_type_promoted`, `tasks_board_lifecycle_created`; counts 1 board, 2 item, 2 task.
+- Browser: panel note hiện `1 phiếu · 1/3`, Vote/Unvote hoạt động; quota cập nhật; tab Báo cáo
+  hiển thị nhóm ý tưởng và task kẹt.
+- Phát hiện Mongoose tự dùng collection `voterbudgets`; đã thêm `collection: 'voter_budgets'`,
+  rebuild và xác nhận budget ghi đúng; collection sai đã drop.
+- Explain test chạy `executionStats` cho hai pipeline report; DB tạm đã drop.
+- Board tạm, budget/activity/checkpoint đã xóa; board thật giữ 1 board, 2 item, 2 task.
+- Full suite trước gate: 37 file, 162 test pass.
 
 ## 11. Tiêu chí chấp nhận
 

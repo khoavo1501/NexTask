@@ -321,3 +321,25 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   21.39/21.84/21.55 s; Docker health `0.5.0`.
 - Tạo tag annotated `v0.5.0` sau docs release merge.
 - Không push.
+
+## 19. Phase 6
+
+- Feature: `feat/phase-6-voting-reports`, tạo từ `release/v0.6`.
+- Phạm vi: vote/unvote quota, voter_budgets, results aggregation, stalled-ideas report,
+  UI vote/quota và tab Báo cáo; migration 006.
+- Feature gate: typecheck/lint/format pass; full suite 37 file, 162 test ba lần
+  29.41/29.64/29.50 s.
+- Merge feature vào `release/v0.6` bằng `--no-ff` (`9d0ddc5`); release gate pass:
+  typecheck/lint/format; full suite 37 file, 162 test ba lần 29.51/29.44/29.77 s.
+- Feature đã xóa; `release/v0.6` chứa Phase 6.
+- Không bump `0.6.0`; không merge `main`; tag `v0.5.0` giữ nguyên; không push.
+
+## 20. Phát hành v0.6.0
+
+- Bump `package.json`, workspace packages, `package-lock.json` và `SERVICE_VERSION`
+  lên `0.6.0` trên `release/v0.6`.
+- Release v0.6 gồm Phase 6; merge vào `main` bằng `--no-ff` với message
+  `release: v0.6 voting and reports`.
+- Sau merge main: typecheck/lint/format, full suite ba lần và Docker health `0.6.0`.
+- Tạo tag annotated `v0.6.0` sau docs release merge.
+- Không push.

@@ -656,3 +656,30 @@ drop sau khi đo. Query sort `{ columnId: 1, order: 1, _id: 1 }`.
 - Multi-select 3 note, batch tạo 3 task/activity; undo một activity còn 2 task, badge cập nhật.
 - Reload giữ trạng thái; move task rồi undo cũ trả `UNDO_NO_LONGER_SAFE`.
 - Board tạm, activity và checkpoint của board tạm đã xóa.
+
+## 21. Quan sát Giai đoạn 6
+
+### Migration 006
+
+- Backup `nextask-before-6-2026-11-17.gz`; rehearsal/app áp `006-phase-6`.
+- `voter_budgets` validator strict/error, unique `(boardId,userId)`; backfill budget theo
+  `settings.votingLimit` và `used` từ votes hiện có.
+- Report indexes `items_board_type_promoted`, `tasks_board_lifecycle_created`.
+- Mongoose mặc định pluralize `VoterBudget` thành `voterbudgets`; phải khai báo
+  `collection: 'voter_budgets'` để khớp migration. Đây là bài học quan trọng khi tạo
+  collection bằng tay.
+
+### Vote transaction
+
+- Vote/unvote cập nhật item votes và budget trong transaction; vote không tăng item.version.
+- Budget `used/limit/version` là điểm tuần tự hóa quota; hai vote đồng thời khi còn một
+  quota chỉ một commit.
+- Vote lại/không vote trả ALREADY_VOTED/NOT_VOTED; hết quota trả VOTE_LIMIT_REACHED.
+
+### Reports
+
+- Hai aggregation song song trên `items` và `tasks`; response gộp hai nhóm, tránh `$facet`
+  trên hai collection.
+- Unpromoted lọc promotedTaskId null và lookup active task; stalled lọc lifecycle active,
+  sourceItemId, cột Done và tuổi task.
+- Explain `executionStats` chạy trên DB tạm `nextask_explain_v6` với 1000 item/task; DB drop.

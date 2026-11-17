@@ -249,6 +249,22 @@ export const COLLECTION_VALIDATORS: Record<string, Document> = {
       },
     },
   },
+  voter_budgets: {
+    $jsonSchema: {
+      bsonType: 'object',
+      required: ['boardId', 'userId', 'used', 'limit', 'version', 'createdAt', 'updatedAt'],
+      additionalProperties: false,
+      properties: {
+        _id: objectId,
+        boardId: objectId,
+        userId: objectId,
+        used: { bsonType: 'number', minimum: 0 },
+        limit: { bsonType: 'number', minimum: 0 },
+        version: { bsonType: 'number', minimum: 1 },
+        ...timestampProperties,
+      },
+    },
+  },
   invitations: {
     $jsonSchema: {
       bsonType: 'object',

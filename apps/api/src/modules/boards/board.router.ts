@@ -13,7 +13,9 @@ import { serializeBoard } from '../../lib/serialize.js';
 import { createActivitiesRouter } from '../activities/activity.router.js';
 import { createInvitation } from '../invitations/invitation.service.js';
 import { createItemsRouter } from '../items/item.router.js';
+import { createReportsRouter } from '../reports/report.router.js';
 import { createTasksRouter } from '../tasks/task.router.js';
+import { createVotesRouter } from '../votes/vote.router.js';
 import { loadBoardAccess, requireOwner } from './board-access.js';
 import {
   createBoard,
@@ -126,6 +128,8 @@ export function createBoardsRouter(): Router {
   router.use('/:boardId/items', createItemsRouter());
   router.use('/:boardId/tasks', createTasksRouter());
   router.use('/:boardId/activities', createActivitiesRouter());
+  router.use('/:boardId/votes', createVotesRouter());
+  router.use('/:boardId/reports', createReportsRouter());
 
   return router;
 }

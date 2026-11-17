@@ -8,5 +8,7 @@ export * from './invitation.js';
 export * from './item.js';
 export * from './promotion.js';
 export * from './realtime.js';
+export * from './report.js';
 export * from './task.js';
+export * from './vote.js';
 export * from './version.js';

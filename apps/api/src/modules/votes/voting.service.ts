@@ -1,4 +1,9 @@
-import { ALREADY_VOTED_CODE, NOT_VOTED_CODE, VOTE_LIMIT_REACHED_CODE } from '@nextask/contracts';
+import {
+  ALREADY_VOTED_CODE,
+  NOT_VOTED_CODE,
+  VOTE_LIMIT_REACHED_CODE,
+  type VoteResultsDto,
+} from '@nextask/contracts';
 import mongoose, { Types } from 'mongoose';
 import { AppError } from '../../lib/errors.js';
 import type { BoardDocument } from '../boards/board.model.js';
@@ -90,6 +95,67 @@ export async function voteItem(input: {
   } finally {
     await session.endSession();
   }
+}
+
+export async function getVoteResults(
+  board: BoardDocument,
+  viewerId: Types.ObjectId,
+  limit: number,
+): Promise<VoteResultsDto> {
+  const [items, budgets] = await Promise.all([
+    ItemModel.aggregate<{
+      itemId: Types.ObjectId;
+      shapeId: string;
+      content: string;
+      voteCount: number;
+      voters: Types.ObjectId[];
+      promotedTaskId: Types.ObjectId | null;
+      createdAt: Date;
+    }>([
+      { $match: { boardId: board._id, type: 'note' } },
+      {
+        $project: {
+          itemId: '$_id',
+          shapeId: 1,
+          content: 1,
+          voteCount: { $size: '$votes' },
+          voters: '$votes.userId',
+          promotedTaskId: 1,
+          createdAt: 1,
+          _id: 0,
+        },
+      },
+      { $sort: { voteCount: -1, createdAt: 1, itemId: 1 } },
+      { $limit: limit },
+    ]).exec(),
+    VoterBudgetModel.find({ boardId: board._id }).sort({ used: -1, userId: 1 }).exec(),
+  ]);
+
+  const ensureViewer = await ensureVoterBudget(board._id, viewerId, board.settings.votingLimit);
+  const usage = budgets.map((budget) => ({
+    userId: budget.userId.toHexString(),
+    used: budget.used,
+    limit: budget.limit,
+  }));
+  const viewer = usage.find((entry) => entry.userId === viewerId.toHexString()) ?? {
+    userId: viewerId.toHexString(),
+    used: ensureViewer.used,
+    limit: ensureViewer.limit,
+  };
+
+  return {
+    items: items.map((item) => ({
+      itemId: item.itemId.toHexString(),
+      shapeId: item.shapeId,
+      content: item.content,
+      voteCount: item.voteCount,
+      voters: item.voters.map((id) => id.toHexString()),
+      promotedTaskId: item.promotedTaskId?.toHexString() ?? null,
+      createdAt: item.createdAt.toISOString(),
+    })),
+    usage,
+    viewer,
+  };
 }
 
 export async function unvoteItem(input: {

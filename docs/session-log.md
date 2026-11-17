@@ -841,3 +841,13 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   30.08/30.42/30.12 s.
 - Cập nhật spec/plan/architecture/README/MongoDB notes/git workflow.
 - Chờ merge feature vào `release/v0.7`; không bump `0.7.0`; không merge `main`.
+
+### Merge release/v0.7
+
+- Merge `feat/phase-7-ops-seed` vào `release/v0.7` bằng `--no-ff`:
+  `1962ebf` (`merge: phase 7 ops and seed`).
+- Release gate: typecheck/lint/format pass; full suite 38 file, 164 test ba lần
+  30.02/30.49/32.60 s.
+- Xóa feature bằng `git branch -d`; profiler đã tắt.
+- `main` vẫn `2c79479`; tag `v0.2.0`–`v0.6.0` giữ nguyên.
+- `release/v0.7` chứa Phase 7; chưa bump `0.7.0`, chưa merge `main`.

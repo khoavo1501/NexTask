@@ -1,7 +1,7 @@
 # Giai đoạn 7 - Profiler, Backup/Restore, Seed và hoàn thiện
 
-- Trạng thái: Hoàn thành code, verification và feature gate; chờ merge vào
-  `release/v0.7`. Chưa merge `main`, chưa bump `0.7.0`.
+- Trạng thái: Hoàn thành; merge vào `release/v0.7` bằng `--no-ff` tại `1962ebf`;
+  release gate pass. Chưa merge `main`, chưa bump `0.7.0`.
 - Ngày lập: 2026-11-17
 - Tiền đề: v0.6.0 đã phát hành; `main` tại `2c79479`, tag annotated `v0.6.0`
 - Kiến trúc: [../architecture.md](../architecture.md), mục 15, 16

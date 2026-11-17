@@ -12,8 +12,8 @@
 
 **Branch:** `feat/phase-7-ops-seed` từ `release/v0.7`; release tạo từ `main` tại `2c79479` (v0.6.0). Không merge `main`, không bump `0.7.0`, tag `v0.6.0` giữ nguyên.
 
-**Trạng thái thực thi:** Hoàn thành code/verification và feature gate; chờ merge vào
-`release/v0.7`. Commit chính:
+**Trạng thái thực thi:** Hoàn thành; đã merge vào `release/v0.7` bằng `--no-ff`
+(`1962ebf`); feature branch đã xóa. Commit chính:
 
 - `fa7965a` `docs: specify phase 7 ops and seed`
 - `44d8dbf` `docs: plan phase 7 ops and seed`
@@ -22,6 +22,11 @@
 - `f8d032a` `feat: add backup and restore drill scripts`
 - `e9b2fd3` `docs: record phase 7 verification`
 - `9791e2f` `chore: format demo seed`
+- `cced579` `docs: record phase 7 verification`
+- `1962ebf` `merge: phase 7 ops and seed` vào `release/v0.7`
+
+Release gate: typecheck/lint/format pass; full suite 38 file, 164 test ba lần
+30.02/30.49/32.60 s.
 
 Feature gate: typecheck/lint/format pass; full suite 38 file, 164 test ba lần
 30.08/30.42/30.12 s.

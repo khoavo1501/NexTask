@@ -351,4 +351,7 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Phạm vi: seed demo idempotent, profiler on/report/off, backup/restore drill, README/test.
 - Feature gate: typecheck/lint/format pass; full suite 38 file, 164 test ba lần
   30.08/30.42/30.12 s.
-- Chờ merge feature vào `release/v0.7`; không bump `0.7.0`; không merge `main`.
+- Merge feature vào `release/v0.7` bằng `--no-ff` (`1962ebf`); release gate pass:
+  typecheck/lint/format; full suite 38 file, 164 test ba lần 30.02/30.49/32.60 s.
+- Feature đã xóa; `release/v0.7` chứa Phase 7.
+- Không bump `0.7.0`; không merge `main`; tag `v0.6.0` giữ nguyên; không push.

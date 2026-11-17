@@ -12,8 +12,8 @@
 
 **Branch:** `feat/phase-6-voting-reports` từ `release/v0.6`; release tạo từ `main` tại `3bf6d66` (v0.5.0). Không merge `main`, không bump `0.6.0`, tag `v0.5.0` giữ nguyên.
 
-**Trạng thái thực thi:** Hoàn thành code/migration/browser verification và feature gate;
-chờ merge vào `release/v0.6`. Commit chính:
+**Trạng thái thực thi:** Hoàn thành; đã merge vào `release/v0.6` bằng `--no-ff`
+(`9d0ddc5`); feature branch đã xóa. Commit chính:
 
 - `b7e6013` `docs: specify phase 6 voting and reports`
 - `2a47258` `docs: plan phase 6 voting and reports`
@@ -26,6 +26,11 @@ chờ merge vào `release/v0.6`. Commit chính:
 - `ff7dab3` `feat: add stalled ideas report tab`
 - `c599a27` `fix: use voter_budgets collection name`
 - `581817b` `docs: record phase 6 verification`
+- `6fe2aa4` `docs: record phase 6 verification`
+- `9d0ddc5` `merge: phase 6 voting and reports` vào `release/v0.6`
+
+Release gate: typecheck/lint/format pass; full suite 37 file, 162 test ba lần
+29.51/29.44/29.77 s.
 
 **Điều chỉnh thực tế:** report dùng hai aggregation song song trên `items`/`tasks` thay vì
 `$facet` trên hai collection; Mongoose model phải khai báo `collection: 'voter_budgets'`.

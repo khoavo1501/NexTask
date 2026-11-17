@@ -784,3 +784,13 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Feature gate: typecheck/lint/format pass; full suite 37 file, 162 test ba lần
   29.41/29.64/29.50 s.
 - Chờ merge feature vào `release/v0.6`; không bump `0.6.0`; không merge `main`.
+
+### Merge release/v0.6
+
+- Merge `feat/phase-6-voting-reports` vào `release/v0.6` bằng `--no-ff`:
+  `9d0ddc5` (`merge: phase 6 voting and reports`).
+- Release gate: typecheck/lint/format pass; full suite 37 file, 162 test ba lần
+  29.51/29.44/29.77 s.
+- Xóa feature bằng `git branch -d`.
+- `main` vẫn `3bf6d66`; tag `v0.2.0`–`v0.5.0` giữ nguyên.
+- `release/v0.6` chứa Phase 6; chưa bump `0.6.0`, chưa merge `main`.

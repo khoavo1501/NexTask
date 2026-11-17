@@ -1,7 +1,7 @@
 # Giai đoạn 6 - Dot voting, quota và báo cáo ý tưởng
 
-- Trạng thái: Hoàn thành code, migration, browser verification và feature gate;
-  chờ merge vào `release/v0.6`. Chưa merge `main`, chưa bump `0.6.0`.
+- Trạng thái: Hoàn thành; merge vào `release/v0.6` bằng `--no-ff` tại `9d0ddc5`;
+  release gate pass. Chưa merge `main`, chưa bump `0.6.0`, chưa tạo tag v0.6.
 - Ngày lập: 2026-11-17
 - Tiền đề: v0.5.0 đã phát hành; `main` tại `3bf6d66`, tag annotated `v0.5.0`
 - Kiến trúc: [../architecture.md](../architecture.md), mục 4.4, 4.9, 4.10, 12

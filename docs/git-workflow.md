@@ -329,4 +329,7 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   UI vote/quota và tab Báo cáo; migration 006.
 - Feature gate: typecheck/lint/format pass; full suite 37 file, 162 test ba lần
   29.41/29.64/29.50 s.
-- Chờ merge feature vào `release/v0.6`; không bump `0.6.0`; không merge `main`.
+- Merge feature vào `release/v0.6` bằng `--no-ff` (`9d0ddc5`); release gate pass:
+  typecheck/lint/format; full suite 37 file, 162 test ba lần 29.51/29.44/29.77 s.
+- Feature đã xóa; `release/v0.6` chứa Phase 6.
+- Không bump `0.6.0`; không merge `main`; tag `v0.5.0` giữ nguyên; không push.

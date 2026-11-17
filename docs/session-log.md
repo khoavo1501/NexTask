@@ -754,3 +754,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Docker rebuild; health `0.5.0`, Mongo `rs0` primary.
 - Tạo tag annotated `v0.5.0` sau docs release merge; không push.
 - Tag `v0.2.0`, `v0.3.0`, `v0.4.0` giữ nguyên.
+
+## 2026-11-17 - Phase 6 spec
+
+- Tạo `release/v0.6` từ `main` tại `3bf6d66` (v0.5.0) và feature
+  `feat/phase-6-voting-reports`.
+- Chốt Phase 6 trọn gói: dot voting + quota `voter_budgets`, results aggregation,
+  reports stalled ideas/tasks, UI vote và tab Báo cáo.
+- Vote không tăng `item.version`; không ghi activity từng vote; không thêm event realtime.
+- Spec: `docs/phases/06-voting-reports.md`; chờ duyệt trước khi viết plan/code.

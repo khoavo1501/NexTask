@@ -23,6 +23,8 @@ import {
   undoPromoteResponseSchema,
   updateColumnsRequestSchema,
   updateTaskRequestSchema,
+  voteResponseSchema,
+  voteResultsResponseSchema,
   userResponseSchema,
   type ActivityDto,
   type BatchPromoteRequest,
@@ -45,6 +47,7 @@ import {
   type UpdateColumnsRequest,
   type UpdateTaskRequest,
   type UserDto,
+  type VoteResultsDto,
 } from '@nextask/contracts';
 import type { z } from 'zod';
 
@@ -369,5 +372,37 @@ export async function undoPromote(
     await request(`/boards/${boardId}/activities/${activityId}/undo`, undoPromoteResponseSchema, {
       method: 'POST',
     })
+  ).data;
+}
+
+export async function voteItem(
+  boardId: string,
+  itemId: string,
+): Promise<{ item: ItemDto; budget: { used: number; limit: number } }> {
+  return (
+    await request(`/boards/${boardId}/items/${itemId}/votes`, voteResponseSchema, {
+      method: 'POST',
+    })
+  ).data;
+}
+
+export async function unvoteItem(
+  boardId: string,
+  itemId: string,
+): Promise<{ item: ItemDto; budget: { used: number; limit: number } }> {
+  return (
+    await request(`/boards/${boardId}/items/${itemId}/votes`, voteResponseSchema, {
+      method: 'DELETE',
+    })
+  ).data;
+}
+
+export async function getVoteResults(boardId: string, limit = 50): Promise<VoteResultsDto> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  return (
+    await request(
+      `/boards/${boardId}/votes/results?${params.toString()}`,
+      voteResultsResponseSchema,
+    )
   ).data;
 }

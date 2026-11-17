@@ -13,6 +13,10 @@ export interface WhiteboardProps {
   onItemsChange: (items: ItemDto[]) => void;
   onPromoteRequest: (item: ItemDto) => void;
   onPromoteBatchRequest: (items: ItemDto[]) => void;
+  currentUserId: string;
+  voteUsage: { used: number; limit: number };
+  onVote: (item: ItemDto) => Promise<void>;
+  onUnvote: (item: ItemDto) => Promise<void>;
 }
 
 const WhiteboardCanvas = dynamic<WhiteboardProps>(

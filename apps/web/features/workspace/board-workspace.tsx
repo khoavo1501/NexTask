@@ -8,6 +8,7 @@ import type {
   PresenceParticipant,
   RealtimeEvent,
   TaskDto,
+  VoteResultsDto,
 } from '@nextask/contracts';
 import { SOCKET_EVENTS } from '@nextask/contracts';
 import Link from 'next/link';
@@ -21,6 +22,7 @@ import {
   getBoardMembers,
   getItems,
   getTasks,
+  getVoteResults,
   demoteTask,
   isOrderConflict,
   isVersionConflict,
@@ -28,6 +30,8 @@ import {
   promoteBatch,
   promoteItem,
   undoPromote,
+  unvoteItem,
+  voteItem,
 } from '../../lib/api';
 import { createBoardSocket } from '../../lib/realtime';
 import { BatchPromoteDialog } from '../whiteboard/batch-promote-dialog';
@@ -70,6 +74,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const [notice, setNotice] = useState<string | null>(null);
   const [sidebarTab, setSidebarTab] = useState<'kanban' | 'activities'>('kanban');
   const [activityRevision, setActivityRevision] = useState(0);
+  const [voteResults, setVoteResults] = useState<VoteResultsDto | null>(null);
   const [filters, setFilters] = useState<KanbanFilters>({
     q: '',
     assigneeId: '',
@@ -90,13 +95,15 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     setLoading(true);
     setError(null);
     try {
-      const [board, members, items, taskPage] = await Promise.all([
+      const [board, members, items, taskPage, results] = await Promise.all([
         getBoard(boardId),
         getBoardMembers(boardId),
         getItems(boardId),
         getTasks(boardId),
+        getVoteResults(boardId),
       ]);
       setData({ board, members, items, tasks: taskPage.tasks });
+      setVoteResults(results);
       setHasMoreTasks(taskPage.hasMore);
     } catch (caught) {
       if (caught instanceof ApiClientError && caught.status === 401) {
@@ -293,6 +300,47 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       }
     },
     [boardId, loadWorkspace, promoteTarget],
+  );
+
+  const handleVote = useCallback(
+    async (item: ItemDto, action: 'vote' | 'unvote') => {
+      try {
+        const result =
+          action === 'vote'
+            ? await voteItem(boardId, item._id)
+            : await unvoteItem(boardId, item._id);
+        setData((current) =>
+          current
+            ? {
+                ...current,
+                items: current.items.map((entry) =>
+                  entry._id === result.item._id ? result.item : entry,
+                ),
+              }
+            : current,
+        );
+        setVoteResults((current) =>
+          current
+            ? {
+                ...current,
+                viewer: { ...current.viewer, ...result.budget },
+                usage: current.usage.map((entry) =>
+                  entry.userId === current.viewer.userId ? { ...entry, ...result.budget } : entry,
+                ),
+              }
+            : current,
+        );
+        setNotice(action === 'vote' ? 'Đã vote ghi chú' : 'Đã bỏ vote');
+      } catch (caught) {
+        if (caught instanceof ApiClientError) {
+          setNotice(caught.message);
+          await loadWorkspace();
+          return;
+        }
+        throw caught;
+      }
+    },
+    [boardId, loadWorkspace],
   );
 
   const handleBatchPromote = useCallback(
@@ -619,6 +667,10 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
             onItemsChange={handleItemsChange}
             onPromoteRequest={setPromoteTarget}
             onPromoteBatchRequest={setBatchPromoteTarget}
+            currentUserId={voteResults?.viewer.userId ?? ''}
+            voteUsage={voteResults?.viewer ?? { used: 0, limit: 0 }}
+            onVote={(item) => handleVote(item, 'vote')}
+            onUnvote={(item) => handleVote(item, 'unvote')}
           />
         </section>
 

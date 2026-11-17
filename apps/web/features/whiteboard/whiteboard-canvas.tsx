@@ -47,6 +47,10 @@ export function WhiteboardCanvas({
   onItemsChange,
   onPromoteRequest,
   onPromoteBatchRequest,
+  currentUserId,
+  voteUsage,
+  onVote,
+  onUnvote,
 }: WhiteboardProps) {
   const initialItemsRef = useRef(initialItems);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -602,6 +606,31 @@ export function WhiteboardCanvas({
                 Promote thành task
               </button>
             )}
+            <div className="mt-3 flex items-center justify-between gap-2 rounded-lg bg-stone-100 px-2 py-1.5">
+              <span className="text-xs text-stone-600">
+                {selectedItem?.votes.length ?? 0} phiếu · {voteUsage.used}/{voteUsage.limit}
+              </span>
+              {selectedItem ? (
+                selectedItem.votes.some((vote) => vote.userId === currentUserId) ? (
+                  <button
+                    type="button"
+                    onClick={() => void onUnvote(selectedItem)}
+                    className="rounded-lg bg-stone-700 px-2.5 py-1 text-[11px] font-medium text-white"
+                  >
+                    Unvote
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={voteUsage.used >= voteUsage.limit}
+                    onClick={() => void onVote(selectedItem)}
+                    className="rounded-lg bg-emerald-600 px-2.5 py-1 text-[11px] font-medium text-white disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    Vote
+                  </button>
+                )
+              ) : null}
+            </div>
           </div>
         ) : (
           <p className="rounded-xl border border-stone-200 bg-white/90 px-3 py-2 text-xs text-stone-500 shadow-sm">

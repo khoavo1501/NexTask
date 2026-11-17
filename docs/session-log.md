@@ -777,3 +777,10 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Browser: vote/unvote, quota `1/3`, tab Báo cáo hiển thị hai nhóm.
 - Fix collection Mongoose `voterbudgets` → `voter_budgets`; rebuild và xác nhận budget đúng.
 - Explain executionStats chạy; DB tạm drop; board tạm/budget/checkpoint đã xóa.
+
+## 2026-11-17 - Phase 6 gate
+
+- Cập nhật spec/plan/architecture/MongoDB notes/README/git workflow cho Phase 6.
+- Feature gate: typecheck/lint/format pass; full suite 37 file, 162 test ba lần
+  29.41/29.64/29.50 s.
+- Chờ merge feature vào `release/v0.6`; không bump `0.6.0`; không merge `main`.

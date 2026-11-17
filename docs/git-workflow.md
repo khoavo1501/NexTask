@@ -321,3 +321,12 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   21.39/21.84/21.55 s; Docker health `0.5.0`.
 - Tạo tag annotated `v0.5.0` sau docs release merge.
 - Không push.
+
+## 19. Phase 6
+
+- Feature: `feat/phase-6-voting-reports`, tạo từ `release/v0.6`.
+- Phạm vi: vote/unvote quota, voter_budgets, results aggregation, stalled-ideas report,
+  UI vote/quota và tab Báo cáo; migration 006.
+- Feature gate: typecheck/lint/format pass; full suite 37 file, 162 test ba lần
+  29.41/29.64/29.50 s.
+- Chờ merge feature vào `release/v0.6`; không bump `0.6.0`; không merge `main`.

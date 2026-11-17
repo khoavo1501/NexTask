@@ -1,6 +1,7 @@
 'use client';
 
 import type { ItemDto, SyncDeletedItemInput, SyncItemInput } from '@nextask/contracts';
+import { toRichText } from '@tldraw/tlschema';
 import {
   DefaultColorStyle,
   Tldraw,
@@ -246,15 +247,21 @@ export function WhiteboardCanvas({
     try {
       if (initialItemsRef.current.length > 0) {
         mountedEditor.createShapes(
-          initialItemsRef.current.map((item) => ({
-            id: item.shapeId as TLShapeId,
-            type: 'note',
-            x: item.position.x,
-            y: item.position.y,
-            rotation: item.rotation,
-            index: item.tldrawIndex as TLNoteShape['index'],
-            props: item.props as unknown as TLNoteShapeProps,
-          })),
+          initialItemsRef.current.map((item) => {
+            const props = item.props as Partial<TLNoteShapeProps>;
+            return {
+              id: item.shapeId as TLShapeId,
+              type: 'note',
+              x: item.position.x,
+              y: item.position.y,
+              rotation: item.rotation,
+              index: item.tldrawIndex as TLNoteShape['index'],
+              props: {
+                ...props,
+                richText: props.richText ?? toRichText(item.content),
+              } as TLNoteShapeProps,
+            };
+          }),
         );
         mountedEditor.zoomToFit({ animation: { duration: 0 } });
       }

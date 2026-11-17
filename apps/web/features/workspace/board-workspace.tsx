@@ -43,6 +43,7 @@ import { DemoteTaskDialog } from './demote-task-dialog';
 import { InviteDialog } from './invite-dialog';
 import { KanbanBoard, type KanbanFilters } from './kanban-board';
 import { RenameBoardDialog } from './rename-board-dialog';
+import { ReportPanel } from './report-panel';
 import { TaskEditorDialog } from './task-editor-dialog';
 import { UndoPromoteDialog } from './undo-promote-dialog';
 
@@ -72,7 +73,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const [demoteTarget, setDemoteTarget] = useState<TaskDto | null>(null);
   const [creatingColumnId, setCreatingColumnId] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const [sidebarTab, setSidebarTab] = useState<'kanban' | 'activities'>('kanban');
+  const [sidebarTab, setSidebarTab] = useState<'kanban' | 'activities' | 'reports'>('kanban');
   const [activityRevision, setActivityRevision] = useState(0);
   const [voteResults, setVoteResults] = useState<VoteResultsDto | null>(null);
   const [filters, setFilters] = useState<KanbanFilters>({
@@ -330,6 +331,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
               }
             : current,
         );
+        setActivityRevision((value) => value + 1);
         setNotice(action === 'vote' ? 'Đã vote ghi chú' : 'Đã bỏ vote');
       } catch (caught) {
         if (caught instanceof ApiClientError) {
@@ -698,6 +700,17 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
             >
               Hoạt động
             </button>
+            <button
+              type="button"
+              onClick={() => setSidebarTab('reports')}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
+                sidebarTab === 'reports'
+                  ? 'bg-stone-900 text-white'
+                  : 'text-stone-600 hover:bg-stone-100'
+              }`}
+            >
+              Báo cáo
+            </button>
           </div>
           <div className="min-h-0 flex-1">
             {sidebarTab === 'kanban' ? (
@@ -713,7 +726,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
                 onCreateTask={setCreatingColumnId}
                 onMoveTask={handleMoveTask}
               />
-            ) : (
+            ) : sidebarTab === 'activities' ? (
               <ActivityPanel
                 boardId={boardId}
                 members={data.members}
@@ -721,6 +734,8 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
                 refreshKey={activityRevision}
                 onUndo={setUndoTarget}
               />
+            ) : (
+              <ReportPanel boardId={boardId} refreshKey={activityRevision} />
             )}
           </div>
         </aside>

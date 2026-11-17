@@ -17,6 +17,7 @@ import {
   promoteResponseSchema,
   registerRequestSchema,
   renameBoardRequestSchema,
+  reportResponseSchema,
   syncItemsRequestSchema,
   taskResponseSchema,
   tasksListResponseSchema,
@@ -40,6 +41,7 @@ import {
   type PromoteRequest,
   type RegisterRequest,
   type RenameBoardRequest,
+  type StalledIdeasReportDto,
   type SyncDeletedItemInput,
   type SyncItemInput,
   type TaskDto,
@@ -405,4 +407,8 @@ export async function getVoteResults(boardId: string, limit = 50): Promise<VoteR
       voteResultsResponseSchema,
     )
   ).data;
+}
+
+export async function getStalledIdeasReport(boardId: string): Promise<StalledIdeasReportDto> {
+  return (await request(`/boards/${boardId}/reports/stalled-ideas`, reportResponseSchema)).data;
 }

@@ -373,5 +373,8 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Phạm vi: board settings transaction với `voter_budgets`, dialog Owner, Playwright smoke.
 - Feature gate: typecheck/lint/format pass; `build:web` pass; full suite 39 file, 166 test
   ba lần 31.27/32.46/30.91 s; Playwright 1 test pass.
-- Chờ merge feature vào `release/v0.8` bằng `--no-ff`; không bump `0.8.0`; không merge
-  `main`; tag `v0.7` giữ nguyên; không push.
+- Merge feature vào `release/v0.8` bằng `--no-ff` (`ead25f1`); release gate pass:
+  typecheck/lint/format; `build:web`; full suite 39 file, 166 test ba lần
+  30.35/30.69/31.91 s; Playwright pass.
+- Feature đã xóa; `release/v0.8` chứa Phase 8A và note fix.
+- Không bump `0.8.0`; không merge `main`; tag `v0.7` giữ nguyên; không push.

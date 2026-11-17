@@ -881,3 +881,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Feature gate: typecheck/lint/format pass; build:web pass; full suite 39 file, 166 test
   ba lần 31.27/32.46/30.91 s; Playwright pass.
 - Chờ merge feature vào `release/v0.8`; không merge `main`, không bump `0.8.0`.
+
+### Merge release/v0.8 Phase 8A
+
+- Merge `feat/phase-8a-settings-e2e` vào `release/v0.8` bằng `--no-ff`:
+  `ead25f1` (`merge: phase 8a settings and e2e`).
+- Release gate: typecheck/lint/format pass; `build:web` pass; full suite 39 file, 166 test
+  ba lần 30.35/30.69/31.91 s; Playwright pass.
+- Xóa feature bằng `git branch -d`.
+- `main` và tag `v0.7` giữ nguyên; chưa bump `0.8.0`; không push.

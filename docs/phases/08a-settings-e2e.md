@@ -1,6 +1,6 @@
 # Giai đoạn 8A - Board settings và Playwright smoke
 
-- Trạng thái: Hoàn thành, chờ merge `release/v0.8`
+- Trạng thái: Hoàn thành, đã merge `release/v0.8`
 - Ngày lập: 2026-11-17
 - Tiền đề: v0.7.0 đã phát hành; `main` tại `ed61e8c`, tag `v0.7`
 - Nhánh: `release/v0.8`; feature `feat/phase-8a-settings-e2e`
@@ -94,4 +94,6 @@ Lỗi: 403 Member; 409 VERSION_CONFLICT; 422 invalid; 404 board.
   tab Báo cáo; pass 1.1 s với stack Docker và seed hiện có.
 - Gate feature: typecheck/lint/format pass; `build:web` pass; full suite 39 file, 166 test
   ba lần 31.27/32.46/30.91 s.
+- Merge vào `release/v0.8` tại `ead25f1`; release gate pass với full suite ba lần
+  30.35/30.69/31.91 s và Playwright pass.
 - Không migration, không đổi dữ liệu board ngoài board được cập nhật khi test.

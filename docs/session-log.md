@@ -754,3 +754,33 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Docker rebuild; health `0.5.0`, Mongo `rs0` primary.
 - Tạo tag annotated `v0.5.0` sau docs release merge; không push.
 - Tag `v0.2.0`, `v0.3.0`, `v0.4.0` giữ nguyên.
+
+## 2026-11-17 - Phase 6 spec
+
+- Tạo `release/v0.6` từ `main` tại `3bf6d66` (v0.5.0) và feature
+  `feat/phase-6-voting-reports`.
+- Chốt Phase 6 trọn gói: dot voting + quota `voter_budgets`, results aggregation,
+  reports stalled ideas/tasks, UI vote và tab Báo cáo.
+- Vote không tăng `item.version`; không ghi activity từng vote; không thêm event realtime.
+- Spec: `docs/phases/06-voting-reports.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-17 - Phase 6 plan
+
+- Spec `docs/phases/06-voting-reports.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-17-phase-6-voting-reports.md`.
+- Phạm vi: vote/unvote quota, voter_budgets, results/stalled-ideas reports, UI vote/report.
+- Bắt đầu Inline Execution; không merge `main`.
+
+## 2026-11-17 - Phase 6 verification
+
+- Backup/rehearsal/app áp `006-phase-6`; budgets backfill, report indexes, counts giữ nguyên.
+- Browser: vote/unvote, quota `1/3`, tab Báo cáo hiển thị hai nhóm.
+- Fix collection Mongoose `voterbudgets` → `voter_budgets`; rebuild và xác nhận budget đúng.
+- Explain executionStats chạy; DB tạm drop; board tạm/budget/checkpoint đã xóa.
+
+## 2026-11-17 - Phase 6 gate
+
+- Cập nhật spec/plan/architecture/MongoDB notes/README/git workflow cho Phase 6.
+- Feature gate: typecheck/lint/format pass; full suite 37 file, 162 test ba lần
+  29.41/29.64/29.50 s.
+- Chờ merge feature vào `release/v0.6`; không bump `0.6.0`; không merge `main`.

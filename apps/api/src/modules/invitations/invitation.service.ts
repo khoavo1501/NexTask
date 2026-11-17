@@ -5,6 +5,7 @@ import { AppError } from '../../lib/errors.js';
 import type { BoardDocument } from '../boards/board.model.js';
 import { BoardModel } from '../boards/board.model.js';
 import type { UserDocument } from '../users/user.model.js';
+import { ensureVoterBudget } from '../votes/voter-budget.service.js';
 import { normalizeEmail } from '../auth/auth.service.js';
 import { InvitationModel } from './invitation.model.js';
 
@@ -139,6 +140,7 @@ export async function acceptInvitation(
     if (!result) {
       throw new AppError(503, 'TRANSACTION_OUTCOME_UNKNOWN', 'Không xác định kết quả');
     }
+    await ensureVoterBudget(result.board._id, user._id, result.board.settings.votingLimit);
     return result;
   } finally {
     await session.endSession();

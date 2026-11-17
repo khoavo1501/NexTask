@@ -10,6 +10,7 @@ import {
   MIGRATION_003_NAME,
   MIGRATION_004_NAME,
   MIGRATION_005_NAME,
+  MIGRATION_006_NAME,
 } from '../src/db/migration-runner.js';
 import { COLLECTION_VALIDATORS } from '../src/db/collection-validators.js';
 import { assertSchemaVersion } from '../src/db/schema-version.js';
@@ -141,9 +142,10 @@ describe('migration 2A', () => {
     expect(migrations).not.toContain(MIGRATION_003_NAME);
     expect(migrations).not.toContain(MIGRATION_004_NAME);
     expect(migrations).not.toContain(MIGRATION_005_NAME);
+    expect(migrations).not.toContain(MIGRATION_006_NAME);
     expect((await ItemModel.findOne({ shapeId: 'shape:legacy' }))?.version).toBe(9);
     expect((await TaskModel.findOne({ title: 'Legacy task' }))?.version).toBe(4);
-    await expect(assertSchemaVersion(connection, MIGRATION_005_NAME)).resolves.toBeUndefined();
+    await expect(assertSchemaVersion(connection, MIGRATION_006_NAME)).resolves.toBeUndefined();
   });
 
   it('áp validator 002 cho cả 5 collection', async () => {
@@ -277,6 +279,43 @@ describe('migration 2A', () => {
         snapshot: {},
         undoableUntil: null,
         createdAt: new Date(),
+      }),
+    ).rejects.toMatchObject({ code: 121 });
+  });
+
+  it('006 tạo voter_budgets, backfill và report indexes', async () => {
+    if (!connection.db) throw new Error('DB chưa kết nối');
+
+    const [budgetInfo] = await connection.db.listCollections({ name: 'voter_budgets' }).toArray();
+    const options = (budgetInfo as { options?: Record<string, unknown> } | undefined)?.options;
+    expect(budgetInfo).toBeDefined();
+    expect(options?.validationLevel).toBe('strict');
+    expect(options?.validationAction).toBe('error');
+
+    const indexes = await connection.db.collection('voter_budgets').indexes();
+    expect(indexes.find((index) => index.name === 'voter_budgets_board_user_unique')).toMatchObject(
+      { unique: true },
+    );
+
+    const budget = await connection.db
+      .collection('voter_budgets')
+      .findOne({ boardId: legacyBoardId, userId: new Types.ObjectId(legacyOwnerId) });
+    expect(budget).toMatchObject({ used: 0, limit: 3 });
+
+    const itemIndexes = await ItemModel.collection.indexes();
+    expect(itemIndexes.some((index) => index.name === 'items_board_type_promoted')).toBe(true);
+    const taskIndexes = await TaskModel.collection.indexes();
+    expect(taskIndexes.some((index) => index.name === 'tasks_board_lifecycle_created')).toBe(true);
+
+    await expect(
+      connection.db.collection('voter_budgets').insertOne({
+        boardId: new Types.ObjectId(),
+        userId: new Types.ObjectId(),
+        used: -1,
+        limit: 3,
+        version: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
       }),
     ).rejects.toMatchObject({ code: 121 });
   });

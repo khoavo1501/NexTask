@@ -10,6 +10,7 @@ import { AppError } from '../../lib/errors.js';
 import { columnNotEmpty, versionConflict } from '../../lib/versioning.js';
 import { TaskModel } from '../tasks/task.model.js';
 import { UserModel } from '../users/user.model.js';
+import { ensureVoterBudget } from '../votes/voter-budget.service.js';
 import { BoardModel, DEFAULT_COLUMNS, type BoardDocument } from './board.model.js';
 
 export type BoardRole = 'owner' | 'member';
@@ -43,6 +44,7 @@ export async function createBoard(
     settings: { votingLimit: 3, minVotes: 3, stalledAfterDays: 7 },
     version: 1,
   });
+  await ensureVoterBudget(board._id, userId, board.settings.votingLimit);
   return { board, role: 'owner' };
 }
 

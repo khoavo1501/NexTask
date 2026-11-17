@@ -4,6 +4,7 @@ import { phase2bMigration } from './migrations/002-phase-2b.js';
 import { phase3aMigration } from './migrations/003-phase-3a.js';
 import { phase4Migration } from './migrations/004-phase-4.js';
 import { phase5aMigration } from './migrations/005-phase-5a.js';
+import { phase6Migration } from './migrations/006-phase-6.js';
 
 export interface MigrationEnv {
   SEED_OWNER_EMAIL?: string;
@@ -26,7 +27,8 @@ export const MIGRATION_002_NAME = '002-phase-2b';
 export const MIGRATION_003_NAME = '003-phase-3a';
 export const MIGRATION_004_NAME = '004-phase-4';
 export const MIGRATION_005_NAME = '005-phase-5a';
-export const LATEST_MIGRATION_NAME = MIGRATION_005_NAME;
+export const MIGRATION_006_NAME = '006-phase-6';
+export const LATEST_MIGRATION_NAME = MIGRATION_006_NAME;
 
 interface SchemaMigrationDocument {
   _id: string;
@@ -39,6 +41,7 @@ const migrations: Migration[] = [
   phase3aMigration,
   phase4Migration,
   phase5aMigration,
+  phase6Migration,
 ];
 
 export async function runMigrations(options: MigrationOptions): Promise<string[]> {

@@ -8,6 +8,7 @@ import { Router } from 'express';
 import { AppError } from '../../lib/errors.js';
 import { serializeActivity, serializeItem, serializeTask } from '../../lib/serialize.js';
 import { listItems, syncItems } from './item.service.js';
+import { voteItem, unvoteItem } from '../votes/voting.service.js';
 import { promoteBatch } from './promotion-batch.service.js';
 import { promoteItem } from './promotion.service.js';
 
@@ -85,6 +86,50 @@ export function createItemsRouter(): Router {
       data: {
         item: serializeItem(result.item),
         task: serializeTask(result.task),
+      },
+      meta: { requestId: request.requestId },
+    });
+  });
+
+  router.post('/:itemId/votes', async (request, response) => {
+    if (!request.board || !request.user) {
+      throw new AppError(401, 'UNAUTHENTICATED', 'Cần đăng nhập');
+    }
+    const params = request.params as { itemId?: string };
+    if (!params.itemId) {
+      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy item');
+    }
+    const result = await voteItem({
+      board: request.board,
+      itemId: params.itemId,
+      actor: request.user,
+    });
+    response.json({
+      data: {
+        item: serializeItem(result.item),
+        budget: { used: result.budget.used, limit: result.budget.limit },
+      },
+      meta: { requestId: request.requestId },
+    });
+  });
+
+  router.delete('/:itemId/votes', async (request, response) => {
+    if (!request.board || !request.user) {
+      throw new AppError(401, 'UNAUTHENTICATED', 'Cần đăng nhập');
+    }
+    const params = request.params as { itemId?: string };
+    if (!params.itemId) {
+      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy item');
+    }
+    const result = await unvoteItem({
+      board: request.board,
+      itemId: params.itemId,
+      actor: request.user,
+    });
+    response.json({
+      data: {
+        item: serializeItem(result.item),
+        budget: { used: result.budget.used, limit: result.budget.limit },
       },
       meta: { requestId: request.requestId },
     });

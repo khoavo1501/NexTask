@@ -30,22 +30,52 @@ const demoMembers = [
 ];
 
 const notes = [
-  { shapeId: 'seed:start-1', content: 'Start: chia sẻ context sớm', color: 'yellow', x: 0, y: 0 },
-  { shapeId: 'seed:start-2', content: 'Start: chốt scope trong ngày', color: 'blue', x: 0, y: 240 },
-  { shapeId: 'seed:start-3', content: 'Start: demo sớm', color: 'green', x: 0, y: 480 },
-  { shapeId: 'seed:stop-1', content: 'Stop: họp quá dài', color: 'red', x: 300, y: 0 },
-  { shapeId: 'seed:stop-2', content: 'Stop: task không có owner', color: 'yellow', x: 300, y: 240 },
   {
-    shapeId: 'seed:stop-3',
+    shapeId: 'shape:seed-start-1',
+    content: 'Start: chia sẻ context sớm',
+    color: 'yellow',
+    x: 0,
+    y: 0,
+  },
+  {
+    shapeId: 'shape:seed-start-2',
+    content: 'Start: chốt scope trong ngày',
+    color: 'blue',
+    x: 0,
+    y: 240,
+  },
+  { shapeId: 'shape:seed-start-3', content: 'Start: demo sớm', color: 'green', x: 0, y: 480 },
+  { shapeId: 'shape:seed-stop-1', content: 'Stop: họp quá dài', color: 'red', x: 300, y: 0 },
+  {
+    shapeId: 'shape:seed-stop-2',
+    content: 'Stop: task không có owner',
+    color: 'yellow',
+    x: 300,
+    y: 240,
+  },
+  {
+    shapeId: 'shape:seed-stop-3',
     content: 'Stop: blocker không được nêu',
     color: 'blue',
     x: 300,
     y: 480,
   },
-  { shapeId: 'seed:continue-1', content: 'Continue: pair review', color: 'green', x: 600, y: 0 },
-  { shapeId: 'seed:continue-2', content: 'Continue: viết note ngắn', color: 'red', x: 600, y: 240 },
   {
-    shapeId: 'seed:continue-3',
+    shapeId: 'shape:seed-continue-1',
+    content: 'Continue: pair review',
+    color: 'green',
+    x: 600,
+    y: 0,
+  },
+  {
+    shapeId: 'shape:seed-continue-2',
+    content: 'Continue: viết note ngắn',
+    color: 'red',
+    x: 600,
+    y: 240,
+  },
+  {
+    shapeId: 'shape:seed-continue-3',
     content: 'Continue: cập nhật Kanban',
     color: 'yellow',
     x: 600,
@@ -141,9 +171,9 @@ export async function seedDemoBoard(ownerEmail: string): Promise<SeedSummary> {
             parentFrameId: null,
             authorId: ownerId,
             votes:
-              note.shapeId === 'seed:stop-2'
+              note.shapeId === 'shape:seed-stop-2'
                 ? memberIds.map((userId) => ({ userId, createdAt: new Date() }))
-                : note.shapeId === 'seed:continue-2'
+                : note.shapeId === 'shape:seed-continue-2'
                   ? [{ userId: ownerId, createdAt: new Date() }]
                   : [],
             promotedTaskId: null,
@@ -155,7 +185,7 @@ export async function seedDemoBoard(ownerEmail: string): Promise<SeedSummary> {
 
         const taskPayloads = [
           {
-            shapeId: 'seed:start-1',
+            shapeId: 'shape:seed-start-1',
             columnId: 'backlog',
             order: 'a0',
             assigneeId: null,
@@ -163,7 +193,7 @@ export async function seedDemoBoard(ownerEmail: string): Promise<SeedSummary> {
             title: 'Demo: chia sẻ context sớm',
           },
           {
-            shapeId: 'seed:stop-1',
+            shapeId: 'shape:seed-stop-1',
             columnId: 'todo',
             order: 'a0',
             assigneeId: ownerId,
@@ -171,7 +201,7 @@ export async function seedDemoBoard(ownerEmail: string): Promise<SeedSummary> {
             title: 'Demo: họp quá dài',
           },
           {
-            shapeId: 'seed:continue-1',
+            shapeId: 'shape:seed-continue-1',
             columnId: 'in-progress',
             order: 'a0',
             assigneeId: null,
@@ -179,7 +209,7 @@ export async function seedDemoBoard(ownerEmail: string): Promise<SeedSummary> {
             title: 'Demo: pair review',
           },
           {
-            shapeId: 'seed:start-2',
+            shapeId: 'shape:seed-start-2',
             columnId: 'todo',
             order: 'a1',
             assigneeId: null,

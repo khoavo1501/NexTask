@@ -366,3 +366,12 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   30.09/35.36/30.05 s; Docker health `0.7.0`.
 - Tạo tag annotated `v0.7` theo yêu cầu sau docs release merge.
 - Không push.
+
+## 23. Phase 8A
+
+- Feature: `feat/phase-8a-settings-e2e`, tạo từ `release/v0.8` sau note fix `ac56bc8`.
+- Phạm vi: board settings transaction với `voter_budgets`, dialog Owner, Playwright smoke.
+- Feature gate: typecheck/lint/format pass; `build:web` pass; full suite 39 file, 166 test
+  ba lần 31.27/32.46/30.91 s; Playwright 1 test pass.
+- Chờ merge feature vào `release/v0.8` bằng `--no-ff`; không bump `0.8.0`; không merge
+  `main`; tag `v0.7` giữ nguyên; không push.

@@ -43,6 +43,13 @@ export const renameBoardRequestSchema = z.object({
   expectedVersion: z.number().int().positive(),
 });
 
+export const updateBoardSettingsRequestSchema = z.object({
+  votingLimit: z.number().int().min(0).max(100),
+  minVotes: z.number().int().min(0).max(100),
+  stalledAfterDays: z.number().int().min(1).max(365),
+  expectedVersion: z.number().int().positive(),
+});
+
 export const updateColumnsRequestSchema = z
   .object({
     columns: z
@@ -100,4 +107,5 @@ export type BoardMemberDto = z.infer<typeof boardMemberSchema>;
 export type BoardMemberDetailDto = z.infer<typeof boardMemberDetailSchema>;
 export type CreateBoardRequest = z.infer<typeof createBoardRequestSchema>;
 export type RenameBoardRequest = z.infer<typeof renameBoardRequestSchema>;
+export type UpdateBoardSettingsRequest = z.infer<typeof updateBoardSettingsRequestSchema>;
 export type UpdateColumnsRequest = z.infer<typeof updateColumnsRequestSchema>;

@@ -851,3 +851,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Xóa feature bằng `git branch -d`; profiler đã tắt.
 - `main` vẫn `2c79479`; tag `v0.2.0`–`v0.6.0` giữ nguyên.
 - `release/v0.7` chứa Phase 7; chưa bump `0.7.0`, chưa merge `main`.
+
+## 2026-11-17 - Phát hành v0.7.0
+
+- Bump version root/API/web/contracts và `package-lock.json` lên `0.7.0`.
+- Bump `SERVICE_VERSION` trong `.env.example` và `docker-compose.yml` lên `0.7.0`.
+- Merge `release/v0.7` vào `main` bằng `--no-ff` với message `release: v0.7 ops and seed`.
+- Sau merge: gate 3 lần, Docker health `0.7.0`; tạo tag annotated `v0.7` sau docs release merge.
+- Không push.

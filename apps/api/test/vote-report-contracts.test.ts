@@ -17,9 +17,11 @@ describe('phase 6 contracts', () => {
 
   it('report query coerce và optional defaults từ board', () => {
     expect(reportQuerySchema.parse({})).toEqual({ limit: 50 });
-    expect(
-      reportQuerySchema.parse({ minVotes: '2', stalledDays: '7', limit: '10' }),
-    ).toEqual({ minVotes: 2, stalledDays: 7, limit: 10 });
+    expect(reportQuerySchema.parse({ minVotes: '2', stalledDays: '7', limit: '10' })).toEqual({
+      minVotes: 2,
+      stalledDays: 7,
+      limit: 10,
+    });
     expect(() => reportQuerySchema.parse({ minVotes: '-1' })).toThrow();
     expect(() => reportQuerySchema.parse({ stalledDays: '0' })).toThrow();
   });

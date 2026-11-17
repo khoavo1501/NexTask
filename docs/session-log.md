@@ -812,3 +812,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Docker rebuild; health `0.6.0`, Mongo `rs0` primary.
 - Tạo tag annotated `v0.6.0` sau docs release merge; không push.
 - Tag `v0.2.0`–`v0.5.0` giữ nguyên.
+
+## 2026-11-17 - Phase 7 spec
+
+- Tạo `release/v0.7` từ `main` tại `2c79479` (v0.6.0) và feature
+  `feat/phase-7-ops-seed`.
+- Chốt seed board demo idempotent trong app DB; restore drill chỉ vào DB tạm rồi drop.
+- Phạm vi: profiler scripts, backup/restore drill, seed demo, README/test hoàn thiện.
+- Spec: `docs/phases/07-ops-seed.md`; chờ duyệt trước khi viết plan/code.

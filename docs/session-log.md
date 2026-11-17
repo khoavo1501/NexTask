@@ -763,3 +763,10 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   reports stalled ideas/tasks, UI vote và tab Báo cáo.
 - Vote không tăng `item.version`; không ghi activity từng vote; không thêm event realtime.
 - Spec: `docs/phases/06-voting-reports.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-17 - Phase 6 plan
+
+- Spec `docs/phases/06-voting-reports.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-17-phase-6-voting-reports.md`.
+- Phạm vi: vote/unvote quota, voter_budgets, results/stalled-ideas reports, UI vote/report.
+- Bắt đầu Inline Execution; không merge `main`.

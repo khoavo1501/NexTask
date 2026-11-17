@@ -339,7 +339,8 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Bump `package.json`, workspace packages, `package-lock.json` và `SERVICE_VERSION`
   lên `0.6.0` trên `release/v0.6`.
 - Release v0.6 gồm Phase 6; merge vào `main` bằng `--no-ff` với message
-  `release: v0.6 voting and reports`.
-- Sau merge main: typecheck/lint/format, full suite ba lần và Docker health `0.6.0`.
+  `release: v0.6 voting and reports`: `9b6e8ed`.
+- Sau merge main: typecheck/lint/format pass; full suite 37 file, 162 test ba lần
+  29.43/28.34/28.39 s; Docker health `0.6.0`.
 - Tạo tag annotated `v0.6.0` sau docs release merge.
 - Không push.

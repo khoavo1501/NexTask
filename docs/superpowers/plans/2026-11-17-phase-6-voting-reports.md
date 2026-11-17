@@ -12,8 +12,8 @@
 
 **Branch:** `feat/phase-6-voting-reports` từ `release/v0.6`; release tạo từ `main` tại `3bf6d66` (v0.5.0). Không merge `main`, không bump `0.6.0`, tag `v0.5.0` giữ nguyên.
 
-**Trạng thái thực thi:** Hoàn thành; đã merge vào `release/v0.6` bằng `--no-ff`
-(`9d0ddc5`); feature branch đã xóa. Commit chính:
+**Trạng thái thực thi:** Hoàn thành; đã merge vào `release/v0.6` (`9d0ddc5`) và phát hành
+`0.6.0` trên `main` tại `9b6e8ed`; feature branch đã xóa. Commit chính:
 
 - `b7e6013` `docs: specify phase 6 voting and reports`
 - `2a47258` `docs: plan phase 6 voting and reports`
@@ -28,9 +28,11 @@
 - `581817b` `docs: record phase 6 verification`
 - `6fe2aa4` `docs: record phase 6 verification`
 - `9d0ddc5` `merge: phase 6 voting and reports` vào `release/v0.6`
+- `e08fef2` `chore: prepare v0.6.0 release`
+- `9b6e8ed` `release: v0.6 voting and reports` vào `main`
 
 Release gate: typecheck/lint/format pass; full suite 37 file, 162 test ba lần
-29.51/29.44/29.77 s.
+29.51/29.44/29.77 s. Main gate: 29.43/28.34/28.39 s; Docker health `0.6.0`.
 
 **Điều chỉnh thực tế:** report dùng hai aggregation song song trên `items`/`tasks` thay vì
 `$facet` trên hai collection; Mongoose model phải khai báo `collection: 'voter_budgets'`.

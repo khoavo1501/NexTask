@@ -205,7 +205,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0`. Phase 5A/5B đã phát hành v0.5.0: bump `ccffef6`, merge `main` tại `ff9734d`, tag annotated `v0.5.0`. Phase 6 đã merge `release/v0.6` tại `9d0ddc5`; chưa merge `main`, chưa bump `0.6.0`. Tag `v0.2.0`–`v0.5.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0`. Phase 5A/5B đã phát hành v0.5.0: bump `ccffef6`, merge `main` tại `ff9734d`, tag annotated `v0.5.0`. Phase 6 đã phát hành v0.6.0: bump `e08fef2`, merge `main` tại `9b6e8ed`, tag annotated `v0.6.0` sau docs release merge. Tag `v0.2.0`–`v0.5.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 

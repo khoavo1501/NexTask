@@ -1,6 +1,6 @@
 {
   "name": "nextask",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "workspaces": [
@@ -16,6 +16,12 @@
     "build:web": "npm run build --workspace @nextask/web",
     "build": "npm run build:contracts && npm run build:api && npm run build:web",
     "db:migrate": "npm run db:migrate --workspace @nextask/api",
+    "db:seed": "npm run db:seed --workspace @nextask/api",
+    "db:profiler:on": "bash scripts/db-profiler.sh on",
+    "db:profiler:report": "bash scripts/db-profiler.sh report",
+    "db:profiler:off": "bash scripts/db-profiler.sh off",
+    "db:backup": "bash scripts/db-backup.sh",
+    "db:restore-drill": "bash scripts/db-restore-drill.sh",
     "dev": "npm run build:contracts && concurrently -n api,web -c blue,magenta \"npm:dev:api\" \"npm:dev:web\"",
     "dev:api": "npm run dev --workspace @nextask/api",
     "dev:web": "npm run dev --workspace @nextask/web",

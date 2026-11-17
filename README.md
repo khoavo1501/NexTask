@@ -2,7 +2,7 @@
 
 Whiteboard và Kanban cho team Agile, gộp brainstorm và thực thi trên cùng một board.
 
-Phiên bản hiện tại: `0.6.0`.
+Phiên bản hiện tại: `0.7.0`.
 
 ## Trạng thái hiện tại
 
@@ -19,6 +19,7 @@ Phiên bản hiện tại: `0.6.0`.
 - Phase 5B: batch promote từ multi-select note, undo promote trong 10 phút, fault injection.
 - Phase 6: dot voting có quota `voter_budgets`, kết quả vote, báo cáo stalled ideas/tasks,
   UI vote/quota và tab Báo cáo.
+- Phase 7: seed demo idempotent, profiler script, backup/restore drill, README/test hoàn thiện.
 - Chưa có cursor pagination, activity đầy đủ cho mọi thao tác.
 
 ## Yêu cầu
@@ -56,6 +57,15 @@ nextask-local-owner-2026
 ```
 
 Đây là giá trị dev-only trong `.env.example`, không dùng ngoài local. Seed owner giữ `_id` demo cũ nên board và dữ liệu Phase 1 vẫn mở được.
+
+Seed board demo (idempotent, reset riêng board `NexTask Demo Retro`):
+
+```bash
+npm run db:seed
+```
+
+Tài khoản member demo local: `demo.member1@nextask.local` và
+`demo.member2@nextask.local`, mật khẩu `demo-only-password-2026`. Không dùng ngoài local.
 
 Người dùng khác có thể đăng ký tài khoản mới. Owner tạo invitation link trong board; Member mở link để tham gia. Hệ thống chưa gửi email tự động.
 
@@ -142,6 +152,19 @@ transaction và không tăng `item.version`.
 - `GET /reports/stalled-ideas` trả ý tưởng nhiều vote chưa promote và task bị kẹt; UI ở tab
   `Báo cáo`.
 
+## Vận hành profiler và backup
+
+```bash
+npm run db:profiler:on       # level 1, slowms 100
+npm run db:profiler:report   # top slow query >= 100ms
+npm run db:profiler:off
+npm run db:backup -- phase7
+npm run db:restore-drill -- backups/<file>.gz
+```
+
+Restore drill chỉ vào `nextask_restore_drill`, so counts rồi drop; không ghi đè app DB.
+Profiler phải tắt sau khi đo; không dùng level 2 trên dữ liệu thật.
+
 ## Phát triển local
 
 Khởi động MongoDB replica set và migration:
@@ -172,6 +195,7 @@ docker compose exec -T mongo mongodump --archive --gzip --db=nextask > backups/n
 - Backup local đã dùng cho Phase 3A: `backups/nextask-before-3a-2026-11-10.gz`.
 - Backup local đã dùng cho Phase 4: `backups/nextask-before-4-2026-11-10.gz`.
 - Backup local đã dùng cho Phase 5A: `backups/nextask-before-5a-2026-11-10.gz`.
+- Backup Phase 7: `backups/nextask-phase7-20261117-180043.gz`.
 - Migration `002-phase-2b` áp `$jsonSchema` cho `users`, `boards`, `items`, `tasks`,
   `invitations`; không tự sửa dữ liệu cũ.
 - Migration `003-phase-3a` thêm index Kanban/order; migration `004-phase-4` tạo
@@ -188,7 +212,7 @@ npm run format:check
 npm run test
 ```
 
-Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`. Test realtime dùng Change Streams và Socket.IO client thật; suite hiện có 37 file, 162 test.
+Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`. Test realtime dùng Change Streams và Socket.IO client thật; suite hiện có 38 file, 164 test.
 
 ## Bảo mật local
 
@@ -205,7 +229,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0`. Phase 5A/5B đã phát hành v0.5.0: bump `ccffef6`, merge `main` tại `ff9734d`, tag annotated `v0.5.0`. Phase 6 đã phát hành v0.6.0: bump `e08fef2`, merge `main` tại `9b6e8ed`, tag annotated `v0.6.0` sau docs release merge. Tag `v0.2.0`–`v0.5.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0`. Phase 5A/5B đã phát hành v0.5.0: bump `ccffef6`, merge `main` tại `ff9734d`, tag annotated `v0.5.0`. Phase 6 đã phát hành v0.6.0. Phase 7 đã merge `release/v0.7` tại `1962ebf`; chưa merge `main`, chưa bump `0.7.0`. Tag `v0.2.0`–`v0.6.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 
@@ -221,6 +245,7 @@ Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0
 - [Phase 5A](docs/phases/05a-demote-activity.md)
 - [Phase 5B](docs/phases/05b-batch-undo.md)
 - [Phase 6](docs/phases/06-voting-reports.md)
+- [Phase 7](docs/phases/07-ops-seed.md)
 - [Ghi chú MongoDB](docs/mongodb-notes.md)
 - [Lịch sử phiên](docs/session-log.md)
 - [Quy trình Git](docs/git-workflow.md)

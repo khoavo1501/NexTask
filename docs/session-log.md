@@ -812,3 +812,50 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Docker rebuild; health `0.6.0`, Mongo `rs0` primary.
 - Tạo tag annotated `v0.6.0` sau docs release merge; không push.
 - Tag `v0.2.0`–`v0.5.0` giữ nguyên.
+
+## 2026-11-17 - Phase 7 spec
+
+- Tạo `release/v0.7` từ `main` tại `2c79479` (v0.6.0) và feature
+  `feat/phase-7-ops-seed`.
+- Chốt seed board demo idempotent trong app DB; restore drill chỉ vào DB tạm rồi drop.
+- Phạm vi: profiler scripts, backup/restore drill, seed demo, README/test hoàn thiện.
+- Spec: `docs/phases/07-ops-seed.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-17 - Phase 7 plan
+
+- Spec `docs/phases/07-ops-seed.md` đã duyệt.
+- Plan `docs/superpowers/plans/2026-11-17-phase-7-ops-seed.md`.
+- Phạm vi: seed demo idempotent, profiler, backup/restore drill, README/test.
+- Bắt đầu Inline Execution; không merge `main`.
+
+## 2026-11-17 - Phase 7 verification
+
+- Seed app DB: board demo 9 item, 5 task, 4 activity, 3 budget; chạy lại idempotent.
+- Browser demo: badge/task/report đúng; sửa shapeId seed thiếu prefix `shape:`.
+- Profiler on/report/off: slow probe 190ms COLLSCAN; đã tắt profiler.
+- Backup Phase 7 4.5KB; restore drill counts khớp và DB tạm đã drop.
+
+## 2026-11-17 - Phase 7 gate
+
+- Feature gate: typecheck/lint/format pass; full suite 38 file, 164 test ba lần
+  30.08/30.42/30.12 s.
+- Cập nhật spec/plan/architecture/README/MongoDB notes/git workflow.
+- Chờ merge feature vào `release/v0.7`; không bump `0.7.0`; không merge `main`.
+
+### Merge release/v0.7
+
+- Merge `feat/phase-7-ops-seed` vào `release/v0.7` bằng `--no-ff`:
+  `1962ebf` (`merge: phase 7 ops and seed`).
+- Release gate: typecheck/lint/format pass; full suite 38 file, 164 test ba lần
+  30.02/30.49/32.60 s.
+- Xóa feature bằng `git branch -d`; profiler đã tắt.
+- `main` vẫn `2c79479`; tag `v0.2.0`–`v0.6.0` giữ nguyên.
+- `release/v0.7` chứa Phase 7; chưa bump `0.7.0`, chưa merge `main`.
+
+## 2026-11-17 - Phát hành v0.7.0
+
+- Bump version root/API/web/contracts và `package-lock.json` lên `0.7.0`.
+- Bump `SERVICE_VERSION` trong `.env.example` và `docker-compose.yml` lên `0.7.0`.
+- Merge `release/v0.7` vào `main` bằng `--no-ff` với message `release: v0.7 ops and seed`.
+- Sau merge: gate 3 lần, Docker health `0.7.0`; tạo tag annotated `v0.7` sau docs release merge.
+- Không push.

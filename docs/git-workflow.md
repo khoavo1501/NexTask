@@ -344,3 +344,24 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   29.43/28.34/28.39 s; Docker health `0.6.0`.
 - Tạo tag annotated `v0.6.0` sau docs release merge.
 - Không push.
+
+## 21. Phase 7
+
+- Feature: `feat/phase-7-ops-seed`, tạo từ `release/v0.7`.
+- Phạm vi: seed demo idempotent, profiler on/report/off, backup/restore drill, README/test.
+- Feature gate: typecheck/lint/format pass; full suite 38 file, 164 test ba lần
+  30.08/30.42/30.12 s.
+- Merge feature vào `release/v0.7` bằng `--no-ff` (`1962ebf`); release gate pass:
+  typecheck/lint/format; full suite 38 file, 164 test ba lần 30.02/30.49/32.60 s.
+- Feature đã xóa; `release/v0.7` chứa Phase 7.
+- Không bump `0.7.0`; không merge `main`; tag `v0.6.0` giữ nguyên; không push.
+
+## 22. Phát hành v0.7.0
+
+- Bump `package.json`, workspace packages, `package-lock.json` và `SERVICE_VERSION`
+  lên `0.7.0` trên `release/v0.7`.
+- Release v0.7 gồm Phase 7; merge vào `main` bằng `--no-ff` với message
+  `release: v0.7 ops and seed`.
+- Sau merge main: typecheck/lint/format, full suite ba lần và Docker health `0.7.0`.
+- Tạo tag annotated `v0.7` theo yêu cầu sau docs release merge.
+- Không push.

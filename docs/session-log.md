@@ -954,3 +954,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Feature gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
   33.79/33.66/41.32 s; Playwright pass.
 - Chờ merge feature vào `release/v0.8`; không merge `main`, không bump `0.8.0`.
+
+### Merge release/v0.8 Phase 8C
+
+- Merge `feat/phase-8c-cursor-text-search` vào `release/v0.8` bằng `--no-ff`:
+  `4ad0f82` (`merge: phase 8c cursor and text search`).
+- Release gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
+  33.84/33.62/33.73 s; Playwright pass; Docker health `0.7.0`.
+- Xóa feature bằng `git branch -d`.
+- `main` và tag `v0.7` giữ nguyên; chưa bump `0.8.0`; không push.

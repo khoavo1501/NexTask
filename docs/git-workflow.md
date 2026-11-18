@@ -398,5 +398,8 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   UI Tải thêm và khóa drag khi còn trang.
 - Feature gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
   33.79/33.66/41.32 s; Playwright pass.
-- Chờ merge feature vào `release/v0.8` bằng `--no-ff`; không bump `0.8.0`, không merge
-  `main`; tag `v0.7` giữ nguyên; không push.
+- Merge feature vào `release/v0.8` bằng `--no-ff` (`4ad0f82`); release gate pass:
+  typecheck/lint/format/build:web; full suite 42 file, 186 test ba lần
+  33.84/33.62/33.73 s; Playwright pass; Docker health `0.7.0`.
+- Feature đã xóa; `release/v0.8` chứa Phase 8A, 8B, 8C và note fix.
+- Không bump `0.8.0`; không merge `main`; tag `v0.7` giữ nguyên; không push.

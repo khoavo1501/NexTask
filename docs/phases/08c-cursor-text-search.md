@@ -1,6 +1,6 @@
 # Giai đoạn 8C - Cursor pagination và text index cho task
 
-- Trạng thái: Hoàn thành, chờ merge `release/v0.8`
+- Trạng thái: Hoàn thành, đã merge `release/v0.8`
 - Ngày lập: 2026-11-18
 - Tiền đề: Phase 8A/8B đã merge `release/v0.8` tại `89cc76c`; `main` và tag `v0.7` giữ nguyên
 - Nhánh: `feat/phase-8c-cursor-text-search` từ `release/v0.8`
@@ -229,4 +229,6 @@ Cổng:
   sai 422 `INVALID_CURSOR`; explain dùng text index.
 - Feature gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
   33.79/33.66/41.32 s; Playwright pass.
+- Merge vào `release/v0.8` tại `4ad0f82`; release gate pass với full suite ba lần
+  33.84/33.62/33.73 s, Playwright pass và Docker health `0.7.0`.
 - Không merge `main`, không bump `0.8.0`, tag `v0.7` giữ nguyên.

@@ -9,6 +9,7 @@ test('owner login, demo board and report tab', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Board của bạn' })).toBeVisible();
   await page.getByRole('link', { name: /NexTask Demo Retro/ }).click();
   await expect(page.getByRole('heading', { name: 'NexTask Demo Retro' })).toBeVisible();
+  await expect(page.getByText(/3 frame/)).toBeVisible();
   await expect(page.getByRole('region', { name: 'Backlog' })).toBeVisible();
 
   await page.getByRole('button', { name: 'Cài đặt' }).click();

@@ -56,16 +56,34 @@ describe('seed demo', () => {
     const demoId = demoBoard!._id;
     const firstCounts = {
       items: await ItemModel.countDocuments({ boardId: demoId }),
+      frames: await ItemModel.countDocuments({ boardId: demoId, type: 'frame' }),
       tasks: await TaskModel.countDocuments({ boardId: demoId }),
       activities: await ActivityModel.countDocuments({ boardId: demoId }),
       budgets: await VoterBudgetModel.countDocuments({ boardId: demoId }),
     };
-    expect(firstCounts).toEqual({ items: 9, tasks: 5, activities: 4, budgets: 3 });
+    expect(firstCounts).toEqual({ items: 12, frames: 3, tasks: 5, activities: 4, budgets: 3 });
     expect(first.boardId).toBe(demoId.toHexString());
+
+    const startFrame = await ItemModel.findOne({
+      boardId: demoId,
+      shapeId: 'shape:seed-frame-start',
+    }).exec();
+    expect(startFrame?.type).toBe('frame');
+    const startNote = await ItemModel.findOne({
+      boardId: demoId,
+      shapeId: 'shape:seed-start-1',
+    }).exec();
+    expect(startNote?.parentFrameId?.toHexString()).toBe(startFrame?._id.toHexString());
+    const seededTask = await TaskModel.findOne({
+      boardId: demoId,
+      title: 'Demo: chia sẻ context sớm',
+    }).exec();
+    expect(seededTask?.origin?.frameId?.toHexString()).toBe(startFrame?._id.toHexString());
 
     const second = await seedDemoBoard(ownerEmail);
     const secondCounts = {
       items: await ItemModel.countDocuments({ boardId: demoId }),
+      frames: await ItemModel.countDocuments({ boardId: demoId, type: 'frame' }),
       tasks: await TaskModel.countDocuments({ boardId: demoId }),
       activities: await ActivityModel.countDocuments({ boardId: demoId }),
       budgets: await VoterBudgetModel.countDocuments({ boardId: demoId }),

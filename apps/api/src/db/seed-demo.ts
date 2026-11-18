@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { generateKeyBetween } from 'fractional-indexing';
 import { pathToFileURL } from 'node:url';
 import { loadEnv } from '../config/env.js';
 import { loadRootEnvFile } from '../config/load-env-file.js';
@@ -29,59 +30,96 @@ const demoMembers = [
   { email: 'demo.member2@nextask.local', name: 'Demo Member 2' },
 ];
 
+const frames = [
+  { shapeId: 'shape:seed-frame-start', name: 'Start', color: 'yellow', x: 0, y: 0 },
+  { shapeId: 'shape:seed-frame-stop', name: 'Stop', color: 'red', x: 300, y: 0 },
+  { shapeId: 'shape:seed-frame-continue', name: 'Continue', color: 'green', x: 600, y: 0 },
+];
+
 const notes = [
   {
     shapeId: 'shape:seed-start-1',
     content: 'Start: chia sẻ context sớm',
     color: 'yellow',
-    x: 0,
-    y: 0,
+    frame: 'shape:seed-frame-start',
+    x: 10,
+    y: 40,
   },
   {
     shapeId: 'shape:seed-start-2',
     content: 'Start: chốt scope trong ngày',
     color: 'blue',
-    x: 0,
-    y: 240,
+    frame: 'shape:seed-frame-start',
+    x: 10,
+    y: 260,
   },
-  { shapeId: 'shape:seed-start-3', content: 'Start: demo sớm', color: 'green', x: 0, y: 480 },
-  { shapeId: 'shape:seed-stop-1', content: 'Stop: họp quá dài', color: 'red', x: 300, y: 0 },
+  {
+    shapeId: 'shape:seed-start-3',
+    content: 'Start: demo sớm',
+    color: 'green',
+    frame: 'shape:seed-frame-start',
+    x: 10,
+    y: 480,
+  },
+  {
+    shapeId: 'shape:seed-stop-1',
+    content: 'Stop: họp quá dài',
+    color: 'red',
+    frame: 'shape:seed-frame-stop',
+    x: 10,
+    y: 40,
+  },
   {
     shapeId: 'shape:seed-stop-2',
     content: 'Stop: task không có owner',
     color: 'yellow',
-    x: 300,
-    y: 240,
+    frame: 'shape:seed-frame-stop',
+    x: 10,
+    y: 260,
   },
   {
     shapeId: 'shape:seed-stop-3',
     content: 'Stop: blocker không được nêu',
     color: 'blue',
-    x: 300,
+    frame: 'shape:seed-frame-stop',
+    x: 10,
     y: 480,
   },
   {
     shapeId: 'shape:seed-continue-1',
     content: 'Continue: pair review',
     color: 'green',
-    x: 600,
-    y: 0,
+    frame: 'shape:seed-frame-continue',
+    x: 10,
+    y: 40,
   },
   {
     shapeId: 'shape:seed-continue-2',
     content: 'Continue: viết note ngắn',
     color: 'red',
-    x: 600,
-    y: 240,
+    frame: 'shape:seed-frame-continue',
+    x: 10,
+    y: 260,
   },
   {
     shapeId: 'shape:seed-continue-3',
     content: 'Continue: cập nhật Kanban',
     color: 'yellow',
-    x: 600,
+    frame: 'shape:seed-frame-continue',
+    x: 10,
     y: 480,
   },
 ];
+
+function sequentialIndexes(count: number): string[] {
+  const indexes: string[] = [];
+  let previous: string | null = null;
+  for (let index = 0; index < count; index += 1) {
+    previous = generateKeyBetween(previous, null);
+    indexes.push(previous);
+  }
+  return indexes;
+}
 
 async function ensureUser(email: string, name: string): Promise<UserDocument> {
   const normalized = normalizeEmail(email);
@@ -156,29 +194,58 @@ export async function seedDemoBoard(ownerEmail: string): Promise<SeedSummary> {
         await TaskModel.deleteMany({ boardId: board._id }, { session });
         await ItemModel.deleteMany({ boardId: board._id }, { session });
 
-        const createdItems = await ItemModel.create(
-          notes.map((note, index) => ({
+        const frameIndexes = sequentialIndexes(frames.length);
+        const noteIndexes = sequentialIndexes(notes.length);
+
+        const createdFrames = await ItemModel.create(
+          frames.map((frame, index) => ({
             boardId: board._id,
-            shapeId: note.shapeId,
-            type: 'note' as const,
-            content: note.content,
-            style: { color: note.color },
-            props: { color: note.color },
-            position: { x: note.x, y: note.y },
-            size: { w: 200, h: 200 },
+            shapeId: frame.shapeId,
+            type: 'frame' as const,
+            content: '',
+            style: { color: frame.color },
+            props: { w: 220, h: 700, name: frame.name, color: frame.color },
+            position: { x: frame.x, y: frame.y },
+            size: { w: 220, h: 700 },
             rotation: 0,
-            tldrawIndex: `a${index + 1}`,
+            tldrawIndex: frameIndexes[index]!,
             parentFrameId: null,
             authorId: ownerId,
-            votes:
-              note.shapeId === 'shape:seed-stop-2'
-                ? memberIds.map((userId) => ({ userId, createdAt: new Date() }))
-                : note.shapeId === 'shape:seed-continue-2'
-                  ? [{ userId: ownerId, createdAt: new Date() }]
-                  : [],
+            votes: [],
             promotedTaskId: null,
             version: 1,
           })),
+          { session, ordered: true },
+        );
+        const frameByShape = new Map(createdFrames.map((frame) => [frame.shapeId, frame]));
+
+        const createdItems = await ItemModel.create(
+          notes.map((note, index) => {
+            const parentFrame = frameByShape.get(note.frame);
+            if (!parentFrame) throw new Error(`Thiếu frame ${note.frame}`);
+            return {
+              boardId: board._id,
+              shapeId: note.shapeId,
+              type: 'note' as const,
+              content: note.content,
+              style: { color: note.color },
+              props: { color: note.color },
+              position: { x: note.x, y: note.y },
+              size: { w: 200, h: 200 },
+              rotation: 0,
+              tldrawIndex: noteIndexes[index]!,
+              parentFrameId: parentFrame._id,
+              authorId: ownerId,
+              votes:
+                note.shapeId === 'shape:seed-stop-2'
+                  ? memberIds.map((userId) => ({ userId, createdAt: new Date() }))
+                  : note.shapeId === 'shape:seed-continue-2'
+                    ? [{ userId: ownerId, createdAt: new Date() }]
+                    : [],
+              promotedTaskId: null,
+              version: 1,
+            };
+          }),
           { session, ordered: true },
         );
         const byShape = new Map(createdItems.map((item) => [item.shapeId, item]));
@@ -236,7 +303,7 @@ export async function seedDemoBoard(ownerEmail: string): Promise<SeedSummary> {
                 sourceItemId: item._id,
                 origin: {
                   itemId: item._id,
-                  frameId: null,
+                  frameId: item.parentFrameId,
                   position: { x: item.position.x, y: item.position.y },
                   voteCount: item.votes.length,
                   authorId: item.authorId,

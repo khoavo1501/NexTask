@@ -40,4 +40,13 @@ describe('indexes', () => {
       ).toBe(true);
     }
   });
+
+  it('có text index title/description cho tìm kiếm', async () => {
+    const indexes = await TaskModel.collection.indexes();
+    const text = indexes.find((entry) => entry.name === 'tasks_board_text');
+    expect(text).toMatchObject({
+      key: { boardId: 1, lifecycle: 1, _fts: 'text', _ftsx: 1 },
+      default_language: 'none',
+    });
+  });
 });

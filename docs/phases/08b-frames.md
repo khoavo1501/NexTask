@@ -1,6 +1,6 @@
 # Giai đoạn 8B - Frame nhóm note trên whiteboard
 
-- Trạng thái: Hoàn thành, chờ merge `release/v0.8`
+- Trạng thái: Hoàn thành, đã merge `release/v0.8`
 - Ngày lập: 2026-11-18
 - Tiền đề: Phase 8A đã merge `release/v0.8` tại `ead25f1`; `main` và tag `v0.7` giữ nguyên
 - Nhánh: `feat/phase-8b-frames` từ `release/v0.8`
@@ -248,4 +248,6 @@ Cổng:
   bằng `generateKeyBetween`. Frame mới có tên rỗng từ tldraw; web lưu fallback `Frame`.
 - Feature gate: typecheck/lint/format/build:web pass; full suite 41 file, 179 test ba lần
   31.41/31.19/31.12 s; Playwright pass.
+- Merge vào `release/v0.8` tại `9182212`; release gate pass với full suite ba lần
+  31.08/30.57/31.65 s, Playwright pass và Docker health `0.7.0`.
 - Không merge `main`, không bump `0.8.0`, tag `v0.7` giữ nguyên.

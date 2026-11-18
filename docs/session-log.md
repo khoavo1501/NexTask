@@ -917,3 +917,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Feature gate: typecheck/lint/format/build:web pass; full suite 41 file, 179 test ba lần
   31.41/31.19/31.12 s; Playwright pass.
 - Chờ merge feature vào `release/v0.8`; không merge `main`, không bump `0.8.0`.
+
+### Merge release/v0.8 Phase 8B
+
+- Merge `feat/phase-8b-frames` vào `release/v0.8` bằng `--no-ff`:
+  `9182212` (`merge: phase 8b frames`).
+- Release gate: typecheck/lint/format/build:web pass; full suite 41 file, 179 test ba lần
+  31.08/30.57/31.65 s; Playwright pass; Docker health `0.7.0`.
+- Xóa feature bằng `git branch -d`.
+- `main` và tag `v0.7` giữ nguyên; chưa bump `0.8.0`; không push.

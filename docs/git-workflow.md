@@ -385,5 +385,8 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Phạm vi: frame item, sync `parentShapeId`, reparent khi xóa frame, seed 3 frame, E2E header.
 - Feature gate: typecheck/lint/format/build:web pass; full suite 41 file, 179 test ba lần
   31.41/31.19/31.12 s; Playwright pass.
-- Chờ merge feature vào `release/v0.8` bằng `--no-ff`; không bump `0.8.0`, không merge
-  `main`; tag `v0.7` giữ nguyên; không push.
+- Merge feature vào `release/v0.8` bằng `--no-ff` (`9182212`); release gate pass:
+  typecheck/lint/format/build:web; full suite 41 file, 179 test ba lần
+  31.08/30.57/31.65 s; Playwright pass; Docker health `0.7.0`.
+- Feature đã xóa; `release/v0.8` chứa Phase 8A, 8B và note fix.
+- Không bump `0.8.0`; không merge `main`; tag `v0.7` giữ nguyên; không push.

@@ -2,7 +2,7 @@
 
 Whiteboard và Kanban cho team Agile, gộp brainstorm và thực thi trên cùng một board.
 
-Phiên bản hiện tại: `0.7.0`.
+Phiên bản hiện tại: `0.8.0`.
 
 ## Trạng thái hiện tại
 
@@ -238,7 +238,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0`. Phase 5A/5B đã phát hành v0.5.0: bump `ccffef6`, merge `main` tại `ff9734d`, tag annotated `v0.5.0`. Phase 6 đã phát hành v0.6.0. Phase 7 đã phát hành v0.7.0: bump `d2f8fba`, merge `main` tại `f1fd124`, tag annotated `v0.7`. Phase 8A, 8B và 8C đã merge vào `release/v0.8`; chưa merge `main`, chưa bump `0.8.0`. Tag `v0.2.0`–`v0.6.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0`. Phase 5A/5B đã phát hành v0.5.0: bump `ccffef6`, merge `main` tại `ff9734d`, tag annotated `v0.5.0`. Phase 6 đã phát hành v0.6.0. Phase 7 đã phát hành v0.7.0: bump `d2f8fba`, merge `main` tại `f1fd124`, tag annotated `v0.7`. Phase 8A, 8B và 8C đã phát hành v0.8.0: bump `25ea7c5`, merge `main` tại `f78c85f`, tag annotated `v0.8`. Tag `v0.2.0`–`v0.7` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 

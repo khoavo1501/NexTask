@@ -1,6 +1,6 @@
 # Giai đoạn 8C - Cursor pagination và text index cho task
 
-- Trạng thái: Hoàn thành, đã merge `release/v0.8`
+- Trạng thái: Hoàn thành, đã phát hành v0.8.0
 - Ngày lập: 2026-11-18
 - Tiền đề: Phase 8A/8B đã merge `release/v0.8` tại `89cc76c`; `main` và tag `v0.7` giữ nguyên
 - Nhánh: `feat/phase-8c-cursor-text-search` từ `release/v0.8`

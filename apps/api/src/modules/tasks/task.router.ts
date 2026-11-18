@@ -37,12 +37,17 @@ export function createTasksRouter(): Router {
       labels,
       q: query.q,
       limit: query.limit,
+      cursor: query.cursor,
     });
     const data: TaskDto[] = result.tasks.map(serializeTask);
 
     response.json({
       data,
-      meta: { requestId: request.requestId, hasMore: result.hasMore },
+      meta: {
+        requestId: request.requestId,
+        hasMore: result.hasMore,
+        nextCursor: result.nextCursor,
+      },
     });
   });
 

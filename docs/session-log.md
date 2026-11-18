@@ -899,3 +899,9 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   `parentShapeId`; xóa frame reparent note còn lại về page level.
 - Migration 007 chỉ cập nhật validator `items`; seed demo thêm 3 frame.
 - Spec: `docs/phases/08b-frames.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-18 - Phase 8B plan
+
+- Plan `docs/superpowers/plans/2026-11-18-phase-8b-frames.md`: 8 task TDD cho contracts,
+  migration 007, sync/reparent, guard promote, web, seed, rehearsal/browser, gates/merge.
+- Chờ duyệt thực thi; chưa code, chưa merge `main`.

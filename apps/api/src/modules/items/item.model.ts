@@ -40,7 +40,7 @@ const itemSchema = new Schema<Item>(
     boardId: { type: Schema.Types.ObjectId, required: true },
     shapeId: { type: String, required: true },
     type: { type: String, enum: ['note', 'frame'], required: true },
-    content: { type: String, required: true, default: '' },
+    content: { type: String, default: '' },
     style: { type: Schema.Types.Mixed, required: true, default: {} },
     props: { type: Schema.Types.Mixed, required: true, default: {} },
     position: {

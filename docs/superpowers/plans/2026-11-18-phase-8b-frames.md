@@ -191,6 +191,9 @@ và đổi schema enum thành:
     type: { type: String, enum: ['note', 'frame'], required: true },
 ```
 
+Đổi `content` của model thành `{ type: String, default: '' }` để frame có content rỗng
+mà không bị Mongoose `required` từ chối; DB validator vẫn yêu cầu field `content`.
+
 Để giữ typecheck xanh trước khi Task 3/5 hoàn tất, trong `apps/web/features/whiteboard/whiteboard-canvas.tsx`
 đổi `parentFrameId: null` thành `parentShapeId: null`, và trong `item.service.ts` dùng
 `input.items.flatMap` bỏ qua item không phải note. Task 3 và Task 5 thay thế hai đoạn tạm này.

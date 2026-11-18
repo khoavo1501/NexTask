@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { generateKeyBetween } from 'fractional-indexing';
 import { pathToFileURL } from 'node:url';
 import { loadEnv } from '../config/env.js';
 import { loadRootEnvFile } from '../config/load-env-file.js';
@@ -110,6 +111,16 @@ const notes = [
   },
 ];
 
+function sequentialIndexes(count: number): string[] {
+  const indexes: string[] = [];
+  let previous: string | null = null;
+  for (let index = 0; index < count; index += 1) {
+    previous = generateKeyBetween(previous, null);
+    indexes.push(previous);
+  }
+  return indexes;
+}
+
 async function ensureUser(email: string, name: string): Promise<UserDocument> {
   const normalized = normalizeEmail(email);
   const existing = await UserModel.findOne({ emailNormalized: normalized }).exec();
@@ -183,6 +194,9 @@ export async function seedDemoBoard(ownerEmail: string): Promise<SeedSummary> {
         await TaskModel.deleteMany({ boardId: board._id }, { session });
         await ItemModel.deleteMany({ boardId: board._id }, { session });
 
+        const frameIndexes = sequentialIndexes(frames.length);
+        const noteIndexes = sequentialIndexes(notes.length);
+
         const createdFrames = await ItemModel.create(
           frames.map((frame, index) => ({
             boardId: board._id,
@@ -194,7 +208,7 @@ export async function seedDemoBoard(ownerEmail: string): Promise<SeedSummary> {
             position: { x: frame.x, y: frame.y },
             size: { w: 220, h: 700 },
             rotation: 0,
-            tldrawIndex: `a${index + 1}`,
+            tldrawIndex: frameIndexes[index]!,
             parentFrameId: null,
             authorId: ownerId,
             votes: [],
@@ -219,7 +233,7 @@ export async function seedDemoBoard(ownerEmail: string): Promise<SeedSummary> {
               position: { x: note.x, y: note.y },
               size: { w: 200, h: 200 },
               rotation: 0,
-              tldrawIndex: `a${frames.length + index + 1}`,
+              tldrawIndex: noteIndexes[index]!,
               parentFrameId: parentFrame._id,
               authorId: ownerId,
               votes:

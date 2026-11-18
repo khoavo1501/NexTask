@@ -1104,7 +1104,7 @@ Thay đoạn lấy `shapes` và map payload hiện tại bằng:
               props: {
                 w: props.w,
                 h: props.h,
-                name: props.name,
+                name: props.name.trim() || 'Frame',
                 color: props.color,
               },
               position: { x: shape.x, y: shape.y },
@@ -1318,6 +1318,22 @@ const frames = [
   { shapeId: 'shape:seed-frame-stop', name: 'Stop', color: 'red', x: 300, y: 0 },
   { shapeId: 'shape:seed-frame-continue', name: 'Continue', color: 'green', x: 600, y: 0 },
 ];
+
+function sequentialIndexes(count: number): string[] {
+  const indexes: string[] = [];
+  let previous: string | null = null;
+  for (let index = 0; index < count; index += 1) {
+    previous = generateKeyBetween(previous, null);
+    indexes.push(previous);
+  }
+  return indexes;
+}
+```
+
+Thêm import ở đầu file:
+
+```ts
+import { generateKeyBetween } from 'fractional-indexing';
 ```
 
 Thay toàn bộ mảng `notes` bằng:
@@ -1404,6 +1420,9 @@ const notes = [
 Trong transaction, sau `await ItemModel.deleteMany({ boardId: board._id }, { session });`, thêm:
 
 ```ts
+        const frameIndexes = sequentialIndexes(frames.length);
+        const noteIndexes = sequentialIndexes(notes.length);
+
         const createdFrames = await ItemModel.create(
           frames.map((frame, index) => ({
             boardId: board._id,
@@ -1415,7 +1434,7 @@ Trong transaction, sau `await ItemModel.deleteMany({ boardId: board._id }, { ses
             position: { x: frame.x, y: frame.y },
             size: { w: 220, h: 700 },
             rotation: 0,
-            tldrawIndex: `a${index + 1}`,
+            tldrawIndex: frameIndexes[index]!,
             parentFrameId: null,
             authorId: ownerId,
             votes: [],
@@ -1444,7 +1463,7 @@ Trong transaction, sau `await ItemModel.deleteMany({ boardId: board._id }, { ses
               position: { x: note.x, y: note.y },
               size: { w: 200, h: 200 },
               rotation: 0,
-              tldrawIndex: `a${frames.length + index + 1}`,
+              tldrawIndex: noteIndexes[index]!,
               parentFrameId: parentFrame._id,
               authorId: ownerId,
               votes:

@@ -177,7 +177,7 @@ export function WhiteboardCanvas({
               props: {
                 w: props.w,
                 h: props.h,
-                name: props.name,
+                name: props.name.trim() || 'Frame',
                 color: props.color,
               },
               position: { x: shape.x, y: shape.y },

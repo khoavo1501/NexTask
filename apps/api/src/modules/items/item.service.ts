@@ -84,9 +84,7 @@ async function runSyncTransaction(
         const frameInputs = input.items.filter(
           (item): item is FrameSyncItem => item.type === 'frame',
         );
-        const noteInputs = input.items.filter(
-          (item): item is NoteSyncItem => item.type === 'note',
-        );
+        const noteInputs = input.items.filter((item): item is NoteSyncItem => item.type === 'note');
 
         for (const item of frameInputs) {
           if (item.size.w !== item.props.w || item.size.h !== item.props.h) {
@@ -158,8 +156,7 @@ async function runSyncTransaction(
             noteInputs
               .map((item) => item.parentShapeId)
               .filter(
-                (shapeId): shapeId is string =>
-                  shapeId !== null && !frameByShapeId.has(shapeId),
+                (shapeId): shapeId is string => shapeId !== null && !frameByShapeId.has(shapeId),
               ),
           ),
         ];

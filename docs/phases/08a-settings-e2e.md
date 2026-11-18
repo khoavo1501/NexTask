@@ -1,6 +1,6 @@
 # Giai đoạn 8A - Board settings và Playwright smoke
 
-- Trạng thái: Hoàn thành, đã merge `release/v0.8`
+- Trạng thái: Hoàn thành, đã phát hành v0.8.0
 - Ngày lập: 2026-11-17
 - Tiền đề: v0.7.0 đã phát hành; `main` tại `ed61e8c`, tag `v0.7`
 - Nhánh: `release/v0.8`; feature `feat/phase-8a-settings-e2e`

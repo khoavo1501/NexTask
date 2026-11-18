@@ -403,3 +403,14 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   33.84/33.62/33.73 s; Playwright pass; Docker health `0.7.0`.
 - Feature đã xóa; `release/v0.8` chứa Phase 8A, 8B, 8C và note fix.
 - Không bump `0.8.0`; không merge `main`; tag `v0.7` giữ nguyên; không push.
+
+## 26. Phát hành v0.8.0
+
+- Bump `package.json`, workspace packages, `package-lock.json`, `.env.example` và
+  `SERVICE_VERSION` lên `0.8.0` trên `release/v0.8`: `25ea7c5`.
+- Release v0.8 gồm Phase 8A, 8B, 8C và note fix; merge vào `main` bằng `--no-ff`:
+  `f78c85f` (`release: v0.8 settings frames and search`).
+- Main gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
+  33.67/33.91/41.32 s; Playwright pass; Docker health `0.8.0`.
+- Docs release merge và tag annotated `v0.8` sau main merge.
+- Không push; tag `v0.2.0`–`v0.7` giữ nguyên.

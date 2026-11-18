@@ -963,3 +963,14 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   33.84/33.62/33.73 s; Playwright pass; Docker health `0.7.0`.
 - Xóa feature bằng `git branch -d`.
 - `main` và tag `v0.7` giữ nguyên; chưa bump `0.8.0`; không push.
+
+## 2026-11-18 - Phát hành v0.8.0
+
+- Bump root/API/web/contracts, `package-lock.json`, `.env.example` và `SERVICE_VERSION`
+  lên `0.8.0`: `25ea7c5`.
+- Release v0.8 gồm Phase 8A, 8B, 8C và note fix; merge vào `main` bằng `--no-ff`:
+  `f78c85f` (`release: v0.8 settings frames and search`).
+- Main gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
+  33.67/33.91/41.32 s; Playwright pass; Docker health `0.8.0`.
+- Docs release merge sau đó; tag annotated `v0.8` tại commit docs release.
+- Không push; tag `v0.2.0`–`v0.7` giữ nguyên.

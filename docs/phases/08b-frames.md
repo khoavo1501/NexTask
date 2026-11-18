@@ -1,6 +1,6 @@
 # Giai đoạn 8B - Frame nhóm note trên whiteboard
 
-- Trạng thái: Hoàn thành, đã merge `release/v0.8`
+- Trạng thái: Hoàn thành, đã phát hành v0.8.0
 - Ngày lập: 2026-11-18
 - Tiền đề: Phase 8A đã merge `release/v0.8` tại `ead25f1`; `main` và tag `v0.7` giữ nguyên
 - Nhánh: `feat/phase-8b-frames` từ `release/v0.8`

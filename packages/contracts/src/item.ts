@@ -9,7 +9,7 @@ export const itemSchema = z.object({
   _id: objectIdSchema,
   boardId: objectIdSchema,
   shapeId: z.string().min(1),
-  type: z.literal('note'),
+  type: z.enum(['note', 'frame']),
   content: z.string(),
   style: unknownRecordSchema,
   props: unknownRecordSchema,
@@ -31,19 +31,41 @@ export const itemSchema = z.object({
   updatedAt: isoDateSchema,
 });
 
-export const syncItemInputSchema = z.object({
+const syncItemBaseSchema = z.object({
   shapeId: z.string().min(1).max(200),
+  position: pointSchema,
+  tldrawIndex: z.string().min(1).max(100),
+  parentShapeId: z.string().min(1).max(200).nullable().default(null),
+  expectedVersion: z.number().int().nonnegative(),
+});
+
+const syncNoteItemInputSchema = syncItemBaseSchema.extend({
   type: z.literal('note'),
   content: z.string().max(10_000),
   style: unknownRecordSchema,
   props: unknownRecordSchema,
-  position: pointSchema,
   size: sizeSchema,
   rotation: z.number(),
-  tldrawIndex: z.string().min(1).max(100),
-  parentFrameId: z.null(),
-  expectedVersion: z.number().int().nonnegative(),
 });
+
+const syncFrameItemInputSchema = syncItemBaseSchema.extend({
+  type: z.literal('frame'),
+  style: unknownRecordSchema,
+  props: z.object({
+    w: z.number().positive(),
+    h: z.number().positive(),
+    name: z.string().min(1).max(200),
+    color: z.string().min(1),
+  }),
+  size: sizeSchema,
+  rotation: z.literal(0),
+  parentShapeId: z.null().default(null),
+});
+
+export const syncItemInputSchema = z.discriminatedUnion('type', [
+  syncNoteItemInputSchema,
+  syncFrameItemInputSchema,
+]);
 
 export const syncDeletedItemInputSchema = z.object({
   shapeId: z.string().min(1).max(200),

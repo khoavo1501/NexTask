@@ -75,7 +75,8 @@ async function runSyncTransaction(
         }
 
         const now = new Date();
-        const updateOps = input.items.map((item) => {
+        const updateOps = input.items.flatMap((item) => {
+          if (item.type !== 'note') return [];
           const current = byShapeId.get(item.shapeId);
           const fields = {
             type: 'note' as const,

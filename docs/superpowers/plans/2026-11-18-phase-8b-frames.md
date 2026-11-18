@@ -185,6 +185,16 @@ Trong `apps/api/src/modules/items/item.model.ts`:
   type: 'note' | 'frame';
 ```
 
+và đổi schema enum thành:
+
+```ts
+    type: { type: String, enum: ['note', 'frame'], required: true },
+```
+
+Để giữ typecheck xanh trước khi Task 3/5 hoàn tất, trong `apps/web/features/whiteboard/whiteboard-canvas.tsx`
+đổi `parentFrameId: null` thành `parentShapeId: null`, và trong `item.service.ts` dùng
+`input.items.flatMap` bỏ qua item không phải note. Task 3 và Task 5 thay thế hai đoạn tạm này.
+
 - [ ] **Step 5: Chạy test và typecheck**
 
 Run: `npm run build:contracts && npm run test --workspace @nextask/api -- test/frame-contracts.test.ts`

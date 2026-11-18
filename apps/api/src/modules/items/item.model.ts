@@ -8,7 +8,7 @@ export interface ItemVote {
 export interface Item {
   boardId: mongoose.Types.ObjectId;
   shapeId: string;
-  type: 'note';
+  type: 'note' | 'frame';
   content: string;
   style: Record<string, unknown>;
   props: Record<string, unknown>;
@@ -39,7 +39,7 @@ const itemSchema = new Schema<Item>(
   {
     boardId: { type: Schema.Types.ObjectId, required: true },
     shapeId: { type: String, required: true },
-    type: { type: String, enum: ['note'], required: true },
+    type: { type: String, enum: ['note', 'frame'], required: true },
     content: { type: String, required: true, default: '' },
     style: { type: Schema.Types.Mixed, required: true, default: {} },
     props: { type: Schema.Types.Mixed, required: true, default: {} },

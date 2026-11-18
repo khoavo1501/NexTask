@@ -178,7 +178,7 @@ export function WhiteboardCanvas({
             size: { w: bounds?.w ?? 200, h: bounds?.h ?? 200 },
             rotation: shape.rotation,
             tldrawIndex: String(shape.index),
-            parentFrameId: null,
+            parentShapeId: null,
             expectedVersion: known.get(shape.id)?.version ?? 0,
           };
         });

@@ -50,6 +50,9 @@ export async function promoteItem(input: PromoteInput): Promise<PromoteResult> {
         if (!item) {
           throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy item');
         }
+        if (item.type !== 'note') {
+          throw new AppError(422, 'NOT_A_NOTE', 'Item không phải note');
+        }
         if (item.version !== input.request.expectedItemVersion) {
           throw versionConflict(item.version);
         }

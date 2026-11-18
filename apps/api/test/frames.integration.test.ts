@@ -217,4 +217,48 @@ describe('frame sync', () => {
     });
     expect(await TaskModel.countDocuments({ boardId })).toBe(1);
   });
+
+  it('promote frame trả 422 NOT_A_NOTE', async () => {
+    const { owner, boardId } = await setupBoard();
+    const created = await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({ items: [frame()] })
+      .expect(200);
+    const frameItem = created.body.data[0];
+
+    const response = await owner.agent
+      .post(`/api/v1/boards/${boardId}/items/${frameItem._id}/promote`)
+      .send({ columnId: 'todo', assignToMe: false, expectedItemVersion: frameItem.version })
+      .expect(422);
+
+    expect(response.body.error.code).toBe('NOT_A_NOTE');
+    expect(await TaskModel.countDocuments({ boardId })).toBe(0);
+  });
+
+  it('vote frame trả 404', async () => {
+    const { owner, boardId } = await setupBoard();
+    const created = await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({ items: [frame()] })
+      .expect(200);
+
+    await owner.agent
+      .post(`/api/v1/boards/${boardId}/items/${created.body.data[0]._id}/votes`)
+      .expect(404);
+  });
+
+  it('report bỏ qua frame', async () => {
+    const { owner, boardId } = await setupBoard();
+    await owner.agent
+      .put(`/api/v1/boards/${boardId}/items`)
+      .send({ items: [frame(), note('shape:note1', 'shape:frame1')] })
+      .expect(200);
+
+    const report = await owner.agent
+      .get(`/api/v1/boards/${boardId}/reports/stalled-ideas?minVotes=0&stalledDays=1&limit=50`)
+      .expect(200);
+
+    expect(report.body.data.unpromotedIdeas).toHaveLength(1);
+    expect(report.body.data.unpromotedIdeas[0].content).toBe('Ý tưởng');
+  });
 });

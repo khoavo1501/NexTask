@@ -890,3 +890,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   ba lần 30.35/30.69/31.91 s; Playwright pass.
 - Xóa feature bằng `git branch -d`.
 - `main` và tag `v0.7` giữ nguyên; chưa bump `0.8.0`; không push.
+
+## 2026-11-18 - Phase 8B spec
+
+- Tách phạm vi còn lại: 8B làm frame nhóm note; 8C để cursor pagination/text index.
+- Feature `feat/phase-8b-frames` từ `release/v0.8`; không merge `main`, không bump `0.8.0`.
+- Chốt frame là item `type: "frame"`, note giữ `parentFrameId`; sync resolve
+  `parentShapeId`; xóa frame reparent note còn lại về page level.
+- Migration 007 chỉ cập nhật validator `items`; seed demo thêm 3 frame.
+- Spec: `docs/phases/08b-frames.md`; chờ duyệt trước khi viết plan/code.

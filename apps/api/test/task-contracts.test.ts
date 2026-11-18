@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest';
 import {
   createTaskRequestSchema,
   moveTaskRequestSchema,
+  taskCursorSchema,
   taskListQuerySchema,
   taskPrioritySchema,
+  tasksListResponseSchema,
   updateTaskRequestSchema,
 } from '@nextask/contracts';
 
@@ -57,5 +59,25 @@ describe('task contracts', () => {
       expectedVersion: 2,
       title: 'Mới',
     });
+  });
+
+  it('cursor và nextCursor contract', () => {
+    expect(
+      taskCursorSchema.parse({
+        columnId: 'todo',
+        order: 'a0',
+        id: '000000000000000000000001',
+      }),
+    ).toEqual({
+      columnId: 'todo',
+      order: 'a0',
+      id: '000000000000000000000001',
+    });
+    expect(taskListQuerySchema.parse({ cursor: 'opaque' }).cursor).toBe('opaque');
+    const body = tasksListResponseSchema.parse({
+      data: [],
+      meta: { requestId: 'req', hasMore: false, nextCursor: null },
+    });
+    expect(body.meta.nextCursor).toBeNull();
   });
 });

@@ -720,3 +720,18 @@ drop sau khi đo. Query sort `{ columnId: 1, order: 1, _id: 1 }`.
   đối, note position tương đối theo frame.
 - Lỗi thực tế: seed index `a10` không hợp lệ với tldraw; đã chuyển sang
   `generateKeyBetween`; frame tên rỗng từ tldraw được lưu fallback `Frame`.
+
+## 19. Quan sát Giai đoạn 8C
+
+- Backup trước migration 008: `backups/nextask-before-8c-20261118-110624.gz`, 6.1 KB.
+- Rehearsal `nextask_8c_rehearsal`: restore 7 task; migration 001-008; text index
+  `tasks_board_text` key `{ boardId, lifecycle, _fts, _ftsx }`, weights title/description 1,
+  `default_language: "none"`; database đã drop.
+- App DB: `008-phase-8c` áp thành công; 7 task giữ nguyên.
+- Explain 1000 task:
+  - `q=context`: SORT -> TEXT_MATCH `tasks_board_text`, keys 500, docs 500, 2 ms.
+  - cursor: SORT -> OR/IXSCAN `tasks_kanban_order`, keys 499, docs 499, 3 ms.
+- Browser board 120 task: trang đầu 100 task; Tải thêm trả đủ 120; nút biến mất; task
+  draggable sau khi tải hết.
+- Text index yêu cầu equality prefix `boardId` + `lifecycle`; query `$text` không có hai
+  field này sẽ lỗi planner với compound text index.

@@ -12,6 +12,7 @@ import {
   MIGRATION_005_NAME,
   MIGRATION_006_NAME,
   MIGRATION_007_NAME,
+  MIGRATION_008_NAME,
 } from '../src/db/migration-runner.js';
 import { COLLECTION_VALIDATORS } from '../src/db/collection-validators.js';
 import { assertSchemaVersion } from '../src/db/schema-version.js';
@@ -145,9 +146,10 @@ describe('migration 2A', () => {
     expect(migrations).not.toContain(MIGRATION_005_NAME);
     expect(migrations).not.toContain(MIGRATION_006_NAME);
     expect(migrations).not.toContain(MIGRATION_007_NAME);
+    expect(migrations).not.toContain(MIGRATION_008_NAME);
     expect((await ItemModel.findOne({ shapeId: 'shape:legacy' }))?.version).toBe(9);
     expect((await TaskModel.findOne({ title: 'Legacy task' }))?.version).toBe(4);
-    await expect(assertSchemaVersion(connection, MIGRATION_007_NAME)).resolves.toBeUndefined();
+    await expect(assertSchemaVersion(connection, MIGRATION_008_NAME)).resolves.toBeUndefined();
   });
 
   it('áp validator 002 cho cả 5 collection', async () => {
@@ -354,5 +356,17 @@ describe('migration 2A', () => {
         type: 'shape',
       }),
     ).rejects.toMatchObject({ code: 121 });
+  });
+
+  it('008 tạo text index task và default language none', async () => {
+    if (!connection.db) throw new Error('DB chưa kết nối');
+
+    const indexes = await connection.db.collection('tasks').indexes();
+    const text = indexes.find((index) => index.name === 'tasks_board_text');
+    expect(text).toMatchObject({
+      key: { boardId: 1, lifecycle: 1, _fts: 'text', _ftsx: 1 },
+      weights: { title: 1, description: 1 },
+      default_language: 'none',
+    });
   });
 });

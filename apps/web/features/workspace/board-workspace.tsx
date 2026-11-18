@@ -84,6 +84,8 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     priority: '',
   });
   const [hasMoreTasks, setHasMoreTasks] = useState(false);
+  const [nextTaskCursor, setNextTaskCursor] = useState<string | null>(null);
+  const [loadingMoreTasks, setLoadingMoreTasks] = useState(false);
   const [participants, setParticipants] = useState<PresenceParticipant[]>([]);
   const [realtimeStatus, setRealtimeStatus] = useState<'connecting' | 'online' | 'offline'>(
     'connecting',
@@ -108,6 +110,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       setData({ board, members, items, tasks: taskPage.tasks });
       setVoteResults(results);
       setHasMoreTasks(taskPage.hasMore);
+      setNextTaskCursor(taskPage.nextCursor);
     } catch (caught) {
       if (caught instanceof ApiClientError && caught.status === 401) {
         const nextPath = `${window.location.pathname}${window.location.search}`;
@@ -137,7 +140,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   }, []);
 
   const loadTasks = useCallback(
-    async (currentFilters: KanbanFilters) => {
+    async (currentFilters: KanbanFilters, cursor: string | null = null) => {
       const requestId = taskRequestRef.current + 1;
       taskRequestRef.current = requestId;
 
@@ -146,10 +149,20 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           q: currentFilters.q.trim() || undefined,
           assigneeId: currentFilters.assigneeId || undefined,
           priority: currentFilters.priority || undefined,
+          cursor: cursor ?? undefined,
         });
         if (requestId !== taskRequestRef.current) return;
-        setData((current) => (current ? { ...current, tasks: page.tasks } : current));
+        setData((current) => {
+          if (!current) return current;
+          if (!cursor) return { ...current, tasks: page.tasks };
+          const existing = new Set(current.tasks.map((task) => task._id));
+          return {
+            ...current,
+            tasks: [...current.tasks, ...page.tasks.filter((task) => !existing.has(task._id))],
+          };
+        });
         setHasMoreTasks(page.hasMore);
+        setNextTaskCursor(page.nextCursor);
       } catch (caught) {
         if (requestId !== taskRequestRef.current) return;
         setNotice(
@@ -161,6 +174,16 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     },
     [boardId],
   );
+
+  const loadMoreTasks = useCallback(async () => {
+    if (!nextTaskCursor || loadingMoreTasks) return;
+    setLoadingMoreTasks(true);
+    try {
+      await loadTasks(filters, nextTaskCursor);
+    } finally {
+      setLoadingMoreTasks(false);
+    }
+  }, [filters, loadTasks, loadingMoreTasks, nextTaskCursor]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -174,6 +197,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     const [items, taskPage] = await Promise.all([getItems(boardId), getTasks(boardId)]);
     setData((current) => (current ? { ...current, items, tasks: taskPage.tasks } : current));
     setHasMoreTasks(taskPage.hasMore);
+    setNextTaskCursor(taskPage.nextCursor);
     setWhiteboardRevision((value) => value + 1);
   }, [boardId]);
 
@@ -199,36 +223,14 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
         return;
       }
 
-      if (event.type === 'task:demoted') {
-        const payload = event.payload as { taskId?: string };
-        setData((current) =>
-          current
-            ? {
-                ...current,
-                tasks: current.tasks.filter((task) => task._id !== payload.taskId),
-              }
-            : current,
-        );
+      if (event.type.startsWith('task:')) {
+        setNotice('Kanban vừa thay đổi từ tab/người khác. Đã tải lại.');
         setActivityRevision((value) => value + 1);
+        void loadTasks(filters);
         return;
       }
-
-      const payload = event.payload as { task?: TaskDto };
-      const incoming = payload.task;
-      if (!incoming) return;
-      setData((current) => {
-        if (!current) return current;
-        const existing = current.tasks.find((task) => task._id === incoming._id);
-        if (existing && existing.version > incoming.version) return current;
-        return {
-          ...current,
-          tasks: existing
-            ? current.tasks.map((task) => (task._id === incoming._id ? incoming : task))
-            : [...current.tasks, incoming],
-        };
-      });
     },
-    [loadWorkspace, refreshRealtimeSnapshot],
+    [filters, loadTasks, loadWorkspace, refreshRealtimeSnapshot],
   );
 
   useEffect(() => {
@@ -292,6 +294,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
         setPromoteTarget(null);
         setActivityRevision((value) => value + 1);
         setNotice('Đã promote ghi chú thành task');
+        await loadTasks(filters);
       } catch (caught) {
         if (isVersionConflict(caught)) {
           setPromoteTarget(null);
@@ -302,7 +305,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
         throw caught;
       }
     },
-    [boardId, loadWorkspace, promoteTarget],
+    [boardId, filters, loadTasks, loadWorkspace, promoteTarget],
   );
 
   const handleVote = useCallback(
@@ -377,6 +380,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
         setActivityRevision((value) => value + 1);
         setWhiteboardRevision((value) => value + 1);
         setNotice(`Đã promote ${result.tasks.length} ghi chú thành task`);
+        await loadTasks(filters);
       } catch (caught) {
         if (
           isVersionConflict(caught) ||
@@ -423,6 +427,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       setActivityRevision((value) => value + 1);
       setWhiteboardRevision((value) => value + 1);
       setNotice('Đã demote task; note vẫn còn trên whiteboard.');
+      await loadTasks(filters);
     } catch (caught) {
       if (isVersionConflict(caught)) {
         setDemoteTarget(null);
@@ -461,6 +466,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       setActivityRevision((value) => value + 1);
       setWhiteboardRevision((value) => value + 1);
       setNotice('Đã hoàn tác promote.');
+      await loadTasks(filters);
     } catch (caught) {
       if (
         caught instanceof ApiClientError &&
@@ -507,6 +513,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
             tasks: current.tasks.map((task) => (task._id === moved._id ? moved : task)),
           };
         });
+        await loadTasks(filters);
       } catch (caught) {
         if (isVersionConflict(caught) || isOrderConflict(caught)) {
           setNotice('Kanban vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
@@ -743,6 +750,8 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
                 members={data.members}
                 filters={filters}
                 hasMore={hasMoreTasks}
+                loadingMore={loadingMoreTasks}
+                onLoadMore={loadMoreTasks}
                 onFiltersChange={setFilters}
                 onEditTask={setEditingTask}
                 onDemoteTask={setDemoteTarget}

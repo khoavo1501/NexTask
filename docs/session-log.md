@@ -926,3 +926,31 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   31.08/30.57/31.65 s; Playwright pass; Docker health `0.7.0`.
 - Xóa feature bằng `git branch -d`.
 - `main` và tag `v0.7` giữ nguyên; chưa bump `0.8.0`; không push.
+
+## 2026-11-18 - Phase 8C spec
+
+- Tách phần còn lại: 8C cursor pagination + text index; tạo
+  `feat/phase-8c-cursor-text-search` từ `release/v0.8`.
+- Chốt `q` dùng `$text` với `default_language: "none"`; bỏ regex substring.
+- Cursor keyset `{columnId, order, _id}`, `nextCursor`; UI Tải thêm và khóa drag khi
+  còn trang; mutation/realtime reset trang đầu.
+- Migration 008 tạo `tasks_board_text`; backup/rehearsal/explain theo quy trình.
+- Spec: `docs/phases/08c-cursor-text-search.md`; chờ duyệt trước plan/code.
+
+## 2026-11-18 - Phase 8C plan
+
+- Plan `docs/superpowers/plans/2026-11-18-phase-8c-cursor-text-search.md`: 6 task TDD cho
+  contracts cursor, migration 008 text index, service/router, web load more/drag lock,
+  rehearsal/explain/browser, gates/merge.
+- Chờ duyệt thực thi; chưa code, chưa merge `main`.
+
+## 2026-11-18 - Phase 8C verification
+
+- Migration 008: backup `backups/nextask-before-8c-20261118-110624.gz` 6.1 KB;
+  rehearsal 7 task, migration 001-008, text index pass, đã drop DB tạm; app DB áp 008.
+- Explain 1000 task: q dùng TEXT_MATCH `tasks_board_text` (500 keys/docs, 2 ms);
+  cursor dùng IXSCAN `tasks_kanban_order` (499 keys/docs, 3 ms).
+- Browser board tạm 120 task: trang đầu 100, Tải thêm đủ 120, nút biến mất, drag bật.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
+  33.79/33.66/41.32 s; Playwright pass.
+- Chờ merge feature vào `release/v0.8`; không merge `main`, không bump `0.8.0`.

@@ -244,7 +244,7 @@ export async function syncItems(
 export async function getTasks(
   boardId: string,
   filters: TaskListFilters = {},
-): Promise<{ tasks: TaskDto[]; hasMore: boolean }> {
+): Promise<{ tasks: TaskDto[]; hasMore: boolean; nextCursor: string | null }> {
   const params = new URLSearchParams();
   if (filters.q) params.set('q', filters.q);
   if (filters.assigneeId) params.set('assigneeId', filters.assigneeId);
@@ -252,10 +252,11 @@ export async function getTasks(
   if (filters.columnId) params.set('columnId', filters.columnId);
   if (filters.labels) params.set('labels', filters.labels);
   if (filters.limit) params.set('limit', String(filters.limit));
+  if (filters.cursor) params.set('cursor', filters.cursor);
 
   const suffix = params.toString() ? `?${params.toString()}` : '';
   const body = await request(`/boards/${boardId}/tasks${suffix}`, tasksListResponseSchema);
-  return { tasks: body.data, hasMore: body.meta.hasMore };
+  return { tasks: body.data, hasMore: body.meta.hasMore, nextCursor: body.meta.nextCursor };
 }
 
 export async function getBoardMembers(boardId: string): Promise<BoardMemberDetailDto[]> {
@@ -319,6 +320,7 @@ export interface TaskListFilters {
   columnId?: string;
   labels?: string;
   limit?: number;
+  cursor?: string;
 }
 
 export async function promoteItem(

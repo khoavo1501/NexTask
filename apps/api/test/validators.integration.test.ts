@@ -162,4 +162,38 @@ describe('collection validators', () => {
         }),
     ).rejects.toMatchObject({ code: 121 });
   });
+
+  it('items nhận frame và từ chối type lạ', async () => {
+    const frame = {
+      boardId: new Types.ObjectId(),
+      shapeId: 'shape:raw-frame',
+      type: 'frame',
+      content: '',
+      style: { color: 'yellow' },
+      props: { w: 220, h: 700, name: 'Start', color: 'yellow' },
+      position: { x: 0, y: 0 },
+      size: { w: 220, h: 700 },
+      rotation: 0,
+      tldrawIndex: 'a0',
+      parentFrameId: null,
+      authorId: new Types.ObjectId(),
+      votes: [],
+      promotedTaskId: null,
+      version: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await expect(db().collection('items').insertOne(frame)).resolves.toBeDefined();
+    await expect(
+      db()
+        .collection('items')
+        .insertOne({
+          ...frame,
+          _id: new Types.ObjectId(),
+          shapeId: 'shape:raw-unknown',
+          type: 'unknown',
+        }),
+    ).rejects.toMatchObject({ code: 121 });
+  });
 });

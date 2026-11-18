@@ -131,7 +131,7 @@ export const COLLECTION_VALIDATORS: Record<string, Document> = {
         _id: objectId,
         boardId: objectId,
         shapeId: { bsonType: 'string', minLength: 1, maxLength: 200 },
-        type: { bsonType: 'string', enum: ['note'] },
+        type: { bsonType: 'string', enum: ['note', 'frame'] },
         content: { bsonType: 'string', maxLength: 10_000 },
         style: { bsonType: 'object' },
         props: { bsonType: 'object' },

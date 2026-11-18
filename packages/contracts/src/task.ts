@@ -94,6 +94,12 @@ export const updateTaskRequestSchema = z
     { message: 'Cần ít nhất một trường để cập nhật' },
   );
 
+export const taskCursorSchema = z.object({
+  columnId: z.string().min(1).max(50),
+  order: z.string().min(1).max(100),
+  id: objectIdSchema,
+});
+
 export const taskListQuerySchema = z.object({
   columnId: z.string().min(1).max(50).optional(),
   assigneeId: z.union([objectIdSchema, z.literal('none')]).optional(),
@@ -101,11 +107,15 @@ export const taskListQuerySchema = z.object({
   labels: z.string().max(500).optional(),
   q: z.string().trim().max(100).optional(),
   limit: z.coerce.number().int().min(1).max(100).default(100),
+  cursor: z.string().min(1).max(500).optional(),
 });
 
 export const tasksListResponseSchema = z.object({
   data: z.array(taskSchema),
-  meta: envelopeMetaSchema.extend({ hasMore: z.boolean() }),
+  meta: envelopeMetaSchema.extend({
+    hasMore: z.boolean(),
+    nextCursor: z.string().nullable(),
+  }),
 });
 
 export const tasksResponseSchema = z.object({
@@ -129,6 +139,7 @@ export const promoteResponseSchema = z.object({
 export type TaskDto = z.infer<typeof taskSchema>;
 export type TaskPriority = z.infer<typeof taskPrioritySchema>;
 export type TaskListQuery = z.infer<typeof taskListQuerySchema>;
+export type TaskCursor = z.infer<typeof taskCursorSchema>;
 export type PromoteRequest = z.infer<typeof promoteRequestSchema>;
 export type DemoteTaskRequest = z.infer<typeof demoteTaskRequestSchema>;
 export type MoveTaskRequest = z.infer<typeof moveTaskRequestSchema>;

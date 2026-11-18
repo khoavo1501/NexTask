@@ -868,3 +868,98 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Docker rebuild; health `0.7.0`, Mongo `rs0` primary.
 - Tạo tag annotated `v0.7` sau docs release merge; không push.
 - Tag `v0.2.0`–`v0.6.0` giữ nguyên.
+
+## 2026-11-17 - Phase 8A settings và Playwright
+
+- Nhánh `feat/phase-8a-settings-e2e` từ `release/v0.8`; note fix đã merge trước đó tại
+  `ac56bc8`.
+- Thêm `PATCH /boards/:boardId/settings` Owner-only, transaction board version +
+  `voter_budgets.limit`; contracts, service, route, web API, dialog Cài đặt.
+- Thêm Playwright smoke `e2e/mvp-smoke.spec.ts` và script `test:e2e`; chạy với stack
+  Docker + demo seed.
+- Setting test: owner cập nhật version/budget; Member 403; stale 409; invalid 422.
+- Feature gate: typecheck/lint/format pass; build:web pass; full suite 39 file, 166 test
+  ba lần 31.27/32.46/30.91 s; Playwright pass.
+- Chờ merge feature vào `release/v0.8`; không merge `main`, không bump `0.8.0`.
+
+### Merge release/v0.8 Phase 8A
+
+- Merge `feat/phase-8a-settings-e2e` vào `release/v0.8` bằng `--no-ff`:
+  `ead25f1` (`merge: phase 8a settings and e2e`).
+- Release gate: typecheck/lint/format pass; `build:web` pass; full suite 39 file, 166 test
+  ba lần 30.35/30.69/31.91 s; Playwright pass.
+- Xóa feature bằng `git branch -d`.
+- `main` và tag `v0.7` giữ nguyên; chưa bump `0.8.0`; không push.
+
+## 2026-11-18 - Phase 8B spec
+
+- Tách phạm vi còn lại: 8B làm frame nhóm note; 8C để cursor pagination/text index.
+- Feature `feat/phase-8b-frames` từ `release/v0.8`; không merge `main`, không bump `0.8.0`.
+- Chốt frame là item `type: "frame"`, note giữ `parentFrameId`; sync resolve
+  `parentShapeId`; xóa frame reparent note còn lại về page level.
+- Migration 007 chỉ cập nhật validator `items`; seed demo thêm 3 frame.
+- Spec: `docs/phases/08b-frames.md`; chờ duyệt trước khi viết plan/code.
+
+## 2026-11-18 - Phase 8B plan
+
+- Plan `docs/superpowers/plans/2026-11-18-phase-8b-frames.md`: 8 task TDD cho contracts,
+  migration 007, sync/reparent, guard promote, web, seed, rehearsal/browser, gates/merge.
+- Chờ duyệt thực thi; chưa code, chưa merge `main`.
+
+## 2026-11-18 - Phase 8B verification
+
+- Migration 007: backup `backups/nextask-before-8b-20261118-103257.gz` 6.0 KB; rehearsal
+  11 item, migration 001-007, insert frame pass, đã drop DB tạm; app DB áp 007, counts giữ.
+- Seed demo: 12 item (9 note + 3 frame), 9 note con, 5 task, 4 activity, 3 budget.
+- Browser: 3 frame render đúng nhóm; tạo frame, kéo note vào frame, reload giữ nguyên.
+- Sửa lỗi verify: index seed `a10` không hợp lệ với tldraw, thay bằng
+  `generateKeyBetween`; frame tên rỗng lưu fallback `Frame`.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 41 file, 179 test ba lần
+  31.41/31.19/31.12 s; Playwright pass.
+- Chờ merge feature vào `release/v0.8`; không merge `main`, không bump `0.8.0`.
+
+### Merge release/v0.8 Phase 8B
+
+- Merge `feat/phase-8b-frames` vào `release/v0.8` bằng `--no-ff`:
+  `9182212` (`merge: phase 8b frames`).
+- Release gate: typecheck/lint/format/build:web pass; full suite 41 file, 179 test ba lần
+  31.08/30.57/31.65 s; Playwright pass; Docker health `0.7.0`.
+- Xóa feature bằng `git branch -d`.
+- `main` và tag `v0.7` giữ nguyên; chưa bump `0.8.0`; không push.
+
+## 2026-11-18 - Phase 8C spec
+
+- Tách phần còn lại: 8C cursor pagination + text index; tạo
+  `feat/phase-8c-cursor-text-search` từ `release/v0.8`.
+- Chốt `q` dùng `$text` với `default_language: "none"`; bỏ regex substring.
+- Cursor keyset `{columnId, order, _id}`, `nextCursor`; UI Tải thêm và khóa drag khi
+  còn trang; mutation/realtime reset trang đầu.
+- Migration 008 tạo `tasks_board_text`; backup/rehearsal/explain theo quy trình.
+- Spec: `docs/phases/08c-cursor-text-search.md`; chờ duyệt trước plan/code.
+
+## 2026-11-18 - Phase 8C plan
+
+- Plan `docs/superpowers/plans/2026-11-18-phase-8c-cursor-text-search.md`: 6 task TDD cho
+  contracts cursor, migration 008 text index, service/router, web load more/drag lock,
+  rehearsal/explain/browser, gates/merge.
+- Chờ duyệt thực thi; chưa code, chưa merge `main`.
+
+## 2026-11-18 - Phase 8C verification
+
+- Migration 008: backup `backups/nextask-before-8c-20261118-110624.gz` 6.1 KB;
+  rehearsal 7 task, migration 001-008, text index pass, đã drop DB tạm; app DB áp 008.
+- Explain 1000 task: q dùng TEXT_MATCH `tasks_board_text` (500 keys/docs, 2 ms);
+  cursor dùng IXSCAN `tasks_kanban_order` (499 keys/docs, 3 ms).
+- Browser board tạm 120 task: trang đầu 100, Tải thêm đủ 120, nút biến mất, drag bật.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
+  33.79/33.66/41.32 s; Playwright pass.
+- Chờ merge feature vào `release/v0.8`; không merge `main`, không bump `0.8.0`.
+
+### Merge release/v0.8 Phase 8C
+
+- Merge `feat/phase-8c-cursor-text-search` vào `release/v0.8` bằng `--no-ff`:
+  `4ad0f82` (`merge: phase 8c cursor and text search`).
+- Release gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
+  33.84/33.62/33.73 s; Playwright pass; Docker health `0.7.0`.
+- Xóa feature bằng `git branch -d`.
+- `main` và tag `v0.7` giữ nguyên; chưa bump `0.8.0`; không push.

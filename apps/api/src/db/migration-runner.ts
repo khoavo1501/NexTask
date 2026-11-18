@@ -5,6 +5,8 @@ import { phase3aMigration } from './migrations/003-phase-3a.js';
 import { phase4Migration } from './migrations/004-phase-4.js';
 import { phase5aMigration } from './migrations/005-phase-5a.js';
 import { phase6Migration } from './migrations/006-phase-6.js';
+import { phase8bMigration } from './migrations/007-phase-8b.js';
+import { phase8cMigration } from './migrations/008-phase-8c.js';
 
 export interface MigrationEnv {
   SEED_OWNER_EMAIL?: string;
@@ -28,7 +30,9 @@ export const MIGRATION_003_NAME = '003-phase-3a';
 export const MIGRATION_004_NAME = '004-phase-4';
 export const MIGRATION_005_NAME = '005-phase-5a';
 export const MIGRATION_006_NAME = '006-phase-6';
-export const LATEST_MIGRATION_NAME = MIGRATION_006_NAME;
+export const MIGRATION_007_NAME = '007-phase-8b';
+export const MIGRATION_008_NAME = '008-phase-8c';
+export const LATEST_MIGRATION_NAME = MIGRATION_008_NAME;
 
 interface SchemaMigrationDocument {
   _id: string;
@@ -42,6 +46,8 @@ const migrations: Migration[] = [
   phase4Migration,
   phase5aMigration,
   phase6Migration,
+  phase8bMigration,
+  phase8cMigration,
 ];
 
 export async function runMigrations(options: MigrationOptions): Promise<string[]> {

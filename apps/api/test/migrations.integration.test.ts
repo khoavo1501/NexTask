@@ -11,6 +11,8 @@ import {
   MIGRATION_004_NAME,
   MIGRATION_005_NAME,
   MIGRATION_006_NAME,
+  MIGRATION_007_NAME,
+  MIGRATION_008_NAME,
 } from '../src/db/migration-runner.js';
 import { COLLECTION_VALIDATORS } from '../src/db/collection-validators.js';
 import { assertSchemaVersion } from '../src/db/schema-version.js';
@@ -143,9 +145,11 @@ describe('migration 2A', () => {
     expect(migrations).not.toContain(MIGRATION_004_NAME);
     expect(migrations).not.toContain(MIGRATION_005_NAME);
     expect(migrations).not.toContain(MIGRATION_006_NAME);
+    expect(migrations).not.toContain(MIGRATION_007_NAME);
+    expect(migrations).not.toContain(MIGRATION_008_NAME);
     expect((await ItemModel.findOne({ shapeId: 'shape:legacy' }))?.version).toBe(9);
     expect((await TaskModel.findOne({ title: 'Legacy task' }))?.version).toBe(4);
-    await expect(assertSchemaVersion(connection, MIGRATION_006_NAME)).resolves.toBeUndefined();
+    await expect(assertSchemaVersion(connection, MIGRATION_008_NAME)).resolves.toBeUndefined();
   });
 
   it('áp validator 002 cho cả 5 collection', async () => {
@@ -318,5 +322,51 @@ describe('migration 2A', () => {
         updatedAt: new Date(),
       }),
     ).rejects.toMatchObject({ code: 121 });
+  });
+
+  it('007 mở validator items cho frame', async () => {
+    if (!connection.db) throw new Error('DB chưa kết nối');
+
+    const frame = {
+      boardId: legacyBoardId,
+      shapeId: 'shape:frame-legacy',
+      type: 'frame',
+      content: '',
+      style: { color: 'yellow' },
+      props: { w: 220, h: 700, name: 'Start', color: 'yellow' },
+      position: { x: 0, y: 0 },
+      size: { w: 220, h: 700 },
+      rotation: 0,
+      tldrawIndex: 'a1',
+      parentFrameId: null,
+      authorId: new Types.ObjectId(legacyOwnerId),
+      votes: [],
+      promotedTaskId: null,
+      version: 1,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    await expect(connection.db.collection('items').insertOne(frame)).resolves.toBeDefined();
+    await expect(
+      connection.db.collection('items').insertOne({
+        ...frame,
+        _id: new Types.ObjectId(),
+        shapeId: 'shape:bad-type',
+        type: 'shape',
+      }),
+    ).rejects.toMatchObject({ code: 121 });
+  });
+
+  it('008 tạo text index task và default language none', async () => {
+    if (!connection.db) throw new Error('DB chưa kết nối');
+
+    const indexes = await connection.db.collection('tasks').indexes();
+    const text = indexes.find((index) => index.name === 'tasks_board_text');
+    expect(text).toMatchObject({
+      key: { boardId: 1, lifecycle: 1, _fts: 'text', _ftsx: 1 },
+      weights: { title: 1, description: 1 },
+      default_language: 'none',
+    });
   });
 });

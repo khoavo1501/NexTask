@@ -58,6 +58,7 @@ async function setupFilterTasks() {
     });
 
   await create('Daily C++ (urgent)', 'a0', {
+    description: 'context in description',
     assigneeId: member.user._id,
     labels: ['bug', 'ux'],
     priority: 'high',
@@ -102,9 +103,17 @@ describe('task filters', () => {
 
     const byQuery = await owner.agent
       .get(`/api/v1/boards/${boardId}/tasks`)
-      .query({ q: 'c++' })
+      .query({ q: 'urgent' })
       .expect(200);
     expect(byQuery.body.data.map((task: { title: string }) => task.title)).toEqual([
+      'Daily C++ (urgent)',
+    ]);
+
+    const byDescription = await owner.agent
+      .get(`/api/v1/boards/${boardId}/tasks`)
+      .query({ q: 'context' })
+      .expect(200);
+    expect(byDescription.body.data.map((task: { title: string }) => task.title)).toEqual([
       'Daily C++ (urgent)',
     ]);
   });

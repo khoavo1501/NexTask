@@ -2,6 +2,7 @@ import {
   createBoardRequestSchema,
   createInvitationRequestSchema,
   renameBoardRequestSchema,
+  updateBoardSettingsRequestSchema,
   updateColumnsRequestSchema,
   type BoardDto,
   type BoardMemberDetailDto,
@@ -22,6 +23,7 @@ import {
   listBoardMembers,
   listBoardsForUser,
   renameBoard,
+  updateBoardSettings,
   updateColumns,
 } from './board.service.js';
 
@@ -96,6 +98,16 @@ export function createBoardsRouter(): Router {
       data,
       meta: { requestId: request.requestId },
     });
+  });
+
+  router.patch('/:boardId/settings', requireOwner, async (request, response) => {
+    if (!request.board || !request.boardRole) {
+      throw new AppError(404, 'NOT_FOUND', 'Không tìm thấy board');
+    }
+    const input = updateBoardSettingsRequestSchema.parse(request.body);
+    const board = await updateBoardSettings(request.board, input);
+    const data: BoardDto = serializeBoard(board, request.boardRole);
+    response.json({ data, meta: { requestId: request.requestId } });
   });
 
   router.get('/:boardId/members', async (request, response) => {

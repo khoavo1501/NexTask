@@ -44,6 +44,7 @@ import { InviteDialog } from './invite-dialog';
 import { KanbanBoard, type KanbanFilters } from './kanban-board';
 import { RenameBoardDialog } from './rename-board-dialog';
 import { ReportPanel } from './report-panel';
+import { SettingsDialog } from './settings-dialog';
 import { TaskEditorDialog } from './task-editor-dialog';
 import { UndoPromoteDialog } from './undo-promote-dialog';
 
@@ -69,6 +70,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const [showInvite, setShowInvite] = useState(false);
   const [showRename, setShowRename] = useState(false);
   const [showColumns, setShowColumns] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [editingTask, setEditingTask] = useState<TaskDto | null>(null);
   const [demoteTarget, setDemoteTarget] = useState<TaskDto | null>(null);
   const [creatingColumnId, setCreatingColumnId] = useState<string | null>(null);
@@ -82,6 +84,8 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     priority: '',
   });
   const [hasMoreTasks, setHasMoreTasks] = useState(false);
+  const [nextTaskCursor, setNextTaskCursor] = useState<string | null>(null);
+  const [loadingMoreTasks, setLoadingMoreTasks] = useState(false);
   const [participants, setParticipants] = useState<PresenceParticipant[]>([]);
   const [realtimeStatus, setRealtimeStatus] = useState<'connecting' | 'online' | 'offline'>(
     'connecting',
@@ -106,6 +110,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       setData({ board, members, items, tasks: taskPage.tasks });
       setVoteResults(results);
       setHasMoreTasks(taskPage.hasMore);
+      setNextTaskCursor(taskPage.nextCursor);
     } catch (caught) {
       if (caught instanceof ApiClientError && caught.status === 401) {
         const nextPath = `${window.location.pathname}${window.location.search}`;
@@ -135,7 +140,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   }, []);
 
   const loadTasks = useCallback(
-    async (currentFilters: KanbanFilters) => {
+    async (currentFilters: KanbanFilters, cursor: string | null = null) => {
       const requestId = taskRequestRef.current + 1;
       taskRequestRef.current = requestId;
 
@@ -144,10 +149,20 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           q: currentFilters.q.trim() || undefined,
           assigneeId: currentFilters.assigneeId || undefined,
           priority: currentFilters.priority || undefined,
+          cursor: cursor ?? undefined,
         });
         if (requestId !== taskRequestRef.current) return;
-        setData((current) => (current ? { ...current, tasks: page.tasks } : current));
+        setData((current) => {
+          if (!current) return current;
+          if (!cursor) return { ...current, tasks: page.tasks };
+          const existing = new Set(current.tasks.map((task) => task._id));
+          return {
+            ...current,
+            tasks: [...current.tasks, ...page.tasks.filter((task) => !existing.has(task._id))],
+          };
+        });
         setHasMoreTasks(page.hasMore);
+        setNextTaskCursor(page.nextCursor);
       } catch (caught) {
         if (requestId !== taskRequestRef.current) return;
         setNotice(
@@ -159,6 +174,16 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     },
     [boardId],
   );
+
+  const loadMoreTasks = useCallback(async () => {
+    if (!nextTaskCursor || loadingMoreTasks) return;
+    setLoadingMoreTasks(true);
+    try {
+      await loadTasks(filters, nextTaskCursor);
+    } finally {
+      setLoadingMoreTasks(false);
+    }
+  }, [filters, loadTasks, loadingMoreTasks, nextTaskCursor]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -172,6 +197,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     const [items, taskPage] = await Promise.all([getItems(boardId), getTasks(boardId)]);
     setData((current) => (current ? { ...current, items, tasks: taskPage.tasks } : current));
     setHasMoreTasks(taskPage.hasMore);
+    setNextTaskCursor(taskPage.nextCursor);
     setWhiteboardRevision((value) => value + 1);
   }, [boardId]);
 
@@ -197,36 +223,14 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
         return;
       }
 
-      if (event.type === 'task:demoted') {
-        const payload = event.payload as { taskId?: string };
-        setData((current) =>
-          current
-            ? {
-                ...current,
-                tasks: current.tasks.filter((task) => task._id !== payload.taskId),
-              }
-            : current,
-        );
+      if (event.type.startsWith('task:')) {
+        setNotice('Kanban vừa thay đổi từ tab/người khác. Đã tải lại.');
         setActivityRevision((value) => value + 1);
+        void loadTasks(filters);
         return;
       }
-
-      const payload = event.payload as { task?: TaskDto };
-      const incoming = payload.task;
-      if (!incoming) return;
-      setData((current) => {
-        if (!current) return current;
-        const existing = current.tasks.find((task) => task._id === incoming._id);
-        if (existing && existing.version > incoming.version) return current;
-        return {
-          ...current,
-          tasks: existing
-            ? current.tasks.map((task) => (task._id === incoming._id ? incoming : task))
-            : [...current.tasks, incoming],
-        };
-      });
     },
-    [loadWorkspace, refreshRealtimeSnapshot],
+    [filters, loadTasks, loadWorkspace, refreshRealtimeSnapshot],
   );
 
   useEffect(() => {
@@ -290,6 +294,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
         setPromoteTarget(null);
         setActivityRevision((value) => value + 1);
         setNotice('Đã promote ghi chú thành task');
+        await loadTasks(filters);
       } catch (caught) {
         if (isVersionConflict(caught)) {
           setPromoteTarget(null);
@@ -300,7 +305,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
         throw caught;
       }
     },
-    [boardId, loadWorkspace, promoteTarget],
+    [boardId, filters, loadTasks, loadWorkspace, promoteTarget],
   );
 
   const handleVote = useCallback(
@@ -375,6 +380,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
         setActivityRevision((value) => value + 1);
         setWhiteboardRevision((value) => value + 1);
         setNotice(`Đã promote ${result.tasks.length} ghi chú thành task`);
+        await loadTasks(filters);
       } catch (caught) {
         if (
           isVersionConflict(caught) ||
@@ -421,6 +427,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       setActivityRevision((value) => value + 1);
       setWhiteboardRevision((value) => value + 1);
       setNotice('Đã demote task; note vẫn còn trên whiteboard.');
+      await loadTasks(filters);
     } catch (caught) {
       if (isVersionConflict(caught)) {
         setDemoteTarget(null);
@@ -459,6 +466,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       setActivityRevision((value) => value + 1);
       setWhiteboardRevision((value) => value + 1);
       setNotice('Đã hoàn tác promote.');
+      await loadTasks(filters);
     } catch (caught) {
       if (
         caught instanceof ApiClientError &&
@@ -505,6 +513,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
             tasks: current.tasks.map((task) => (task._id === moved._id ? moved : task)),
           };
         });
+        await loadTasks(filters);
       } catch (caught) {
         if (isVersionConflict(caught) || isOrderConflict(caught)) {
           setNotice('Kanban vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
@@ -545,6 +554,18 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     await loadWorkspace();
     await loadTasks(filters);
   }, [filters, loadTasks, loadWorkspace]);
+
+  const handleSettingsSaved = useCallback((board: BoardDto) => {
+    setData((current) => (current ? { ...current, board } : current));
+    setShowSettings(false);
+    setNotice('Đã lưu cài đặt board');
+  }, []);
+
+  const handleSettingsConflict = useCallback(async () => {
+    setShowSettings(false);
+    setNotice('Board vừa thay đổi từ tab/người khác. Đã tải lại dữ liệu.');
+    await loadWorkspace();
+  }, [loadWorkspace]);
 
   if (loading) {
     return (
@@ -593,7 +614,9 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           <div className="min-w-0">
             <h1 className="truncate text-lg font-semibold text-stone-900">{data.board.name}</h1>
             <p className="text-xs text-stone-500">
-              {data.items.length} ghi chú · {data.tasks.length} task
+              {data.items.filter((item) => item.type === 'note').length} ghi chú ·{' '}
+              {data.items.filter((item) => item.type === 'frame').length} frame ·{' '}
+              {data.tasks.length} task
             </p>
           </div>
         </div>
@@ -633,6 +656,13 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
                 className="rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs text-stone-600 hover:border-stone-500"
               >
                 Cột
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowSettings(true)}
+                className="rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs text-stone-600 hover:border-stone-500"
+              >
+                Cài đặt
               </button>
               <button
                 type="button"
@@ -720,6 +750,8 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
                 members={data.members}
                 filters={filters}
                 hasMore={hasMoreTasks}
+                loadingMore={loadingMoreTasks}
+                onLoadMore={loadMoreTasks}
                 onFiltersChange={setFilters}
                 onEditTask={setEditingTask}
                 onDemoteTask={setDemoteTarget}
@@ -767,6 +799,15 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           onClose={() => setShowRename(false)}
           onRenamed={handleRenamed}
           onConflict={handleRenameConflict}
+        />
+      ) : null}
+
+      {showSettings ? (
+        <SettingsDialog
+          board={data.board}
+          onClose={() => setShowSettings(false)}
+          onSaved={handleSettingsSaved}
+          onConflict={handleSettingsConflict}
         />
       ) : null}
 

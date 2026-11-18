@@ -15,6 +15,8 @@ interface KanbanBoardProps {
   members: BoardMemberDetailDto[];
   filters: KanbanFilters;
   hasMore: boolean;
+  loadingMore: boolean;
+  onLoadMore: () => void;
   onFiltersChange: (filters: KanbanFilters) => void;
   onEditTask: (task: TaskDto) => void;
   onDemoteTask: (task: TaskDto) => void;
@@ -55,6 +57,8 @@ export function KanbanBoard({
   members,
   filters,
   hasMore,
+  loadingMore,
+  onLoadMore,
   onFiltersChange,
   onEditTask,
   onDemoteTask,
@@ -67,6 +71,7 @@ export function KanbanBoard({
 
   const filtersActive =
     filters.q.trim() !== '' || filters.assigneeId !== '' || filters.priority !== '';
+  const dragLocked = filtersActive || hasMore;
   const sortedColumns = [...board.columns].sort((a, b) => a.order - b.order);
   const memberNames = new Map(members.map((member) => [member.userId, member.name]));
 
@@ -84,6 +89,7 @@ export function KanbanBoard({
   }
 
   function dropTask(columnId: string, beforeTaskId: string | null, draggedId = draggingTaskId) {
+    if (dragLocked) return;
     if (!draggedId || beforeTaskId === draggedId) return;
     const task = tasks.find((entry) => entry._id === draggedId);
     if (!task) return;
@@ -160,10 +166,20 @@ export function KanbanBoard({
         {filtersActive ? (
           <p className="mt-2 text-[11px] text-amber-700">Xóa bộ lọc để kéo thả.</p>
         ) : null}
+        {!filtersActive && hasMore ? (
+          <p className="mt-2 text-[11px] text-stone-500">Tải hết task để kéo thả.</p>
+        ) : null}
         {hasMore ? (
-          <p className="mt-2 text-[11px] text-stone-500">
-            Còn task chưa tải; thu hẹp bộ lọc để xem thêm.
-          </p>
+          <div className="mt-2">
+            <button
+              type="button"
+              onClick={onLoadMore}
+              disabled={loadingMore}
+              className="rounded-lg border border-stone-300 px-2.5 py-1.5 text-xs font-medium text-stone-700 hover:border-stone-500 disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              {loadingMore ? 'Đang tải...' : 'Tải thêm'}
+            </button>
+          </div>
         ) : null}
       </header>
 
@@ -178,7 +194,7 @@ export function KanbanBoard({
               aria-label={column.name}
               data-column-id={column.id}
               onDragOver={(event) => {
-                if (filtersActive) return;
+                if (dragLocked) return;
                 event.preventDefault();
                 event.dataTransfer.dropEffect = 'move';
                 setDragOverColumn(column.id);
@@ -187,7 +203,7 @@ export function KanbanBoard({
                 setDragOverColumn((current) => (current === column.id ? null : current));
               }}
               onDrop={(event) => {
-                if (filtersActive) return;
+                if (dragLocked) return;
                 event.preventDefault();
                 const taskId = event.dataTransfer.getData('text/plain') || draggingTaskId;
                 dropTask(column.id, null, taskId ?? '');
@@ -228,10 +244,10 @@ export function KanbanBoard({
                   return (
                     <article
                       key={task._id}
-                      draggable={!filtersActive}
+                      draggable={!dragLocked}
                       data-task-id={task._id}
                       onDragStart={(event) => {
-                        if (filtersActive) return;
+                        if (dragLocked) return;
                         setDraggingTaskId(task._id);
                         event.dataTransfer.effectAllowed = 'move';
                         event.dataTransfer.setData('text/plain', task._id);
@@ -242,7 +258,7 @@ export function KanbanBoard({
                         setDragOverTaskId(null);
                       }}
                       onDragOver={(event) => {
-                        if (filtersActive) return;
+                        if (dragLocked) return;
                         event.preventDefault();
                         event.stopPropagation();
                         event.dataTransfer.dropEffect = 'move';
@@ -253,7 +269,7 @@ export function KanbanBoard({
                         setDragOverTaskId((current) => (current === task._id ? null : current));
                       }}
                       onDrop={(event) => {
-                        if (filtersActive) return;
+                        if (dragLocked) return;
                         event.preventDefault();
                         event.stopPropagation();
                         const taskId = event.dataTransfer.getData('text/plain') || draggingTaskId;
@@ -263,7 +279,7 @@ export function KanbanBoard({
                         isDragging ? 'opacity-50' : ''
                       } ${
                         isDragTarget ? 'border-amber-400 ring-2 ring-amber-200' : 'border-stone-200'
-                      } ${filtersActive ? 'cursor-default' : ''}`}
+                      } ${dragLocked ? 'cursor-default' : ''}`}
                     >
                       <h4 className="text-sm font-medium leading-snug text-stone-900">
                         {task.title}

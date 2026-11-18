@@ -366,3 +366,40 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   30.09/35.36/30.05 s; Docker health `0.7.0`.
 - Tạo tag annotated `v0.7` theo yêu cầu sau docs release merge.
 - Không push.
+
+## 23. Phase 8A
+
+- Feature: `feat/phase-8a-settings-e2e`, tạo từ `release/v0.8` sau note fix `ac56bc8`.
+- Phạm vi: board settings transaction với `voter_budgets`, dialog Owner, Playwright smoke.
+- Feature gate: typecheck/lint/format pass; `build:web` pass; full suite 39 file, 166 test
+  ba lần 31.27/32.46/30.91 s; Playwright 1 test pass.
+- Merge feature vào `release/v0.8` bằng `--no-ff` (`ead25f1`); release gate pass:
+  typecheck/lint/format; `build:web`; full suite 39 file, 166 test ba lần
+  30.35/30.69/31.91 s; Playwright pass.
+- Feature đã xóa; `release/v0.8` chứa Phase 8A và note fix.
+- Không bump `0.8.0`; không merge `main`; tag `v0.7` giữ nguyên; không push.
+
+## 24. Phase 8B
+
+- Feature: `feat/phase-8b-frames`, tạo từ `release/v0.8`.
+- Phạm vi: frame item, sync `parentShapeId`, reparent khi xóa frame, seed 3 frame, E2E header.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 41 file, 179 test ba lần
+  31.41/31.19/31.12 s; Playwright pass.
+- Merge feature vào `release/v0.8` bằng `--no-ff` (`9182212`); release gate pass:
+  typecheck/lint/format/build:web; full suite 41 file, 179 test ba lần
+  31.08/30.57/31.65 s; Playwright pass; Docker health `0.7.0`.
+- Feature đã xóa; `release/v0.8` chứa Phase 8A, 8B và note fix.
+- Không bump `0.8.0`; không merge `main`; tag `v0.7` giữ nguyên; không push.
+
+## 25. Phase 8C
+
+- Feature: `feat/phase-8c-cursor-text-search`, tạo từ `release/v0.8`.
+- Phạm vi: cursor keyset `nextCursor`, text index `tasks_board_text`, q `$text`,
+  UI Tải thêm và khóa drag khi còn trang.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
+  33.79/33.66/41.32 s; Playwright pass.
+- Merge feature vào `release/v0.8` bằng `--no-ff` (`4ad0f82`); release gate pass:
+  typecheck/lint/format/build:web; full suite 42 file, 186 test ba lần
+  33.84/33.62/33.73 s; Playwright pass; Docker health `0.7.0`.
+- Feature đã xóa; `release/v0.8` chứa Phase 8A, 8B, 8C và note fix.
+- Không bump `0.8.0`; không merge `main`; tag `v0.7` giữ nguyên; không push.

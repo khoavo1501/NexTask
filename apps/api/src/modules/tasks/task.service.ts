@@ -1,8 +1,10 @@
-import type {
-  CreateTaskRequest,
-  MoveTaskRequest,
-  TaskPriority,
-  UpdateTaskRequest,
+import {
+  taskCursorSchema,
+  type CreateTaskRequest,
+  type MoveTaskRequest,
+  type TaskCursor,
+  type TaskPriority,
+  type UpdateTaskRequest,
 } from '@nextask/contracts';
 import { generateKeyBetween } from 'fractional-indexing';
 import { Types } from 'mongoose';
@@ -19,15 +21,33 @@ export interface TaskListOptions {
   labels: string[];
   q?: string;
   limit: number;
+  cursor?: string;
 }
 
 export interface TaskListResult {
   tasks: TaskDocument[];
   hasMore: boolean;
+  nextCursor: string | null;
 }
 
-function escapeRegex(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function decodeTaskCursor(value: string): TaskCursor {
+  try {
+    const decoded = Buffer.from(value, 'base64url').toString('utf8');
+    return taskCursorSchema.parse(JSON.parse(decoded));
+  } catch {
+    throw new AppError(422, 'INVALID_CURSOR', 'Cursor không hợp lệ');
+  }
+}
+
+function encodeTaskCursor(task: TaskDocument): string {
+  return Buffer.from(
+    JSON.stringify({
+      columnId: task.columnId,
+      order: task.order,
+      id: task._id.toHexString(),
+    }),
+    'utf8',
+  ).toString('base64url');
 }
 
 export async function listTasks(
@@ -53,18 +73,38 @@ export async function listTasks(
 
   const q = options.q?.trim();
   if (q) {
-    const regex = new RegExp(escapeRegex(q), 'i');
-    filter.$or = [{ title: regex }, { description: regex }];
+    filter.$text = { $search: q, $language: 'none' };
+  }
+
+  if (options.cursor) {
+    const cursor = decodeTaskCursor(options.cursor);
+    filter.$and = [
+      {
+        $or: [
+          { columnId: { $gt: cursor.columnId } },
+          { columnId: cursor.columnId, order: { $gt: cursor.order } },
+          {
+            columnId: cursor.columnId,
+            order: cursor.order,
+            _id: { $gt: new Types.ObjectId(cursor.id) },
+          },
+        ],
+      },
+    ];
   }
 
   const tasks = await TaskModel.find(filter)
     .sort({ columnId: 1, order: 1, _id: 1 })
     .limit(options.limit + 1)
     .exec();
+  const page = tasks.slice(0, options.limit);
+  const hasMore = tasks.length > options.limit;
+  const last = page[page.length - 1];
 
   return {
-    tasks: tasks.slice(0, options.limit),
-    hasMore: tasks.length > options.limit,
+    tasks: page,
+    hasMore,
+    nextCursor: hasMore && last ? encodeTaskCursor(last) : null,
   };
 }
 

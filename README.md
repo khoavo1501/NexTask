@@ -20,7 +20,12 @@ Phiên bản hiện tại: `0.7.0`.
 - Phase 6: dot voting có quota `voter_budgets`, kết quả vote, báo cáo stalled ideas/tasks,
   UI vote/quota và tab Báo cáo.
 - Phase 7: seed demo idempotent, profiler script, backup/restore drill, README/test hoàn thiện.
-- Chưa có cursor pagination, activity đầy đủ cho mọi thao tác.
+- Phase 8A: Owner chỉnh `votingLimit`/`minVotes`/`stalledAfterDays` trong transaction với
+  `voter_budgets`; Playwright smoke cho login → demo board → Kanban → Cài đặt → Báo cáo.
+- Phase 8B: frame tldraw nhóm note, sync/hydrate frame + note con, seed Start/Stop/Continue,
+  promote/vote/report chỉ áp dụng note.
+- Phase 8C: cursor pagination task, nút `Tải thêm`, khóa drag khi còn trang, text index
+  title/description; `q` là token search, không substring.
 
 ## Yêu cầu
 
@@ -210,9 +215,13 @@ npm run typecheck
 npm run lint
 npm run format:check
 npm run test
+npm run test:e2e
 ```
 
-Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`. Test realtime dùng Change Streams và Socket.IO client thật; suite hiện có 38 file, 164 test.
+Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`. Test realtime dùng Change Streams và Socket.IO client thật; suite hiện có 42 file, 186 test.
+
+Playwright smoke cần stack Docker và demo seed đang chạy; cài browser một lần bằng
+`npx playwright install chromium`. Biến `E2E_BASE_URL` đổi URL web nếu không dùng cổng 3000.
 
 ## Bảo mật local
 
@@ -229,7 +238,7 @@ Bản web build production nên tldraw hiển thị license watermark. Cần lic
 
 ## Git
 
-Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0`. Phase 5A/5B đã phát hành v0.5.0: bump `ccffef6`, merge `main` tại `ff9734d`, tag annotated `v0.5.0`. Phase 6 đã phát hành v0.6.0. Phase 7 đã phát hành v0.7.0: bump `d2f8fba`, merge `main` tại `f1fd124`, tag annotated `v0.7`. Tag `v0.2.0`–`v0.6.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
+Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0; Phase 3A/3B đã merge vào `main` tại `d327c74` (v0.3.0). Phase 4 đã phát hành v0.4.0: bump tại `7276612`, merge `main` tại `18588e6`, tag annotated `v0.4.0`. Phase 5A/5B đã phát hành v0.5.0: bump `ccffef6`, merge `main` tại `ff9734d`, tag annotated `v0.5.0`. Phase 6 đã phát hành v0.6.0. Phase 7 đã phát hành v0.7.0: bump `d2f8fba`, merge `main` tại `f1fd124`, tag annotated `v0.7`. Phase 8A, 8B và 8C đã merge vào `release/v0.8`; chưa merge `main`, chưa bump `0.8.0`. Tag `v0.2.0`–`v0.6.0` giữ nguyên. Quy tắc branch, merge và identity nằm trong [docs/git-workflow.md](docs/git-workflow.md).
 
 ## Tài liệu
 
@@ -246,6 +255,9 @@ Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0
 - [Phase 5B](docs/phases/05b-batch-undo.md)
 - [Phase 6](docs/phases/06-voting-reports.md)
 - [Phase 7](docs/phases/07-ops-seed.md)
+- [Phase 8A](docs/phases/08a-settings-e2e.md)
+- [Phase 8B](docs/phases/08b-frames.md)
+- [Phase 8C](docs/phases/08c-cursor-text-search.md)
 - [Ghi chú MongoDB](docs/mongodb-notes.md)
 - [Lịch sử phiên](docs/session-log.md)
 - [Quy trình Git](docs/git-workflow.md)

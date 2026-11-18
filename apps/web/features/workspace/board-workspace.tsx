@@ -607,7 +607,9 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
           <div className="min-w-0">
             <h1 className="truncate text-lg font-semibold text-stone-900">{data.board.name}</h1>
             <p className="text-xs text-stone-500">
-              {data.items.length} ghi chú · {data.tasks.length} task
+              {data.items.filter((item) => item.type === 'note').length} ghi chú ·{' '}
+              {data.items.filter((item) => item.type === 'frame').length} frame ·{' '}
+              {data.tasks.length} task
             </p>
           </div>
         </div>

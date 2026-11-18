@@ -1157,7 +1157,7 @@ Thay khối `if (initialItemsRef.current.length > 0) { mountedEditor.createShape
               y: item.position.y,
               rotation: 0,
               index: item.tldrawIndex as TLFrameShape['index'],
-              props: item.props as TLFrameShapeProps,
+              props: item.props as unknown as TLFrameShapeProps,
             })),
           );
         }

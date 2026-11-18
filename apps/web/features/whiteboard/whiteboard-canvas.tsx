@@ -8,6 +8,8 @@ import {
   type Editor,
   type TLEventInfo,
   type TLDefaultColorStyle,
+  type TLFrameShape,
+  type TLFrameShapeProps,
   type TLNoteShape,
   type TLNoteShapeProps,
   type TLShapeId,
@@ -156,13 +158,41 @@ export function WhiteboardCanvas({
       .then(async () => {
         const shapes = currentEditor
           .getCurrentPageShapes()
-          .filter((shape): shape is TLNoteShape => shape.type === 'note');
+          .filter(
+            (shape): shape is TLNoteShape | TLFrameShape =>
+              shape.type === 'note' || shape.type === 'frame',
+          );
 
         const known = knownItemsRef.current;
         const localShapeIds = new Set<string>(shapes.map((shape) => shape.id));
         const payload: SyncItemInput[] = shapes.map((shape) => {
+          const expectedVersion = known.get(shape.id)?.version ?? 0;
+
+          if (shape.type === 'frame') {
+            const props = shape.props as TLFrameShapeProps;
+            return {
+              shapeId: shape.id,
+              type: 'frame' as const,
+              style: { color: props.color },
+              props: {
+                w: props.w,
+                h: props.h,
+                name: props.name,
+                color: props.color,
+              },
+              position: { x: shape.x, y: shape.y },
+              size: { w: props.w, h: props.h },
+              rotation: 0,
+              tldrawIndex: String(shape.index),
+              parentShapeId: null,
+              expectedVersion,
+            };
+          }
+
           const bounds = currentEditor.getShapePageBounds(shape);
           const props = shape.props as TLNoteShapeProps;
+          const parent = shape.parentId ? currentEditor.getShape(shape.parentId) : null;
+          const parentShapeId = parent?.type === 'frame' ? parent.id : null;
           return {
             shapeId: shape.id,
             type: 'note' as const,
@@ -178,8 +208,8 @@ export function WhiteboardCanvas({
             size: { w: bounds?.w ?? 200, h: bounds?.h ?? 200 },
             rotation: shape.rotation,
             tldrawIndex: String(shape.index),
-            parentShapeId: null,
-            expectedVersion: known.get(shape.id)?.version ?? 0,
+            parentShapeId,
+            expectedVersion,
           };
         });
         const deleted: SyncDeletedItemInput[] = [...known.entries()]
@@ -246,23 +276,48 @@ export function WhiteboardCanvas({
 
     try {
       if (initialItemsRef.current.length > 0) {
-        mountedEditor.createShapes(
-          initialItemsRef.current.map((item) => {
-            const props = item.props as Partial<TLNoteShapeProps>;
-            return {
+        const frameItems = initialItemsRef.current.filter((item) => item.type === 'frame');
+        const noteItems = initialItemsRef.current.filter((item) => item.type === 'note');
+        const frameShapeIds = new Map(frameItems.map((item) => [item._id, item.shapeId]));
+
+        if (frameItems.length > 0) {
+          mountedEditor.createShapes(
+            frameItems.map((item) => ({
               id: item.shapeId as TLShapeId,
-              type: 'note',
+              type: 'frame',
               x: item.position.x,
               y: item.position.y,
-              rotation: item.rotation,
-              index: item.tldrawIndex as TLNoteShape['index'],
-              props: {
-                ...props,
-                richText: props.richText ?? toRichText(item.content),
-              } as TLNoteShapeProps,
-            };
-          }),
-        );
+              rotation: 0,
+              index: item.tldrawIndex as TLFrameShape['index'],
+              props: item.props as unknown as TLFrameShapeProps,
+            })),
+          );
+        }
+
+        if (noteItems.length > 0) {
+          mountedEditor.createShapes(
+            noteItems.map((item) => {
+              const props = item.props as Partial<TLNoteShapeProps>;
+              const parentShapeId = item.parentFrameId
+                ? frameShapeIds.get(item.parentFrameId)
+                : undefined;
+              return {
+                id: item.shapeId as TLShapeId,
+                type: 'note',
+                x: item.position.x,
+                y: item.position.y,
+                rotation: item.rotation,
+                index: item.tldrawIndex as TLNoteShape['index'],
+                ...(parentShapeId ? { parentId: parentShapeId as TLShapeId } : {}),
+                props: {
+                  ...props,
+                  richText: props.richText ?? toRichText(item.content),
+                } as TLNoteShapeProps,
+              };
+            }),
+          );
+        }
+
         mountedEditor.zoomToFit({ animation: { duration: 0 } });
       }
       mountedEditor.selectNone();
@@ -271,7 +326,7 @@ export function WhiteboardCanvas({
       setSaveState('saved');
     } catch {
       setSaveState('error');
-      setError('Không dựng lại được các ghi chú trên whiteboard.');
+      setError('Không dựng lại được whiteboard.');
     }
 
     initializedRef.current = true;
@@ -336,7 +391,7 @@ export function WhiteboardCanvas({
     };
   }, [editor, scheduleSave]);
 
-  function selectTool(tool: 'select' | 'hand' | 'note') {
+  function selectTool(tool: 'select' | 'hand' | 'note' | 'frame') {
     editor?.setCurrentTool(tool);
     setCurrentTool(tool);
   }
@@ -491,6 +546,7 @@ export function WhiteboardCanvas({
             ['select', 'Chọn'],
             ['hand', 'Kéo'],
             ['note', 'Note'],
+            ['frame', 'Frame'],
           ] as const
         ).map(([tool, label]) => (
           <button

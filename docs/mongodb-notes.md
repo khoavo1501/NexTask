@@ -707,3 +707,16 @@ drop sau khi đo. Query sort `{ columnId: 1, order: 1, _id: 1 }`.
 - Restore drill vào `nextask_restore_drill`; counts users/boards/items/tasks/activities/
   voter_budgets/schema_migrations khớp app DB; sample board đọc được; `failed: false`.
 - Drill drop database tạm; app DB counts không đổi.
+
+## 18. Quan sát Giai đoạn 8B
+
+- Backup trước migration 007: `backups/nextask-before-8b-20261118-103257.gz`, 6.0 KB.
+- Rehearsal `nextask_8b_rehearsal`: restore 11 item (11 note), áp migration 001-007;
+  insert frame thử thành công; database đã drop sau kiểm tra.
+- App DB: `007-phase-8b` áp thành công; 11 item trước seed, 0 frame; counts không đổi.
+- Migration 007 chỉ `collMod` validator `items` cho enum `note|frame`; không backfill,
+  không đổi index.
+- Seed demo: 12 item (9 note + 3 frame), 9 note có `parentFrameId`; frame position tuyệt
+  đối, note position tương đối theo frame.
+- Lỗi thực tế: seed index `a10` không hợp lệ với tldraw; đã chuyển sang
+  `generateKeyBetween`; frame tên rỗng từ tldraw được lưu fallback `Frame`.

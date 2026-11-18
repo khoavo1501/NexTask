@@ -1,6 +1,6 @@
 # Giai đoạn 8B - Frame nhóm note trên whiteboard
 
-- Trạng thái: Draft chờ duyệt
+- Trạng thái: Hoàn thành, chờ merge `release/v0.8`
 - Ngày lập: 2026-11-18
 - Tiền đề: Phase 8A đã merge `release/v0.8` tại `ead25f1`; `main` và tag `v0.7` giữ nguyên
 - Nhánh: `feat/phase-8b-frames` từ `release/v0.8`
@@ -229,3 +229,23 @@ Cổng:
 - Báo cáo/nhóm task theo frame.
 - Frame lồng nhau, vote/promote frame, màu frame tùy chỉnh ngoài mặc định tldraw.
 - Di chuyển note giữa frame bằng API riêng; chỉ sync theo thao tác tldraw.
+
+## 14. Kiểm chứng
+
+- Backup trước migration: `backups/nextask-before-8b-20261118-103257.gz`, 6.0 KB, `gzip -t` pass.
+- Rehearsal `nextask_8b_rehearsal`: restore 11 item (11 note); migration áp đủ 001-007;
+  insert frame thử thành công; đã drop database sau kiểm tra.
+- App DB: `007-phase-8b` đã áp; 11 item trước seed, 0 frame; counts không đổi.
+- Seed demo: 12 item (9 note + 3 frame), 9 note có `parentFrameId`, 5 task, 4 activity,
+  3 budget.
+- API integration 8 test: sync frame + note con, resolve frame ngoài payload, reject
+  parent/size/version, xóa frame reparent note, giữ note promoted, promote frame 422
+  `NOT_A_NOTE`, vote frame 404, report bỏ qua frame.
+- Playwright smoke pass; header hiển thị `9 ghi chú · 3 frame · 5 task`.
+- Browser verification: 3 frame Start/Stop/Continue render đúng nhóm; tạo frame mới,
+  kéo note vào frame, reload giữ frame/note; screenshot đã kiểm tra.
+- Lỗi phát hiện khi verify: seed dùng index `a10` không hợp lệ với tldraw; đã sinh index
+  bằng `generateKeyBetween`. Frame mới có tên rỗng từ tldraw; web lưu fallback `Frame`.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 41 file, 179 test ba lần
+  31.41/31.19/31.12 s; Playwright pass.
+- Không merge `main`, không bump `0.8.0`, tag `v0.7` giữ nguyên.

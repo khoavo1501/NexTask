@@ -905,3 +905,15 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Plan `docs/superpowers/plans/2026-11-18-phase-8b-frames.md`: 8 task TDD cho contracts,
   migration 007, sync/reparent, guard promote, web, seed, rehearsal/browser, gates/merge.
 - Chờ duyệt thực thi; chưa code, chưa merge `main`.
+
+## 2026-11-18 - Phase 8B verification
+
+- Migration 007: backup `backups/nextask-before-8b-20261118-103257.gz` 6.0 KB; rehearsal
+  11 item, migration 001-007, insert frame pass, đã drop DB tạm; app DB áp 007, counts giữ.
+- Seed demo: 12 item (9 note + 3 frame), 9 note con, 5 task, 4 activity, 3 budget.
+- Browser: 3 frame render đúng nhóm; tạo frame, kéo note vào frame, reload giữ nguyên.
+- Sửa lỗi verify: index seed `a10` không hợp lệ với tldraw, thay bằng
+  `generateKeyBetween`; frame tên rỗng lưu fallback `Frame`.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 41 file, 179 test ba lần
+  31.41/31.19/31.12 s; Playwright pass.
+- Chờ merge feature vào `release/v0.8`; không merge `main`, không bump `0.8.0`.

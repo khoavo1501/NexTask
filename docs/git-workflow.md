@@ -378,3 +378,12 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   30.35/30.69/31.91 s; Playwright pass.
 - Feature đã xóa; `release/v0.8` chứa Phase 8A và note fix.
 - Không bump `0.8.0`; không merge `main`; tag `v0.7` giữ nguyên; không push.
+
+## 24. Phase 8B
+
+- Feature: `feat/phase-8b-frames`, tạo từ `release/v0.8`.
+- Phạm vi: frame item, sync `parentShapeId`, reparent khi xóa frame, seed 3 frame, E2E header.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 41 file, 179 test ba lần
+  31.41/31.19/31.12 s; Playwright pass.
+- Chờ merge feature vào `release/v0.8` bằng `--no-ff`; không bump `0.8.0`, không merge
+  `main`; tag `v0.7` giữ nguyên; không push.

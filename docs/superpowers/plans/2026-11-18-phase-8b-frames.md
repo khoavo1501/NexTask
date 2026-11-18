@@ -524,7 +524,10 @@ describe('frame sync', () => {
       .expect(200);
 
     const frameItem = await ItemModel.findOne({ boardId, shapeId: 'shape:frame1' }).exec();
-    expect(response.body.data[0].parentFrameId).toBe(frameItem?._id.toHexString());
+    const noteItem = response.body.data.find(
+      (item: { shapeId: string }) => item.shapeId === 'shape:note1',
+    );
+    expect(noteItem.parentFrameId).toBe(frameItem?._id.toHexString());
   });
 
   it('từ chối frame cha không tồn tại, size lệch và version cũ', async () => {
@@ -779,7 +782,8 @@ async function runSyncTransaction(
             noteInputs
               .map((item) => item.parentShapeId)
               .filter(
-                (shapeId): shapeId is string => Boolean(shapeId) && !frameByShapeId.has(shapeId),
+                (shapeId): shapeId is string =>
+                  shapeId !== null && !frameByShapeId.has(shapeId),
               ),
           ),
         ];

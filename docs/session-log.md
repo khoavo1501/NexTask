@@ -926,3 +926,13 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   31.08/30.57/31.65 s; Playwright pass; Docker health `0.7.0`.
 - Xóa feature bằng `git branch -d`.
 - `main` và tag `v0.7` giữ nguyên; chưa bump `0.8.0`; không push.
+
+## 2026-11-18 - Phase 8C spec
+
+- Tách phần còn lại: 8C cursor pagination + text index; tạo
+  `feat/phase-8c-cursor-text-search` từ `release/v0.8`.
+- Chốt `q` dùng `$text` với `default_language: "none"`; bỏ regex substring.
+- Cursor keyset `{columnId, order, _id}`, `nextCursor`; UI Tải thêm và khóa drag khi
+  còn trang; mutation/realtime reset trang đầu.
+- Migration 008 tạo `tasks_board_text`; backup/rehearsal/explain theo quy trình.
+- Spec: `docs/phases/08c-cursor-text-search.md`; chờ duyệt trước plan/code.

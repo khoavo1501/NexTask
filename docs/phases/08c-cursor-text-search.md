@@ -1,6 +1,6 @@
 # Giai đoạn 8C - Cursor pagination và text index cho task
 
-- Trạng thái: Draft chờ duyệt
+- Trạng thái: Hoàn thành, chờ merge `release/v0.8`
 - Ngày lập: 2026-11-18
 - Tiền đề: Phase 8A/8B đã merge `release/v0.8` tại `89cc76c`; `main` và tag `v0.7` giữ nguyên
 - Nhánh: `feat/phase-8c-cursor-text-search` từ `release/v0.8`
@@ -212,3 +212,21 @@ Cổng:
 - Search labels/assignee/title nâng cao, highlight kết quả.
 - Cursor có chữ ký hoặc snapshot isolation.
 - Thay đổi Kanban ordering, promote/demote, realtime ngoài reset trang.
+
+## 13. Kiểm chứng
+
+- Backup trước migration 008: `backups/nextask-before-8c-20261118-110624.gz`, 6.1 KB,
+  `gzip -t` pass.
+- Rehearsal `nextask_8c_rehearsal`: restore 7 task; migration áp đủ 001-008; text index
+  `tasks_board_text` có `default_language: "none"`; đã drop DB tạm.
+- App DB: `008-phase-8c` đã áp; text index tồn tại; 7 task giữ nguyên.
+- Explain 1000 task:
+  - `q=context`: SORT -> TEXT_MATCH `tasks_board_text`, keys 500, docs 500, 2 ms.
+  - cursor: SORT -> OR/IXSCAN `tasks_kanban_order`, keys 499, docs 499, 3 ms.
+- Browser board tạm 120 task: trang đầu 100 task + nút `Tải thêm`; sau khi bấm đủ 120,
+  nút biến mất, hint `Tải hết task để kéo thả.` biến mất và task draggable.
+- API integration: 3 trang không duplicate; cursor + priority/labels/assignee/q; cursor
+  sai 422 `INVALID_CURSOR`; explain dùng text index.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
+  33.79/33.66/41.32 s; Playwright pass.
+- Không merge `main`, không bump `0.8.0`, tag `v0.7` giữ nguyên.

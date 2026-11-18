@@ -390,3 +390,13 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   31.08/30.57/31.65 s; Playwright pass; Docker health `0.7.0`.
 - Feature đã xóa; `release/v0.8` chứa Phase 8A, 8B và note fix.
 - Không bump `0.8.0`; không merge `main`; tag `v0.7` giữ nguyên; không push.
+
+## 25. Phase 8C
+
+- Feature: `feat/phase-8c-cursor-text-search`, tạo từ `release/v0.8`.
+- Phạm vi: cursor keyset `nextCursor`, text index `tasks_board_text`, q `$text`,
+  UI Tải thêm và khóa drag khi còn trang.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
+  33.79/33.66/41.32 s; Playwright pass.
+- Chờ merge feature vào `release/v0.8` bằng `--no-ff`; không bump `0.8.0`, không merge
+  `main`; tag `v0.7` giữ nguyên; không push.

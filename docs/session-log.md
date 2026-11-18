@@ -943,3 +943,14 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   contracts cursor, migration 008 text index, service/router, web load more/drag lock,
   rehearsal/explain/browser, gates/merge.
 - Chờ duyệt thực thi; chưa code, chưa merge `main`.
+
+## 2026-11-18 - Phase 8C verification
+
+- Migration 008: backup `backups/nextask-before-8c-20261118-110624.gz` 6.1 KB;
+  rehearsal 7 task, migration 001-008, text index pass, đã drop DB tạm; app DB áp 008.
+- Explain 1000 task: q dùng TEXT_MATCH `tasks_board_text` (500 keys/docs, 2 ms);
+  cursor dùng IXSCAN `tasks_kanban_order` (499 keys/docs, 3 ms).
+- Browser board tạm 120 task: trang đầu 100, Tải thêm đủ 120, nút biến mất, drag bật.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 42 file, 186 test ba lần
+  33.79/33.66/41.32 s; Playwright pass.
+- Chờ merge feature vào `release/v0.8`; không merge `main`, không bump `0.8.0`.

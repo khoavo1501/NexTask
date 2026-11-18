@@ -936,3 +936,10 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   còn trang; mutation/realtime reset trang đầu.
 - Migration 008 tạo `tasks_board_text`; backup/rehearsal/explain theo quy trình.
 - Spec: `docs/phases/08c-cursor-text-search.md`; chờ duyệt trước plan/code.
+
+## 2026-11-18 - Phase 8C plan
+
+- Plan `docs/superpowers/plans/2026-11-18-phase-8c-cursor-text-search.md`: 6 task TDD cho
+  contracts cursor, migration 008 text index, service/router, web load more/drag lock,
+  rehearsal/explain/browser, gates/merge.
+- Chờ duyệt thực thi; chưa code, chưa merge `main`.

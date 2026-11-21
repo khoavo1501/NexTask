@@ -974,3 +974,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   33.67/33.91/41.32 s; Playwright pass; Docker health `0.8.0`.
 - Docs release merge sau đó; tag annotated `v0.8` tại commit docs release.
 - Không push; tag `v0.2.0`–`v0.7` giữ nguyên.
+
+## 2026-11-21 - Phase 9 spec
+
+- Tạo `release/v1.0` từ `main` `78bf21a`; feature `feat/phase-9-production`.
+- Chốt target: VPS Docker Compose + Caddy TLS + MongoDB self-host có auth; đã có
+  domain/DNS và license tldraw sẽ truyền qua secret/env.
+- Phạm vi: production compose/Caddy, Mongo auth bootstrap, trust proxy/cookie,
+  license tldraw, CI, backup/restore, runbook, staging smoke, release 1.0.0/tag v1.0.
+- Spec: `docs/phases/09-production-v1.md`; chờ duyệt trước khi code/deploy.

@@ -983,3 +983,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Phạm vi: production compose/Caddy, Mongo auth bootstrap, trust proxy/cookie,
   license tldraw, CI, backup/restore, runbook, staging smoke, release 1.0.0/tag v1.0.
 - Spec: `docs/phases/09-production-v1.md`; chờ duyệt trước khi code/deploy.
+
+## 2026-11-21 - Phase 9 plan
+
+- Plan `docs/superpowers/plans/2026-11-21-phase-9-production-v1.md`: 5 task TDD cho
+  runtime hardening/license, production Compose/Caddy/Mongo auth, CI/backup/runbook,
+  staging gate, live deploy/v1.0 release.
+- Spec cập nhật keyfile trong Docker volume và bootstrap profile service.
+- Chờ duyệt thực thi; live deploy/tag v1.0 cần domain/VPS/license thật.

@@ -23,9 +23,11 @@
 2. Caddy là entrypoint công khai duy nhất (80/443); API, web và Mongo không
    publish cổng host.
 3. Mongo replica set `rs0` một node, bật `--auth` + keyFile; app dùng user riêng,
-   DB `nextask`, `authSource=admin`.
-4. Bootstrap Mongo lần đầu bằng sidecar `network_mode: service:mongo` để dùng
-   localhost exception tạo root/app user và `rs.initiate`; sau đó mongo chạy auth.
+   DB `nextask`, `authSource=admin`. Keyfile sinh một lần trong Docker volume bởi
+   service one-shot, không commit và không mount từ host.
+4. Bootstrap Mongo lần đầu bằng profile service tạm không auth trên cùng volume:
+   `rs.initiate`, tạo root/app user, dừng service tạm rồi mới chạy mongo với
+   `--auth --keyFile`; script idempotent và có marker.
 5. Domain và license lấy từ `.env.production`/build args, không hardcode.
 6. `NEXT_PUBLIC_API_URL=https://${DOMAIN}/api/v1`; CORS và cookie production theo
    domain HTTPS.
@@ -127,8 +129,8 @@ NEXT_PUBLIC_TLDRAW_LICENSE_KEY=change-me...
 
 ## 6. Mongo auth và bootstrap
 
-- Keyfile sinh trên VPS: `openssl rand -base64 756 > secrets/mongo-keyfile`, chmod 400,
-  mount read-only; không commit.
+- Keyfile sinh trong Docker volume `mongo-keyfile` bởi service one-shot; không commit,
+  không mount host. Volume keyfile cần được backup cùng dữ liệu.
 - Bootstrap idempotent:
   1. Chờ Mongo healthy.
   2. `rs.initiate` nếu chưa initiated.

@@ -45,7 +45,7 @@ set +a
 compose=(docker compose --env-file .env.public -f docker-compose.public.yml)
 
 echo "Đang build image..."
-"${compose[@]}" build api web migrate
+"${compose[@]}" build api web migrate seed
 
 echo "Đang bootstrap Mongo..."
 ENV_FILE=.env.public COMPOSE_FILE=docker-compose.public.yml \

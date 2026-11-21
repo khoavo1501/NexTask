@@ -14,6 +14,8 @@ x-api-environment: &api-environment
   SERVICE_VERSION: 0.8.0
   JWT_SECRET: local-dev-only-nextask-jwt-secret-change-me
   COOKIE_SECURE: 'false'
+  TRUST_PROXY: 0
+  AUTH_RATE_LIMIT_MAX: 5
   SEED_OWNER_EMAIL: owner@nextask.local
   SEED_OWNER_PASSWORD: nextask-local-owner-2026
   SEED_OWNER_NAME: Demo Owner
@@ -86,6 +88,7 @@ services:
       dockerfile: apps/web/Dockerfile
       args:
         NEXT_PUBLIC_API_URL: http://localhost:4000/api/v1
+        NEXT_PUBLIC_TLDRAW_LICENSE_KEY: ${NEXT_PUBLIC_TLDRAW_LICENSE_KEY:-}
     environment:
       API_INTERNAL_URL: http://api:4000/api/v1
     ports:

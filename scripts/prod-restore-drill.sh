@@ -2,15 +2,18 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+env_file="${ENV_FILE:-.env.production}"
+compose_file="${COMPOSE_FILE:-docker-compose.prod.yml}"
+backup_dir="${BACKUP_DIR:-backups/prod}"
 set -a
-source .env.production
+source "$env_file"
 set +a
 
-archive="${1:-$(ls -t backups/prod/nextask-prod-*.gz | head -n 1)}"
+archive="${1:-$(ls -t "$backup_dir"/nextask-*.gz | head -n 1)}"
 [[ -f "$archive" ]] || { echo "Không tìm thấy backup: $archive" >&2; exit 1; }
 gzip -t "$archive"
 
-compose=(docker compose --env-file .env.production -f docker-compose.prod.yml)
+compose=(docker compose --env-file "$env_file" -f "$compose_file")
 "${compose[@]}" exec -T mongo mongosh --quiet \
   --username "$MONGO_ROOT_USERNAME" --password "$MONGO_ROOT_PASSWORD" \
   --authenticationDatabase admin --eval 'db.getSiblingDB("nextask_restore_drill").dropDatabase()'

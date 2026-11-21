@@ -3,13 +3,16 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 
-if [[ ! -f .env.production ]]; then
-  echo "Thiếu .env.production; copy từ .env.production.example" >&2
+env_file="${ENV_FILE:-.env.production}"
+compose_file="${COMPOSE_FILE:-docker-compose.prod.yml}"
+marker="${MONGO_MARKER:-secrets/mongo-initialized}"
+
+if [[ ! -f "$env_file" ]]; then
+  echo "Thiếu $env_file; copy từ .env.production.example" >&2
   exit 1
 fi
 
-compose=(docker compose --env-file .env.production -f docker-compose.prod.yml)
-marker="secrets/mongo-initialized"
+compose=(docker compose --env-file "$env_file" -f "$compose_file")
 mkdir -p secrets
 
 if [[ -f "$marker" ]]; then

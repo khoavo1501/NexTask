@@ -15,7 +15,7 @@ import { VoterBudgetModel } from '../modules/votes/voter-budget.model.js';
 import { connectMongo } from './mongoose.js';
 
 export const DEMO_BOARD_NAME = 'NexTask Demo Retro';
-const DEMO_MEMBER_PASSWORD = 'demo-only-password-2026';
+const DEMO_MEMBER_PASSWORD = process.env.SEED_DEMO_MEMBER_PASSWORD ?? 'demo-only-password-2026';
 
 export interface SeedSummary {
   boardId: string;
@@ -134,10 +134,19 @@ async function ensureUser(email: string, name: string): Promise<UserDocument> {
 }
 
 export async function seedDemoBoard(ownerEmail: string): Promise<SeedSummary> {
-  const owner = await UserModel.findOne({
+  let owner = await UserModel.findOne({
     emailNormalized: normalizeEmail(ownerEmail),
   }).exec();
-  if (!owner) throw new Error(`Không tìm thấy seed owner ${ownerEmail}`);
+  if (!owner) {
+    const password = process.env.SEED_OWNER_PASSWORD;
+    if (!password) throw new Error(`Không tìm thấy seed owner ${ownerEmail}`);
+    owner = await UserModel.create({
+      email: ownerEmail,
+      emailNormalized: normalizeEmail(ownerEmail),
+      name: process.env.SEED_OWNER_NAME ?? 'Owner',
+      passwordHash: await hashPassword(password),
+    });
+  }
 
   const members = [owner];
   for (const member of demoMembers) {

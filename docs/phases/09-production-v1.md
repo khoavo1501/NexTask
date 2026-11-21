@@ -264,3 +264,18 @@ Gate local/staging vẫn giữ:
   34.17/32.34/32.85 s; Playwright pass; Docker health `1.0.0`.
 - Docs release candidate merge sau main; tag `v1.0` vẫn chờ live smoke trên VPS/domain.
 - Không push trong bước này.
+
+## 17. Self-host public bằng máy cá nhân
+
+- Bổ sung mode chạy trên máy cá nhân, expose qua Cloudflare Named Tunnel; domain/TLS do
+  Cloudflare quản lý, không cần VPS hay mở cổng inbound.
+- Stack riêng `docker-compose.public.yml`: Mongo auth/keyfile volume riêng, migration,
+  seed, API, web, Caddy nội bộ `public-proxy:8080`, cloudflared.
+- `scripts/start-public.sh` tạo `.env.public` với JWT/Mongo/owner password ngẫu nhiên,
+  seed demo + owner, build và in URL/tài khoản owner.
+- `scripts/stop-public.sh` dừng stack, giữ volume dữ liệu.
+- Cloudflare Public Hostname trỏ `http://public-proxy:8080`; token chỉ nằm trong
+  `.env.public` (600, ignored).
+- Tài liệu: `docs/public-host.md`.
+- Giới hạn: máy phải bật, một node, đăng ký mở; dùng Cloudflare Access nếu cần giới hạn.
+- Live tunnel smoke vẫn cần domain/token thật trước khi tag v1.0.

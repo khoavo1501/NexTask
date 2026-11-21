@@ -59,6 +59,15 @@ interface WorkspaceData {
   tasks: TaskDto[];
 }
 
+function canvasSnapshotChanged(next: ItemDto[], current: ItemDto[]): boolean {
+  if (next.length !== current.length) return true;
+  const currentVersions = new Map(current.map((item) => [item.shapeId, item.version]));
+  return next.some((item) => {
+    const currentVersion = currentVersions.get(item.shapeId);
+    return currentVersion === undefined || item.version > currentVersion;
+  });
+}
+
 export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const router = useRouter();
   const [data, setData] = useState<WorkspaceData | null>(null);
@@ -95,6 +104,10 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
   const socketRef = useRef<Socket | null>(null);
   const seenEventIdsRef = useRef(new Set<string>());
   const hasJoinedRef = useRef(false);
+  const itemsRef = useRef<ItemDto[]>([]);
+  const itemRefreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingItemVersionsRef = useRef(new Map<string, number>());
+  const pendingItemForceRefreshRef = useRef(false);
 
   const loadWorkspace = useCallback(async () => {
     setLoading(true);
@@ -135,7 +148,18 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
     }
   }, [data?.board.name]);
 
+  useEffect(() => {
+    itemsRef.current = data?.items ?? [];
+  }, [data?.items]);
+
+  useEffect(() => {
+    return () => {
+      if (itemRefreshTimerRef.current) clearTimeout(itemRefreshTimerRef.current);
+    };
+  }, []);
+
   const handleItemsChange = useCallback((items: ItemDto[]) => {
+    itemsRef.current = items;
     setData((current) => (current ? { ...current, items } : current));
   }, []);
 
@@ -195,11 +219,34 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
 
   const refreshRealtimeSnapshot = useCallback(async () => {
     const [items, taskPage] = await Promise.all([getItems(boardId), getTasks(boardId)]);
+    const canvasChanged = canvasSnapshotChanged(items, itemsRef.current);
+    itemsRef.current = items;
     setData((current) => (current ? { ...current, items, tasks: taskPage.tasks } : current));
     setHasMoreTasks(taskPage.hasMore);
     setNextTaskCursor(taskPage.nextCursor);
-    setWhiteboardRevision((value) => value + 1);
+    if (canvasChanged) {
+      setWhiteboardRevision((value) => value + 1);
+      setNotice('Whiteboard vừa thay đổi từ tab/người khác. Đã tải lại.');
+    }
   }, [boardId]);
+
+  const scheduleItemRefresh = useCallback(() => {
+    if (itemRefreshTimerRef.current) clearTimeout(itemRefreshTimerRef.current);
+    itemRefreshTimerRef.current = setTimeout(() => {
+      itemRefreshTimerRef.current = null;
+      const pendingVersions = pendingItemVersionsRef.current;
+      const forceRefresh = pendingItemForceRefreshRef.current;
+      pendingItemVersionsRef.current = new Map();
+      pendingItemForceRefreshRef.current = false;
+
+      const localVersions = new Map(itemsRef.current.map((item) => [item.shapeId, item.version]));
+      const caughtUp = [...pendingVersions.entries()].every(
+        ([shapeId, version]) => (localVersions.get(shapeId) ?? 0) >= version,
+      );
+      if (!forceRefresh && caughtUp) return;
+      void refreshRealtimeSnapshot();
+    }, 300);
+  }, [refreshRealtimeSnapshot]);
 
   const handleRealtimeEvent = useCallback(
     (event: RealtimeEvent) => {
@@ -217,9 +264,30 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
       }
 
       if (event.type.startsWith('item:')) {
-        setNotice('Whiteboard vừa thay đổi từ tab/người khác. Đã tải lại.');
+        const payloadItem = (event.payload as { item?: ItemDto } | null | undefined)?.item;
+        if (payloadItem) {
+          const local = itemsRef.current.find((item) => item.shapeId === payloadItem.shapeId);
+          if (local) {
+            const sameVersion = payloadItem.version <= local.version;
+            const sameMetadata =
+              sameVersion &&
+              payloadItem.promotedTaskId === local.promotedTaskId &&
+              payloadItem.votes.length === local.votes.length;
+            if (sameMetadata) return;
+            const pendingVersions = pendingItemVersionsRef.current;
+            const previous = pendingVersions.get(payloadItem.shapeId) ?? 0;
+            pendingVersions.set(payloadItem.shapeId, Math.max(previous, payloadItem.version));
+            if (sameVersion) pendingItemForceRefreshRef.current = true;
+          } else {
+            const pendingVersions = pendingItemVersionsRef.current;
+            const previous = pendingVersions.get(payloadItem.shapeId) ?? 0;
+            pendingVersions.set(payloadItem.shapeId, Math.max(previous, payloadItem.version));
+          }
+        } else {
+          pendingItemForceRefreshRef.current = true;
+        }
         setActivityRevision((value) => value + 1);
-        void refreshRealtimeSnapshot();
+        scheduleItemRefresh();
         return;
       }
 
@@ -230,7 +298,7 @@ export function BoardWorkspace({ boardId }: BoardWorkspaceProps) {
         return;
       }
     },
-    [filters, loadTasks, loadWorkspace, refreshRealtimeSnapshot],
+    [filters, loadTasks, loadWorkspace, scheduleItemRefresh],
   );
 
   useEffect(() => {

@@ -1031,3 +1031,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
 - Merge feature vào `release/v1.0` tại `13aa965`; release gate pass 42 file, 189 test ba lần
   32.11/34.58/36.46 s; Playwright pass.
 - Chưa merge `main`, chưa tag v1.0, chưa push.
+
+### Merge main public self-host
+
+- Merge `release/v1.0` vào `main` bằng `--no-ff`: `be6b268` (`merge: public self-host mode`).
+- Main gate: typecheck/lint/format/build:web pass; full suite 42 file, 189 test ba lần
+  32.92/32.62/32.99 s; Playwright pass; Docker health `1.0.0`.
+- Tag `v1.0` vẫn chờ live Cloudflare Named Tunnel smoke với domain/token thật.
+- Không push.

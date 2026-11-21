@@ -414,3 +414,14 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   33.67/33.91/41.32 s; Playwright pass; Docker health `0.8.0`.
 - Docs release merge và tag annotated `v0.8` sau main merge.
 - Không push; tag `v0.2.0`–`v0.7` giữ nguyên.
+
+## 27. Release candidate v1.0
+
+- Feature `feat/phase-9-production` merge `release/v1.0` tại `4654e7d`; bump `1.0.0`
+  tại `632bc9e`; docs RC `29aae6c`.
+- Merge `release/v1.0` vào `main` bằng `--no-ff`: `99d2dfc`
+  (`release: v1.0 production hardening`).
+- Main gate: typecheck/lint/format/build:web pass; full suite 42 file, 188 test ba lần
+  34.17/32.34/32.85 s; Playwright pass; Docker health `1.0.0`.
+- Tag `v1.0` chỉ tạo sau live deploy/smoke trên VPS/domain; hiện chưa tag, chưa push
+  main/release sau merge.

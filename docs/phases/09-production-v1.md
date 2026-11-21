@@ -1,6 +1,6 @@
 # Giai đoạn 9 - Production hardening và phát hành v1.0
 
-- Trạng thái: Draft chờ duyệt
+- Trạng thái: Release candidate 1.0.0, chờ live deploy
 - Ngày lập: 2026-11-21
 - Tiền đề: v0.8.0 đã merge `main`, tag `v0.8`, đã push
 - Nhánh: `release/v1.0`; feature `feat/phase-9-production`
@@ -239,3 +239,19 @@ Gate local/staging vẫn giữ:
 - SSO, email invitation tự động, billing, multi-region.
 - TLS nội bộ Mongo trong Docker network.
 - Thay đổi schema/API nghiệp vụ.
+
+## 15. Kiểm chứng staging
+
+- Production compose config và Caddyfile validate pass; Caddy chưa chạy TLS vì staging
+  dùng domain localhost, không có DNS public.
+- Mongo bootstrap production-like: replica set `rs0`, keyfile volume, root/app user;
+  `listDatabases` không credential bị từ chối, app user truy vấn được.
+- API production-like health trả `version=1.0.0`, Mongo primary; web health 200.
+- Smoke API: register 201, create board 201, list boards 200.
+- Backup production-like 3.2 KB; restore drill counts khớp, schema 8 migration, DB tạm drop.
+- Gate: typecheck/lint/format/build:web pass; full suite 42 file, 188 test ba lần
+  34.75/32.87/32.29 s; Playwright pass; dev Docker health `1.0.0`.
+- License tldraw local dùng placeholder; kiểm tra watermark thật và HTTPS/DNS vẫn là
+  điều kiện live deploy.
+- Blocker còn lại: cần VPS/SSH, domain/DNS và license key thật trong `.env.production`
+  trên server để live smoke, merge `main` và tag `v1.0`.

@@ -991,3 +991,14 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   staging gate, live deploy/v1.0 release.
 - Spec cập nhật keyfile trong Docker volume và bootstrap profile service.
 - Chờ duyệt thực thi; live deploy/tag v1.0 cần domain/VPS/license thật.
+
+## 2026-11-21 - Phase 9 staging/RC
+
+- Feature hoàn thành hardening/compose/Caddy/Mongo auth/CI/backup/runbook; merge
+  `release/v1.0` tại `4654e7d`.
+- Staging production-like: Mongo auth pass, API health `1.0.0`, register/create board,
+  backup/restore drill pass.
+- Gate: typecheck/lint/format/build:web pass; full suite 42 file, 188 test ba lần
+  34.75/32.87/32.29 s; Playwright pass; dev Docker health `1.0.0`.
+- Bump `1.0.0` tại `632bc9e`; chưa merge `main`, chưa tag v1.0.
+- Blocker: cần VPS/SSH, domain/DNS và license key thật để live smoke.

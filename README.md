@@ -2,7 +2,7 @@
 
 Whiteboard và Kanban cho team Agile, gộp brainstorm và thực thi trên cùng một board.
 
-Phiên bản hiện tại: `0.8.0`.
+Phiên bản hiện tại: `1.0.0`.
 
 ## Trạng thái hiện tại
 
@@ -26,6 +26,8 @@ Phiên bản hiện tại: `0.8.0`.
   promote/vote/report chỉ áp dụng note.
 - Phase 8C: cursor pagination task, nút `Tải thêm`, khóa drag khi còn trang, text index
   title/description; `q` là token search, không substring.
+- Phase 9: production compose + Caddy HTTPS, Mongo auth/keyfile, CI, backup/restore,
+  runbook; release candidate `1.0.0`, chờ live deploy.
 
 ## Yêu cầu
 

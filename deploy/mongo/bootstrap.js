@@ -1,3 +1,5 @@
+/* global process, rs, db, sleep, printjson */
+
 const rootUser = process.env.MONGO_ROOT_USERNAME;
 const rootPassword = process.env.MONGO_ROOT_PASSWORD;
 const appUser = process.env.MONGO_APP_USERNAME;

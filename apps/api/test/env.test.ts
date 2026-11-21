@@ -68,8 +68,6 @@ describe('loadEnv', () => {
     expect(() => loadEnv({ ...base, CORS_ORIGIN: 'http://nextask.example.com' })).toThrow(
       /CORS_ORIGIN/,
     );
-    expect(() => loadEnv({ ...base, SEED_OWNER_EMAIL: 'demo@example.com' })).toThrow(
-      /SEED_OWNER/,
-    );
+    expect(() => loadEnv({ ...base, SEED_OWNER_EMAIL: 'demo@example.com' })).toThrow(/SEED_OWNER/);
   });
 });

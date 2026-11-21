@@ -435,3 +435,5 @@ Không chạy `git config user.name` hoặc `git config user.email`.
 - Merge `release/v1.0` tại `13aa965`; release gate pass 42 file, 189 test ba lần
   32.11/34.58/36.46 s; Playwright pass.
 - Chưa merge `main`, chưa tag v1.0; live Cloudflare tunnel smoke cần domain/token.
+- Merge public self-host vào `main` tại `be6b268`; main gate 42 file, 189 test ba lần
+  32.92/32.62/32.99 s; Playwright pass; health `1.0.0`.

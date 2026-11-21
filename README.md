@@ -238,7 +238,7 @@ npm run test
 npm run test:e2e
 ```
 
-Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`. Test realtime dùng Change Streams và Socket.IO client thật; suite hiện có 42 file, 186 test.
+Test API dùng MongoDB replica set thật, không mock database. Test DB Phase 2 là `nextask_phase2_test`; migration test dùng database riêng; có thể override bằng `MONGODB_TEST_URI` và `MONGODB_MIGRATION_TEST_URI`. Global teardown drop các DB test sau mỗi lần chạy. Test realtime dùng Change Streams và Socket.IO client thật; suite hiện có 42 file, 189 test.
 
 Playwright smoke cần stack Docker và demo seed đang chạy; cài browser một lần bằng
 `npx playwright install chromium`. Biến `E2E_BASE_URL` đổi URL web nếu không dùng cổng 3000.

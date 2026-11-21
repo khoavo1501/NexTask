@@ -1039,3 +1039,11 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   32.92/32.62/32.99 s; Playwright pass; Docker health `1.0.0`.
 - Tag `v1.0` vẫn chờ live Cloudflare Named Tunnel smoke với domain/token thật.
 - Không push.
+
+## 2026-11-21 - Test DB teardown
+
+- Thêm `apps/api/test/global-setup.ts`: drop `nextask_phase2_test`,
+  `nextask_phase2_migration_test`, `nextask_phase0_test`, `nextask_explain_v6` trước và
+  sau toàn bộ suite.
+- Chạy full suite 42 file, 189 test; sau run Mongo chỉ còn database app `nextask`.
+- README cập nhật số test và hành vi teardown.

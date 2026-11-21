@@ -117,4 +117,20 @@ describe('seed demo', () => {
     expect(ownerBudget?.used).toBe(2);
     expect(budgets.every((budget) => budget.limit === 3)).toBe(true);
   });
+
+  it('tạo owner mới nếu DB public trống', async () => {
+    process.env.SEED_OWNER_PASSWORD = 'public-seed-owner-password';
+    process.env.SEED_OWNER_NAME = 'Public Owner';
+    try {
+      const summary = await seedDemoBoard('fresh.owner@example.com');
+      const owner = await UserModel.findOne({
+        emailNormalized: 'fresh.owner@example.com',
+      }).exec();
+      expect(owner?.name).toBe('Public Owner');
+      expect(summary.items).toBe(12);
+    } finally {
+      delete process.env.SEED_OWNER_PASSWORD;
+      delete process.env.SEED_OWNER_NAME;
+    }
+  });
 });

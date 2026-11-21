@@ -2,15 +2,18 @@
 set -euo pipefail
 
 cd "$(dirname "$0")/.."
+env_file="${ENV_FILE:-.env.production}"
+compose_file="${COMPOSE_FILE:-docker-compose.prod.yml}"
+backup_dir="${BACKUP_DIR:-backups/prod}"
 set -a
-source .env.production
+source "$env_file"
 set +a
-mkdir -p backups/prod
+mkdir -p "$backup_dir"
 
 timestamp="$(date +%Y%m%d-%H%M%S)"
-file="backups/prod/nextask-prod-${timestamp}.gz"
+file="${backup_dir}/nextask-${BACKUP_LABEL:-prod}-${timestamp}.gz"
 
-docker compose --env-file .env.production -f docker-compose.prod.yml exec -T mongo \
+docker compose --env-file "$env_file" -f "$compose_file" exec -T mongo \
   mongodump --host localhost \
   --username "$MONGO_ROOT_USERNAME" \
   --password "$MONGO_ROOT_PASSWORD" \
@@ -18,5 +21,5 @@ docker compose --env-file .env.production -f docker-compose.prod.yml exec -T mon
   --db nextask --archive --gzip > "$file"
 
 gzip -t "$file"
-find backups/prod -name 'nextask-prod-*.gz' -mtime +14 -delete
+find "$backup_dir" -name "nextask-${BACKUP_LABEL:-prod}-*.gz" -mtime +14 -delete
 ls -lh "$file"

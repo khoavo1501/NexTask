@@ -54,6 +54,24 @@ Các URL local:
 - API health: `http://localhost:4000/api/v1/health`
 - MongoDB: `127.0.0.1:27017`
 
+## Self-host public bằng máy cá nhân
+
+Dùng Docker + Cloudflare Named Tunnel để mở link public mà không cần VPS:
+
+```bash
+PUBLIC_DOMAIN=nextask.example.com \
+CLOUDFLARE_TUNNEL_TOKEN='<token>' \
+NEXT_PUBLIC_TLDRAW_LICENSE_KEY='<license>' \
+./scripts/start-public.sh
+```
+
+Script tạo `.env.public` (ngẫu nhiên secret), bootstrap Mongo auth, seed demo và owner,
+khởi động API/web/Caddy/cloudflared, rồi in URL và tài khoản owner. Dừng bằng
+`./scripts/stop-public.sh`; dữ liệu giữ trong volume.
+
+Cloudflare Public Hostname phải trỏ service `http://public-proxy:8080`. Chi tiết:
+[docs/public-host.md](docs/public-host.md).
+
 ## Tài khoản local
 
 Migration seed owner cũ bằng cấu hình trong `.env` local:
@@ -262,6 +280,7 @@ Repository Git cục bộ, không tự push. Phase 2A/2B đã phát hành v0.2.0
 - [Phase 8C](docs/phases/08c-cursor-text-search.md)
 - [Phase 9](docs/phases/09-production-v1.md)
 - [Production runbook](docs/production-runbook.md)
+- [Self-host public](docs/public-host.md)
 - [Ghi chú MongoDB](docs/mongodb-notes.md)
 - [Lịch sử phiên](docs/session-log.md)
 - [Quy trình Git](docs/git-workflow.md)

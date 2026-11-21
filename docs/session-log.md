@@ -1011,3 +1011,23 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   34.17/32.34/32.85 s; Playwright pass; Docker health `1.0.0`.
 - Chưa tag `v1.0`; tag chờ live deploy/smoke trên VPS/domain.
 - Không push.
+
+## 2026-11-21 - Self-host public mode
+
+- Thêm `docker-compose.public.yml`, Caddy nội bộ `public-proxy:8080`, Cloudflare Named
+  Tunnel, Mongo auth volume riêng; seed demo + owner random.
+- `scripts/start-public.sh` một lệnh tạo `.env.public`, build, bootstrap, seed và in URL
+  + tài khoản owner; `stop-public.sh` giữ volume.
+- Chạy thử local qua `public-proxy`: health 200, owner login 200, demo board đúng.
+- Docs: `docs/public-host.md`, README, production runbook, Phase 9.
+- Chưa test Cloudflare tunnel thật (cần domain/token); tag v1.0 vẫn chờ live smoke.
+
+## 2026-11-21 - Public self-host merge
+
+- Feature gate: typecheck/lint/format/build:web pass; full suite 42 file, 189 test ba lần
+  33.75/34.36/33.29 s; Playwright pass.
+- Local public stack: proxy health 200, owner login 200, demo board đúng; Cloudflare
+  Named Tunnel thật chưa test vì cần domain/token.
+- Merge feature vào `release/v1.0` tại `13aa965`; release gate pass 42 file, 189 test ba lần
+  32.11/34.58/36.46 s; Playwright pass.
+- Chưa merge `main`, chưa tag v1.0, chưa push.

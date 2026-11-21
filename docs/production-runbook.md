@@ -128,3 +128,18 @@ Cập nhật `.env.production`, recreate `migrate`/`api`, kiểm tra health.
 - License tldraw sai/hết hạn: watermark có thể trở lại; kiểm tra sau deploy.
 - Không chạy `docker compose down -v` trên production trừ khi đã backup và chủ động
   xóa dữ liệu.
+
+## 10. Self-host public bằng máy cá nhân
+
+Nếu không dùng VPS, có thể chạy stack public ngay trên máy cá nhân qua Cloudflare Named
+Tunnel. Xem [public-host.md](public-host.md) và dùng:
+
+```bash
+PUBLIC_DOMAIN=nextask.example.com \
+CLOUDFLARE_TUNNEL_TOKEN='<token>' \
+NEXT_PUBLIC_TLDRAW_LICENSE_KEY='<license>' \
+./scripts/start-public.sh
+```
+
+Cloudflare Public Hostname trỏ `http://public-proxy:8080`. Stack dùng volume
+`nextask-public` riêng, không đụng DB dev. Dừng bằng `./scripts/stop-public.sh`.

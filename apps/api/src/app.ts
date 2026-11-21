@@ -23,11 +23,15 @@ export interface AppDependencies {
   jwtSecret: string;
   cookieSecure: boolean;
   authRateLimitMax: number;
+  trustProxy?: number;
 }
 
 export function createApp(deps: AppDependencies): Express {
   const app = express();
   const authenticate = createAuthenticate(deps.jwtSecret);
+  if (deps.trustProxy && deps.trustProxy > 0) {
+    app.set('trust proxy', deps.trustProxy);
+  }
   app.disable('x-powered-by');
   app.use(helmet());
   app.use(cors({ origin: deps.corsOrigin, credentials: true }));

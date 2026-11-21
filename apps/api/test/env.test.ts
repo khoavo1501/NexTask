@@ -36,4 +36,38 @@ describe('loadEnv', () => {
   it('từ chối JWT_SECRET ngắn', () => {
     expect(() => loadEnv({ ...validEnv, JWT_SECRET: 'short' })).toThrow(/JWT_SECRET/);
   });
+
+  it('parse production hợp lệ và default trust proxy/rate limit', () => {
+    const env = loadEnv({
+      ...validEnv,
+      NODE_ENV: 'production',
+      COOKIE_SECURE: 'true',
+      CORS_ORIGIN: 'https://nextask.example.com',
+      JWT_SECRET: 'production-secret-at-least-32-bytes-long',
+      SEED_OWNER_EMAIL: undefined,
+      SEED_OWNER_PASSWORD: undefined,
+    });
+    expect(env.TRUST_PROXY).toBe(0);
+    expect(env.AUTH_RATE_LIMIT_MAX).toBe(5);
+  });
+
+  it('từ chối production thiếu cookie secure/https/dev secret/seed owner', () => {
+    const base = {
+      ...validEnv,
+      NODE_ENV: 'production',
+      COOKIE_SECURE: 'true',
+      CORS_ORIGIN: 'https://nextask.example.com',
+      JWT_SECRET: 'production-secret-at-least-32-bytes-long',
+      SEED_OWNER_EMAIL: undefined,
+      SEED_OWNER_PASSWORD: undefined,
+    };
+    expect(() => loadEnv({ ...base, COOKIE_SECURE: 'false' })).toThrow(/COOKIE_SECURE/);
+    expect(() =>
+      loadEnv({ ...base, JWT_SECRET: 'local-dev-only-nextask-jwt-secret-change-me' }),
+    ).toThrow(/JWT_SECRET/);
+    expect(() => loadEnv({ ...base, CORS_ORIGIN: 'http://nextask.example.com' })).toThrow(
+      /CORS_ORIGIN/,
+    );
+    expect(() => loadEnv({ ...base, SEED_OWNER_EMAIL: 'demo@example.com' })).toThrow(/SEED_OWNER/);
+  });
 });

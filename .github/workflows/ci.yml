@@ -1,0 +1,45 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 26
+          cache: npm
+      - run: npm ci
+      - run: docker compose up -d mongo mongo-init
+      - name: Wait for MongoDB replica set
+        run: |
+          for i in $(seq 1 30); do
+            if docker compose exec -T mongo mongosh --quiet \
+              --eval 'db.adminCommand({ ping: 1 }).ok' | grep -q 1; then
+              exit 0
+            fi
+            sleep 2
+          done
+          docker compose logs mongo mongo-init
+          exit 1
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run test
+      - run: npm run build:web
+      - name: Validate production compose
+        run: |
+          cp .env.production.example .env.production
+          docker compose --env-file .env.production -f docker-compose.prod.yml config >/dev/null
+          rm .env.production
+      - name: Validate Caddyfile
+        run: |
+          docker run --rm -e DOMAIN=nextask.example.com -e ACME_EMAIL=ops@example.com \
+            -v "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2 caddy validate --config /etc/caddy/Caddyfile
+      - if: always()
+        run: docker compose down -v

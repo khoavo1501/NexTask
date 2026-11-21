@@ -425,3 +425,13 @@ Không chạy `git config user.name` hoặc `git config user.email`.
   34.17/32.34/32.85 s; Playwright pass; Docker health `1.0.0`.
 - Tag `v1.0` chỉ tạo sau live deploy/smoke trên VPS/domain; hiện chưa tag, chưa push
   main/release sau merge.
+
+## 28. Self-host public mode
+
+- Feature `feat/public-selfhost` từ `release/v1.0`; thêm Compose public, Caddy nội bộ,
+  Cloudflare Named Tunnel, start/stop script, seed owner/demo random và docs.
+- Feature gate: typecheck/lint/format/build:web pass; full suite 42 file, 189 test ba lần
+  33.75/34.36/33.29 s; Playwright pass.
+- Merge `release/v1.0` tại `13aa965`; release gate pass 42 file, 189 test ba lần
+  32.11/34.58/36.46 s; Playwright pass.
+- Chưa merge `main`, chưa tag v1.0; live Cloudflare tunnel smoke cần domain/token.

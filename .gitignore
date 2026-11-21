@@ -6,6 +6,8 @@ coverage/
 .env
 .env.*
 !.env.example
+!.env.production.example
+secrets/
 *.log
 .DS_Store
 .vscode/

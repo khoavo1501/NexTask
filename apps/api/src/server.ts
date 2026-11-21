@@ -30,7 +30,8 @@ async function main(): Promise<void> {
     logger,
     jwtSecret: env.JWT_SECRET,
     cookieSecure: env.COOKIE_SECURE,
-    authRateLimitMax: 5,
+    authRateLimitMax: env.AUTH_RATE_LIMIT_MAX,
+    trustProxy: env.TRUST_PROXY,
   });
   const server = createServer(app);
   const realtime = createRealtimeServer(server, {

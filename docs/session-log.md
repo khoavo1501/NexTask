@@ -974,3 +974,31 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   33.67/33.91/41.32 s; Playwright pass; Docker health `0.8.0`.
 - Docs release merge sau đó; tag annotated `v0.8` tại commit docs release.
 - Không push; tag `v0.2.0`–`v0.7` giữ nguyên.
+
+## 2026-11-21 - Phase 9 spec
+
+- Tạo `release/v1.0` từ `main` `78bf21a`; feature `feat/phase-9-production`.
+- Chốt target: VPS Docker Compose + Caddy TLS + MongoDB self-host có auth; đã có
+  domain/DNS và license tldraw sẽ truyền qua secret/env.
+- Phạm vi: production compose/Caddy, Mongo auth bootstrap, trust proxy/cookie,
+  license tldraw, CI, backup/restore, runbook, staging smoke, release 1.0.0/tag v1.0.
+- Spec: `docs/phases/09-production-v1.md`; chờ duyệt trước khi code/deploy.
+
+## 2026-11-21 - Phase 9 plan
+
+- Plan `docs/superpowers/plans/2026-11-21-phase-9-production-v1.md`: 5 task TDD cho
+  runtime hardening/license, production Compose/Caddy/Mongo auth, CI/backup/runbook,
+  staging gate, live deploy/v1.0 release.
+- Spec cập nhật keyfile trong Docker volume và bootstrap profile service.
+- Chờ duyệt thực thi; live deploy/tag v1.0 cần domain/VPS/license thật.
+
+## 2026-11-21 - Phase 9 staging/RC
+
+- Feature hoàn thành hardening/compose/Caddy/Mongo auth/CI/backup/runbook; merge
+  `release/v1.0` tại `4654e7d`.
+- Staging production-like: Mongo auth pass, API health `1.0.0`, register/create board,
+  backup/restore drill pass.
+- Gate: typecheck/lint/format/build:web pass; full suite 42 file, 188 test ba lần
+  34.75/32.87/32.29 s; Playwright pass; dev Docker health `1.0.0`.
+- Bump `1.0.0` tại `632bc9e`; chưa merge `main`, chưa tag v1.0.
+- Blocker: cần VPS/SSH, domain/DNS và license key thật để live smoke.

@@ -503,7 +503,11 @@ export function WhiteboardCanvas({
       onPointerMove={handlePointerMove}
       className="relative h-full w-full overflow-hidden bg-stone-50"
     >
-      <Tldraw hideUi onMount={handleMount} />
+      <Tldraw
+        hideUi
+        licenseKey={process.env.NEXT_PUBLIC_TLDRAW_LICENSE_KEY}
+        onMount={handleMount}
+      />
 
       <div className="pointer-events-none absolute inset-0 z-20 overflow-hidden">
         {promotedBadges.map((badge) => (

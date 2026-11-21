@@ -1002,3 +1002,12 @@ Tài liệu này ghi lại thay đổi theo phiên song song với Git. Mỗi m�
   34.75/32.87/32.29 s; Playwright pass; dev Docker health `1.0.0`.
 - Bump `1.0.0` tại `632bc9e`; chưa merge `main`, chưa tag v1.0.
 - Blocker: cần VPS/SSH, domain/DNS và license key thật để live smoke.
+
+## 2026-11-21 - Merge main v1.0 RC
+
+- Merge `release/v1.0` vào `main` bằng `--no-ff`: `99d2dfc`
+  (`release: v1.0 production hardening`).
+- Main gate: typecheck/lint/format/build:web pass; full suite 42 file, 188 test ba lần
+  34.17/32.34/32.85 s; Playwright pass; Docker health `1.0.0`.
+- Chưa tag `v1.0`; tag chờ live deploy/smoke trên VPS/domain.
+- Không push.

@@ -1,6 +1,6 @@
 # Giai đoạn 9 - Production hardening và phát hành v1.0
 
-- Trạng thái: Release candidate 1.0.0, chờ live deploy
+- Trạng thái: Release candidate 1.0.0, đã merge main, chờ live deploy/tag v1.0
 - Ngày lập: 2026-11-21
 - Tiền đề: v0.8.0 đã merge `main`, tag `v0.8`, đã push
 - Nhánh: `release/v1.0`; feature `feat/phase-9-production`
@@ -255,3 +255,12 @@ Gate local/staging vẫn giữ:
   điều kiện live deploy.
 - Blocker còn lại: cần VPS/SSH, domain/DNS và license key thật trong `.env.production`
   trên server để live smoke, merge `main` và tag `v1.0`.
+
+## 16. Merge main release candidate
+
+- Merge `release/v1.0` vào `main` bằng `--no-ff`: `99d2dfc`
+  (`release: v1.0 production hardening`).
+- Main gate: typecheck/lint/format/build:web pass; full suite 42 file, 188 test ba lần
+  34.17/32.34/32.85 s; Playwright pass; Docker health `1.0.0`.
+- Docs release candidate merge sau main; tag `v1.0` vẫn chờ live smoke trên VPS/domain.
+- Không push trong bước này.
